@@ -1,0 +1,4546 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aufschaltformular</title>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<style>
+  :root {
+    --bg-top: #295e70;
+    --bg-bottom: #214f60;
+    --card: rgba(255, 255, 255, 0.88);
+    --card-solid: #ffffff;
+    --line: #d7e0ea;
+    --line-strong: #c4d2df;
+    --text: #1d1d1f;
+    --muted: #556274;
+    --accent: #0a84ff;
+    --accent-soft: rgba(10, 132, 255, 0.2);
+    --shadow-soft: 0 12px 34px rgba(17, 35, 56, 0.12);
+    --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    --step-count: 5;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.55), transparent 40%),
+      linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+    padding: 24px 16px 32px;
+  }
+
+  .box {
+    background: var(--card);
+    border: 1px solid rgba(255, 255, 255, 0.76);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 28px;
+    border-radius: 24px;
+  }
+
+  h2 {
+    text-align: center;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    font-size: clamp(30px, 4.8vw, 44px);
+    line-height: 1.1;
+    margin: 0 0 14px;
+  }
+
+  .page-title {
+    margin: 0 0 14px;
+    font-size: clamp(30px, 4.8vw, 46px);
+    line-height: 1.02;
+    font-weight: 740;
+    letter-spacing: -0.03em;
+    color: #11283f;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75),
+      0 10px 20px rgba(16, 33, 52, 0.14);
+  }
+
+  .page-title::after {
+    content: "";
+    display: block;
+    width: clamp(90px, 16vw, 140px);
+    height: 3px;
+    margin: 10px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), rgba(10, 132, 255, 0.95), rgba(255, 255, 255, 0.75));
+    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.28);
+  }
+
+  .brand-logo {
+    display: block;
+    width: min(290px, 84%);
+    height: auto;
+    margin: 0 auto 12px;
+    filter: drop-shadow(0 8px 14px rgba(28, 43, 68, 0.16));
+  }
+
+  .intro-subtitle {
+    margin: 0;
+    text-align: center;
+    color: #233f5f;
+    font-size: 16px;
+    font-weight: 640;
+    letter-spacing: 0.01em;
+  }
+
+  .intro-note {
+    margin: 8px 0 18px;
+    text-align: center;
+    color: #4c5f77;
+    font-size: 13px;
+  }
+
+  .stepper {
+    position: sticky;
+    top: 8px;
+    z-index: 9;
+    margin: 0 0 18px;
+    border: 1px solid #d5e2ef;
+    border-radius: 18px;
+    background: rgba(247, 251, 255, 0.95);
+    box-shadow: 0 8px 18px rgba(20, 42, 67, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 12px;
+  }
+
+  .stepper-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    color: #324760;
+    font-weight: 650;
+  }
+
+  .stepper-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .step-item {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    border: 1px solid #cbd9e7;
+    border-radius: 13px;
+    padding: 8px 6px;
+    background: #f5f9ff;
+    color: #365172;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 620;
+  }
+
+  .step-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(31, 62, 96, 0.12);
+    background: #eef5ff;
+  }
+
+  .step-item.active {
+    border-color: #2b73bd;
+    background: linear-gradient(180deg, #e4f0ff, #d8e9ff);
+    color: #1f456f;
+    box-shadow: 0 10px 18px rgba(43, 115, 189, 0.18);
+  }
+
+  .step-item.complete {
+    border-color: #79a5d7;
+    background: linear-gradient(180deg, #e9f4ff, #e0efff);
+    color: #1e466f;
+  }
+
+  .step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid #9bb7d8;
+    background: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .step-item.complete .step-index {
+    background: #2f7fd3;
+    border-color: #2f7fd3;
+    color: #ffffff;
+  }
+
+  .step-item.active .step-index {
+    background: #2b73bd;
+    border-color: #2b73bd;
+    color: #ffffff;
+  }
+
+  .step-name {
+    white-space: nowrap;
+  }
+
+  form {
+    width: 100%;
+  }
+
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 18px;
+    margin: 0 0 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(247, 250, 255, 0.88));
+    box-shadow: var(--shadow-inset);
+    scroll-margin-top: 150px;
+    transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+  }
+
+  legend {
+    font-weight: 700;
+    font-size: 15px;
+    color: #233449;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #f1f6fc;
+    letter-spacing: 0.01em;
+    margin-bottom: 10px;
+    transition: border-color 0.28s ease, background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease;
+  }
+
+  fieldset.section-focus {
+    border-color: #7eaede;
+    box-shadow:
+      0 0 0 4px rgba(10, 132, 255, 0.12),
+      0 16px 30px rgba(26, 63, 103, 0.12),
+      var(--shadow-inset);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(233, 244, 255, 0.92));
+  }
+
+  fieldset.section-focus legend {
+    border-color: #7eaede;
+    background: linear-gradient(180deg, #eef6ff, #dcecff);
+    color: #153b62;
+    box-shadow: 0 10px 20px rgba(43, 115, 189, 0.16);
+  }
+
+  label {
+    display: block;
+    margin-bottom: 9px;
+    color: #314155;
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  textarea,
+  select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: #ffffff;
+    color: #1b2c3f;
+    font-size: 15px;
+    line-height: 1.35;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 40px;
+    background-image:
+      linear-gradient(45deg, transparent 50%, #5a7190 50%),
+      linear-gradient(135deg, #5a7190 50%, transparent 50%),
+      linear-gradient(180deg, #ffffff, #f7fbff);
+    background-position:
+      calc(100% - 18px) calc(50% + 1px),
+      calc(100% - 12px) calc(50% + 1px),
+      0 0;
+    background-size: 6px 6px, 6px 6px, 100% 100%;
+    background-repeat: no-repeat;
+  }
+
+  select::-ms-expand {
+    display: none;
+  }
+
+  select:disabled {
+    cursor: not-allowed;
+    background-image:
+      linear-gradient(45deg, transparent 50%, #7f96b3 50%),
+      linear-gradient(135deg, #7f96b3 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% + 1px),
+      calc(100% - 12px) calc(50% + 1px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+
+  .custom-select {
+    position: relative;
+    margin-top: 6px;
+  }
+
+  .custom-select.is-open {
+    z-index: 45;
+  }
+
+  .custom-select > select.select-native-hidden {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .custom-select-trigger {
+    width: 100%;
+    min-height: 46px;
+    text-align: left;
+    padding: 11px 40px 11px 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background:
+      linear-gradient(45deg, transparent 50%, #5a7190 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #5a7190 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #ffffff, #f7fbff);
+    color: #1b2c3f;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.35;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    box-shadow: none;
+  }
+
+  .custom-select-trigger.placeholder {
+    color: #75859b;
+    font-weight: 500;
+  }
+
+  .custom-select-trigger:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background-color: #ffffff;
+  }
+
+  .custom-select.is-open .custom-select-trigger {
+    border-color: #7aa8da;
+    box-shadow: 0 0 0 3px rgba(51, 117, 192, 0.14);
+  }
+
+  .custom-select.is-disabled .custom-select-trigger {
+    cursor: not-allowed;
+    color: #70839c;
+    background:
+      linear-gradient(45deg, transparent 50%, #7f96b3 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #7f96b3 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #f7fbff, #edf3fb);
+  }
+
+  .custom-select-trigger.is-filled {
+    background:
+      linear-gradient(45deg, transparent 50%, #4f7ead 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #4f7ead 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #eaf3ff, #dceafe);
+    border-color: #a8c3e9;
+    color: #1e3b60;
+    opacity: 1;
+  }
+
+  .custom-select-menu {
+    position: absolute;
+    z-index: 35;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    max-height: 250px;
+    overflow: auto;
+    display: none;
+    border: 1px solid #bfd0e3;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff, #f7fbff);
+    box-shadow: 0 14px 28px rgba(16, 42, 70, 0.2);
+    padding: 6px;
+  }
+
+  .custom-select.is-open .custom-select-menu {
+    display: block;
+  }
+
+  .custom-select.open-upward .custom-select-menu {
+    top: auto;
+    bottom: calc(100% + 7px);
+  }
+
+  .custom-select-option {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #1f3b5a;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.3;
+    padding: 8px 10px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .custom-select-option:hover {
+    background: #eaf3ff;
+    color: #17385b;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .custom-select-option.is-selected {
+    background: #dcecff;
+    color: #163c66;
+    font-weight: 650;
+  }
+
+  .custom-select-option.is-disabled {
+    color: #7b8ea5;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+  }
+
+  .custom-select-option.is-disabled:hover {
+    background: transparent;
+    color: #7b8ea5;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+  }
+
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="tel"]::placeholder,
+  textarea::placeholder {
+    color: #8a97a8;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="tel"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background-color: #ffffff;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: -3px;
+    accent-color: var(--accent);
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .customer-input-row {
+    margin-top: 9px;
+  }
+
+  .customer-saved-row {
+    display: none;
+    margin-top: 9px;
+    padding: 11px 13px;
+    border: 1px solid #cad9e7;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f6faff, #f2f7fc);
+  }
+
+  .customer-saved-row .saved-label {
+    font-weight: 700;
+    color: #2b415b;
+  }
+
+  .customer-saved-row .saved-value {
+    font-weight: 400;
+    color: #22384f;
+  }
+
+  .technik-box {
+    border: 1px solid #d5e2ee;
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 13px;
+    background: var(--card-solid);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .tech-check-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .tech-check-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2b415b;
+    font-weight: 600;
+  }
+
+  .tech-check-main input[type="checkbox"] {
+    flex: 0 0 auto;
+  }
+
+  .tech-check-note {
+    display: inline;
+    color: #7b8899;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 500;
+  }
+
+  #technikFieldset.tech-frozen .technik-box.tech-filled-box {
+    background: linear-gradient(180deg, #f4f8ff, #e9f2ff);
+    border-color: #c5d8f2;
+  }
+
+  #technikFieldset.tech-frozen input[type="text"].tech-filled:disabled,
+  #technikFieldset.tech-frozen select.tech-filled:disabled,
+  #technikFieldset.tech-frozen textarea.tech-filled:disabled {
+    background: linear-gradient(180deg, #eaf3ff, #dceafe);
+    border-color: #a8c3e9;
+    color: #1e3b60;
+    opacity: 1;
+  }
+
+  #technikFieldset.tech-frozen input[type="checkbox"].tech-filled:disabled {
+    accent-color: #2c79d0;
+    filter: saturate(1.15);
+  }
+
+  #technikFieldset.tech-frozen label.tech-filled-label {
+    color: #244a74;
+    font-weight: 700;
+  }
+
+  .tech-inactive-note {
+    display: none;
+    margin: -4px 0 12px;
+    color: #607286;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .legend-with-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .legend-toggle-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-toggle-btn {
+    width: auto;
+    min-width: 48px;
+    padding: 6px 12px;
+    border: 1px solid #c6d6e7;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff, #f4f8fd);
+    color: #365172;
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1.1;
+    box-shadow: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+
+  .legend-toggle-btn:hover {
+    transform: none;
+    filter: none;
+    box-shadow: none;
+    background: linear-gradient(180deg, #f8fbff, #edf4fc);
+    border-color: #afc6df;
+  }
+
+  .legend-toggle-btn.is-active {
+    border-color: #2f7fd3;
+    background: linear-gradient(180deg, #2f8fff, #1477dd);
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(20, 99, 184, 0.18);
+  }
+
+  #technikFieldset {
+    overflow: hidden;
+    transition: padding 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  }
+
+  .tech-panel {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-12px);
+    margin-top: 0;
+    pointer-events: none;
+    transition: max-height 0.42s ease, opacity 0.28s ease, transform 0.36s ease, margin-top 0.36s ease;
+  }
+
+  #technikFieldset.tech-enabled .tech-panel {
+    max-height: 2400px;
+    opacity: 1;
+    transform: translateY(0);
+    margin-top: 10px;
+    pointer-events: auto;
+  }
+
+  #technikFieldset.tech-enabled,
+  #technikFieldset.tech-enabled .tech-panel {
+    overflow: visible;
+  }
+
+  #technikFieldset:not(.tech-enabled) {
+    padding-bottom: 12px;
+  }
+
+  .step-item.is-muted {
+    border-color: #d4dde7;
+    background: #f1f4f8;
+    color: #728296;
+  }
+
+  .step-item.is-muted:hover {
+    transform: none;
+    box-shadow: none;
+    background: #f1f4f8;
+  }
+
+  .step-item.is-muted .step-index {
+    border-color: #c6d1dd;
+    background: #f8fafc;
+    color: #7b8899;
+  }
+
+  #verbindungFieldset.verbindung-frozen .technik-box.verbindung-filled-box,
+  #verbindungFieldset.verbindung-frozen .sub-tech-options.verbindung-filled-box {
+    background: linear-gradient(180deg, #f4f8ff, #e9f2ff);
+    border-color: #c5d8f2;
+  }
+
+  #verbindungFieldset.verbindung-frozen input[type="text"].verbindung-filled:disabled,
+  #verbindungFieldset.verbindung-frozen select.verbindung-filled:disabled,
+  #verbindungFieldset.verbindung-frozen textarea.verbindung-filled:disabled {
+    background: linear-gradient(180deg, #eaf3ff, #dceafe);
+    border-color: #a8c3e9;
+    color: #1e3b60;
+    opacity: 1;
+  }
+
+  #verbindungFieldset.verbindung-frozen input[type="checkbox"].verbindung-filled:disabled {
+    accent-color: #2c79d0;
+    filter: saturate(1.15);
+  }
+
+  #verbindungFieldset.verbindung-frozen label.verbindung-filled-label {
+    color: #244a74;
+    font-weight: 700;
+  }
+
+  #statusFieldset.status-frozen #statusOptions.status-filled-box,
+  #statusFieldset.status-frozen .status-extra.status-filled-box {
+    background: linear-gradient(180deg, #f4f8ff, #e9f2ff);
+    border-color: #c5d8f2;
+  }
+
+  #statusFieldset.status-frozen input[type="text"].status-filled:disabled,
+  #statusFieldset.status-frozen select.status-filled:disabled,
+  #statusFieldset.status-frozen textarea.status-filled:disabled {
+    background: linear-gradient(180deg, #eaf3ff, #dceafe);
+    border-color: #a8c3e9;
+    color: #1e3b60;
+    opacity: 1;
+  }
+
+  #statusFieldset.status-frozen input[type="checkbox"].status-filled:disabled {
+    accent-color: #2c79d0;
+    filter: saturate(1.15);
+  }
+
+  #statusFieldset.status-frozen label.status-filled-label {
+    color: #244a74;
+    font-weight: 700;
+  }
+
+  .tech-options {
+    display: none;
+    margin-top: 10px;
+  }
+
+  .tech-options > * + * {
+    margin-top: 10px;
+  }
+
+  .sub-tech-options {
+    display: none;
+    margin-top: 10px;
+    padding: 11px 12px;
+    border: 1px solid #dce7f1;
+    border-radius: 14px;
+    background: #f8fbff;
+  }
+
+  .sub-tech-options > * + * {
+    margin-top: 10px;
+  }
+
+  .status-options {
+    display: block;
+    margin-top: 8px;
+  }
+
+  .status-options > * + * {
+    margin-top: 10px;
+  }
+
+  .status-extra {
+    display: none;
+    margin-top: 8px;
+    padding: 11px 12px;
+    border: 1px solid #dce7f1;
+    border-radius: 14px;
+    background: #f8fbff;
+  }
+
+  .multi-phone-wrap {
+    display: grid;
+    gap: 8px;
+  }
+
+  .phone-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .phone-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .phone-row input {
+    margin-top: 0;
+  }
+
+  .phone-add-btn,
+  .phone-remove-btn {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 14px;
+    border: 1px solid var(--line-strong);
+    background: linear-gradient(180deg, #ffffff, #f8fbff);
+    color: #2f5273;
+    font-size: 19px;
+    line-height: 1;
+    font-weight: 650;
+    box-shadow: none;
+  }
+
+  .phone-add-btn:hover,
+  .phone-remove-btn:hover {
+    background: linear-gradient(180deg, #f5f9ff, #edf5ff);
+  }
+
+  .phone-remove-btn {
+    font-size: 17px;
+  }
+
+  .zeitfenster-panel {
+    display: none;
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid #d9e5f2;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fafdff, #f1f7ff);
+  }
+
+  .zeitfenster-panel-head {
+    margin: 0 0 8px;
+    color: #2e4a68;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .zeitfenster-slot-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .zeitfenster-slot {
+    display: grid;
+    grid-template-columns: minmax(92px, 1fr) minmax(106px, 1fr) auto minmax(92px, 1fr) minmax(106px, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 9px;
+    border: 1px solid #dce8f5;
+    border-radius: 13px;
+    background: #ffffff;
+  }
+
+  .zeitfenster-slot .slot-sep {
+    color: #5b6f86;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .zeitfenster-slot .custom-select .custom-select-trigger {
+    margin-top: 0;
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .zeitfenster-add-btn {
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #c8d7e9;
+    background: linear-gradient(180deg, #f7fbff, #ecf3fb);
+    color: #264666;
+    font-size: 13.5px;
+    font-weight: 620;
+    box-shadow: 0 4px 10px rgba(35, 59, 92, 0.11);
+  }
+
+  .zeitfenster-add-btn:hover {
+    background: linear-gradient(180deg, #eef6ff, #e2edf8);
+  }
+
+  .zeitfenster-remove-btn {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid #cfdded;
+    background: #f5f9ff;
+    color: #395876;
+    font-size: 18px;
+    line-height: 1;
+    box-shadow: none;
+  }
+
+  .zeitfenster-remove-btn:hover {
+    background: #eaf3ff;
+  }
+
+  .zeitfenster-summary {
+    margin-top: 8px;
+    background: linear-gradient(180deg, #f8fcff, #edf5ff);
+  }
+
+  .section-hint {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .section-caption {
+    margin: 0 0 12px;
+    color: #485e78;
+    font-size: 13.5px;
+  }
+
+  .zeitfeld {
+    display: none;
+    margin-top: 8px;
+  }
+
+  .field-error {
+    display: none;
+    margin-top: 7px;
+    color: #b42318;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  input.has-error,
+  textarea.has-error,
+  select.has-error {
+    border-color: #d92d20;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13);
+  }
+
+  .privacy-box {
+    border: 1px solid #d6e3f0;
+    border-radius: 14px;
+    padding: 12px 13px;
+    background: linear-gradient(180deg, #fbfdff, #f5f9ff);
+    color: #304966;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .privacy-check {
+    margin-top: 12px;
+    border: 1px solid #d1deeb;
+    border-radius: 13px;
+    padding: 10px 11px;
+    background: #f9fcff;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    color: #2d445f;
+    font-size: 14px;
+  }
+
+  .privacy-check.has-error {
+    border-color: #d92d20;
+    background: #fff5f4;
+  }
+
+  .privacy-check input[type="checkbox"] {
+    margin-top: 2px;
+  }
+
+  .review-wrap {
+    display: grid;
+    gap: 12px;
+  }
+
+  .review-section {
+    border: 1px solid #d8e4f1;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fbfdff, #f5f9ff);
+    padding: 12px;
+  }
+
+  .review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .review-title {
+    margin: 0;
+    font-size: 14px;
+    color: #23405f;
+    font-weight: 700;
+  }
+
+  .review-edit {
+    border: 1px solid #c4d4e5;
+    background: #f1f7ff;
+    color: #1e466f;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .review-edit:hover {
+    background: #e8f2ff;
+  }
+
+  .review-row {
+    display: grid;
+    grid-template-columns: minmax(150px, 230px) 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 5px 0;
+    border-bottom: 1px dashed #dce7f2;
+  }
+
+  .review-row:last-child {
+    border-bottom: none;
+  }
+
+  .review-label {
+    color: #395775;
+    font-size: 13.5px;
+    font-weight: 650;
+  }
+
+  .review-value {
+    color: #1f3852;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+
+  .review-updated {
+    margin: 8px 0 0;
+    color: #5a6d84;
+    font-size: 12.5px;
+  }
+
+  .action-row {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .action-row button {
+    width: auto;
+    flex: 1 1 220px;
+  }
+
+  .section-action-row {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .section-action-row .secondary-btn,
+  .section-action-row .section-reset-btn {
+    width: fit-content;
+    min-width: 150px;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 7px 14px;
+    font-size: 13px;
+  }
+
+  .ghost-btn {
+    background: linear-gradient(180deg, #f5f8fc, #edf3fa);
+    color: #2b4560;
+    border: 1px solid #cdd9e6;
+    box-shadow: 0 6px 14px rgba(38, 60, 90, 0.1);
+  }
+
+  .ghost-btn:hover {
+    box-shadow: 0 8px 16px rgba(38, 60, 90, 0.14);
+    background: linear-gradient(180deg, #f2f7fd, #e8f0f9);
+  }
+
+  button {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #1f8fff, #0676eb);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(7, 98, 193, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(7, 98, 193, 0.3);
+    filter: saturate(1.05);
+  }
+
+  button:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(7, 98, 193, 0.26);
+  }
+
+  button:disabled {
+    opacity: 0.68;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+  }
+
+  #sendBtn {
+    flex: 2 1 320px;
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+    box-shadow: 0 8px 18px rgba(33, 79, 96, 0.32);
+  }
+
+  #sendBtn:hover {
+    box-shadow: 0 10px 20px rgba(33, 79, 96, 0.38);
+  }
+
+  #sendBtn:active {
+    box-shadow: 0 6px 14px rgba(33, 79, 96, 0.3);
+  }
+
+  .secondary-btn {
+    width: fit-content;
+    max-width: 100%;
+    display: block;
+    margin: 10px auto 0;
+    padding: 9px 16px;
+    background: #f4f7fb;
+    color: #2b415a;
+    border: 1px solid #c8d5e3;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.2;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(34, 57, 87, 0.11);
+  }
+
+  .secondary-btn:hover {
+    background: #eef3f9;
+    box-shadow: 0 6px 14px rgba(34, 57, 87, 0.14);
+  }
+
+  .secondary-btn:active {
+    box-shadow: 0 3px 8px rgba(34, 57, 87, 0.11);
+  }
+
+  .secondary-btn:disabled {
+    opacity: 0.72;
+    background: #f3f5f8;
+    border-color: #d3dce6;
+    box-shadow: none;
+  }
+
+  .section-reset-btn {
+    background: #ffffff;
+    color: #5b6c7f;
+    border: 1px solid #d3dce6;
+    box-shadow: 0 4px 10px rgba(34, 57, 87, 0.08);
+  }
+
+  .section-reset-btn:hover {
+    background: #f7faff;
+  }
+
+  .custom-select .custom-select-trigger {
+    width: 100%;
+    min-height: 46px;
+    text-align: left;
+    padding: 11px 40px 11px 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background:
+      linear-gradient(45deg, transparent 50%, #5a7190 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #5a7190 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #ffffff, #f7fbff);
+    color: #1b2c3f;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.35;
+    cursor: pointer;
+    box-shadow: none;
+    letter-spacing: normal;
+    transform: none;
+    filter: none;
+  }
+
+  .custom-select .custom-select-option {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #1f3b5a;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    padding: 8px 10px;
+    cursor: pointer;
+    box-shadow: none;
+    letter-spacing: normal;
+    transform: none;
+    filter: none;
+  }
+
+  .custom-select .custom-select-trigger.placeholder {
+    color: #75859b;
+  }
+
+  .custom-select .custom-select-trigger.is-filled {
+    background:
+      linear-gradient(45deg, transparent 50%, #4f7ead 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #4f7ead 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #eaf3ff, #dceafe);
+    border-color: #a8c3e9;
+    color: #1e3b60;
+    opacity: 1;
+  }
+
+  .custom-select .custom-select-option:hover {
+    background: #eaf3ff;
+    color: #17385b;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .custom-select .custom-select-option.is-selected {
+    background: #dcecff;
+    color: #163c66;
+    font-weight: 650;
+  }
+
+  .custom-select .custom-select-option.is-disabled {
+    color: #7b8ea5;
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .custom-select .custom-select-option.is-disabled:hover {
+    background: transparent;
+    color: #7b8ea5;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+
+  .select-note-inline {
+    color: #7b8899;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  #verbindungSummary div {
+    margin-bottom: 8px;
+  }
+
+  #verbindungSummary div:last-child {
+    margin-bottom: 0;
+  }
+
+  #techSummary div {
+    margin-bottom: 8px;
+  }
+
+  #techSummary div:last-child {
+    margin-bottom: 0;
+  }
+
+  #statusSummary div {
+    margin-bottom: 8px;
+  }
+
+  #statusSummary div:last-child {
+    margin-bottom: 0;
+  }
+
+  #danke {
+    display: none;
+    text-align: center;
+  }
+
+  .saved-flash {
+    animation: savedPulse 0.65s ease;
+  }
+
+  @keyframes savedPulse {
+    0% {
+      transform: scale(1);
+      filter: saturate(1);
+    }
+    40% {
+      transform: scale(1.015);
+      filter: saturate(1.12);
+    }
+    100% {
+      transform: scale(1);
+      filter: saturate(1);
+    }
+  }
+
+  .success-meta {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid #cfe0ee;
+    background: linear-gradient(180deg, #f7fbff, #eff6ff);
+    color: #294564;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .success-meta strong {
+    color: #1f3d5d;
+  }
+
+  #danke .secondary-btn {
+    margin-top: 14px;
+  }
+
+  @media (max-width: 720px) {
+    body {
+      padding: 14px 10px 20px;
+    }
+
+    .box {
+      padding: 18px 14px;
+      border-radius: 18px;
+    }
+
+    h2 {
+      font-size: clamp(30px, 10vw, 40px);
+      margin-bottom: 10px;
+    }
+
+    .page-title {
+      font-size: clamp(28px, 9vw, 36px);
+      margin-bottom: 10px;
+    }
+
+    .page-title::after {
+      height: 3px;
+      margin-top: 8px;
+    }
+
+    .brand-logo {
+      margin-bottom: 10px;
+      width: min(230px, 82%);
+    }
+
+    .stepper {
+      position: static;
+      padding: 10px;
+    }
+
+    .stepper-list {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .step-item {
+      flex: 0 0 auto;
+      min-width: 118px;
+    }
+
+    fieldset {
+      padding: 14px;
+      border-radius: 16px;
+    }
+
+    legend {
+      font-size: 14px;
+    }
+
+    .review-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .phone-row {
+      grid-template-columns: 1fr auto;
+    }
+
+    .zeitfenster-slot {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .zeitfenster-slot .slot-sep {
+      display: none;
+    }
+
+    .zeitfenster-remove-btn {
+      width: 100%;
+      min-width: 0;
+      height: 38px;
+    }
+
+    .action-row {
+      flex-direction: column;
+    }
+
+    .action-row button {
+      width: 100%;
+      flex: initial;
+    }
+  }
+
+  @media print {
+    body {
+      background: #ffffff;
+      padding: 0;
+    }
+
+    .box {
+      max-width: 100%;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 0;
+      margin: 0;
+      background: #ffffff;
+    }
+
+    .stepper,
+    .secondary-btn,
+    #sendBtn,
+    .ghost-btn,
+    #danke {
+      display: none !important;
+    }
+
+    #formular {
+      display: block !important;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  if (typeof emailjs !== "undefined") {
+    emailjs.init("l10PMPa-_A1CMgSCV");
+  }
+})();
+
+let alreadySent = false;
+let customSelectGlobalBound = false;
+
+function closeAllCustomSelects(exceptWrap){
+  document.querySelectorAll(".custom-select.is-open").forEach(wrap => {
+    if (exceptWrap && wrap === exceptWrap) return;
+    wrap.classList.remove("is-open");
+  });
+}
+
+function setCustomSelectLabelContent(target, option, fallbackText){
+  if (!target) return;
+
+  const htmlLabel = option && option.dataset ? String(option.dataset.labelHtml || "").trim() : "";
+  if (htmlLabel){
+    target.innerHTML = htmlLabel;
+    return;
+  }
+
+  target.innerText = String(fallbackText || "").trim();
+}
+
+function syncCustomSelect(select){
+  if (!select || select.dataset.customUi !== "1") return;
+  const wrap = select.parentElement;
+  if (!wrap || !wrap.classList.contains("custom-select")) return;
+
+  const trigger = wrap.querySelector(".custom-select-trigger");
+  const menu = wrap.querySelector(".custom-select-menu");
+  if (!trigger || !menu) return;
+
+  const options = Array.from(select.options || []);
+  const current = options[select.selectedIndex] || null;
+  const text = current ? String(current.text || "").trim() : "";
+  const placeholderMode = !current || current.disabled || current.value === "";
+
+  setCustomSelectLabelContent(trigger, current, text || "Bitte auswählen");
+  trigger.classList.toggle("placeholder", placeholderMode);
+  trigger.disabled = !!select.disabled;
+  wrap.classList.toggle("is-disabled", !!select.disabled);
+  if (select.disabled || !isElementVisible(select)){
+    wrap.classList.remove("is-open");
+  }
+
+  const isFilledLocked =
+    !!select.disabled &&
+    (select.classList.contains("tech-filled") ||
+     select.classList.contains("verbindung-filled") ||
+     select.classList.contains("status-filled"));
+  trigger.classList.toggle("is-filled", isFilledLocked);
+
+  menu.innerHTML = "";
+  options.forEach((opt, index) => {
+    const isPlaceholderOption = opt.disabled && String(opt.value || "").trim() === "";
+    if (isPlaceholderOption) return;
+
+    const optionBtn = document.createElement("button");
+    optionBtn.type = "button";
+    optionBtn.className = "custom-select-option";
+    setCustomSelectLabelContent(optionBtn, opt, String(opt.text || "").trim());
+    optionBtn.dataset.index = String(index);
+
+    if (opt.disabled){
+      optionBtn.classList.add("is-disabled");
+      optionBtn.disabled = true;
+    }
+    if (index === select.selectedIndex && !opt.disabled){
+      optionBtn.classList.add("is-selected");
+    }
+
+    optionBtn.addEventListener("click", () => {
+      if (select.disabled || opt.disabled) return;
+      select.selectedIndex = index;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      syncCustomSelect(select);
+      closeAllCustomSelects();
+      trigger.focus();
+    });
+
+    menu.appendChild(optionBtn);
+  });
+}
+
+function createCustomSelect(select){
+  if (!select || select.dataset.customUi === "1") return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "custom-select";
+  select.parentNode.insertBefore(wrap, select);
+  wrap.appendChild(select);
+
+  select.classList.add("select-native-hidden");
+  select.dataset.customUi = "1";
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "custom-select-trigger placeholder";
+  trigger.setAttribute("aria-haspopup", "listbox");
+
+  const menu = document.createElement("div");
+  menu.className = "custom-select-menu";
+  menu.setAttribute("role", "listbox");
+
+  wrap.appendChild(trigger);
+  wrap.appendChild(menu);
+
+  const updateMenuPlacement = () => {
+    const optionCount = menu.children.length;
+    const estimatedHeight = Math.min((optionCount * 42) + 12, 250);
+    const rect = wrap.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const openUpward = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+    wrap.classList.toggle("open-upward", openUpward);
+  };
+
+  trigger.addEventListener("click", () => {
+    if (select.disabled) return;
+    const isOpen = wrap.classList.contains("is-open");
+    closeAllCustomSelects(wrap);
+    if (!isOpen){
+      syncCustomSelect(select);
+      updateMenuPlacement();
+      wrap.classList.add("is-open");
+    } else {
+      wrap.classList.remove("is-open");
+    }
+  });
+
+  select.addEventListener("change", () => syncCustomSelect(select));
+
+  const observer = new MutationObserver(() => syncCustomSelect(select));
+  observer.observe(select, { attributes: true, attributeFilter: ["disabled", "class"] });
+  select._customObserver = observer;
+  select._syncCustomSelect = () => syncCustomSelect(select);
+
+  syncCustomSelect(select);
+}
+
+function initCustomSelects(){
+  const selects = Array.from(document.querySelectorAll("select"));
+  selects.forEach(select => createCustomSelect(select));
+
+  if (customSelectGlobalBound) return;
+  customSelectGlobalBound = true;
+
+  document.addEventListener("click", (event) => {
+    if (event.target && event.target.closest(".custom-select")) return;
+    closeAllCustomSelects();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAllCustomSelects();
+  });
+}
+
+function refreshCustomSelects(){
+  document.querySelectorAll('select[data-custom-ui="1"]').forEach(select => {
+    if (typeof select._syncCustomSelect === "function"){
+      select._syncCustomSelect();
+    }
+  });
+}
+
+function toggleZeit(selectEl, id) {
+  const feld = document.getElementById(id);
+  if (!feld) return;
+  feld.style.display = (selectEl.value === "zeit") ? "block" : "none";
+}
+
+const WEEKDAY_OPTIONS = [
+  { value: "mo", label: "Mo" },
+  { value: "di", label: "Di" },
+  { value: "mi", label: "Mi" },
+  { value: "do", label: "Do" },
+  { value: "fr", label: "Fr" },
+  { value: "sa", label: "Sa" },
+  { value: "so", label: "So" }
+];
+
+function getDayLabel(dayValue){
+  const hit = WEEKDAY_OPTIONS.find(item => item.value === dayValue);
+  return hit ? hit.label : "";
+}
+
+function syncTelefonnummerCombined(){
+  const hidden = document.getElementById("telefonnummer");
+  if (!hidden) return;
+  const numbers = Array.from(document.querySelectorAll(".telefonnummer-item"))
+    .map(input => String(input.value || "").trim())
+    .filter(Boolean);
+  hidden.value = numbers.join(", ");
+}
+
+function splitCombinedValues(combined){
+  return String(combined || "")
+    .split(/[,;\n]+/)
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function handlePhoneFieldsChange(){
+  syncTelefonnummerCombined();
+  scheduleDraftSave();
+  renderReviewSummary();
+}
+
+function setPhoneFieldsDisabled(disabled){
+  document.querySelectorAll(".telefonnummer-item").forEach(input => {
+    input.disabled = !!disabled;
+  });
+  document.querySelectorAll(".phone-remove-btn").forEach(btn => {
+    btn.disabled = !!disabled;
+  });
+  const addBtn = document.getElementById("phoneAddBtn");
+  if (addBtn) addBtn.disabled = !!disabled;
+}
+
+function addPhoneRow(initialValue){
+  const list = document.getElementById("telefonnummer_list");
+  if (!list) return;
+
+  const row = document.createElement("div");
+  row.className = "phone-row dynamic-phone-row";
+
+  const input = document.createElement("input");
+  input.type = "tel";
+  input.className = "telefonnummer-item";
+  input.placeholder = "Telefonnummer";
+  input.value = initialValue || "";
+  input.addEventListener("input", handlePhoneFieldsChange);
+  input.addEventListener("change", handlePhoneFieldsChange);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "phone-remove-btn";
+  removeBtn.setAttribute("aria-label", "Telefonnummer entfernen");
+  removeBtn.innerText = "−";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    handlePhoneFieldsChange();
+  });
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  list.appendChild(row);
+
+  if (customerLocked) setPhoneFieldsDisabled(true);
+  syncTelefonnummerCombined();
+  if (!initialValue) input.focus();
+}
+
+function applyPhoneValues(combined){
+  const list = document.getElementById("telefonnummer_list");
+  const baseInput = document.getElementById("telefonnummer_first");
+  if (!list || !baseInput) return;
+
+  list.querySelectorAll(".dynamic-phone-row").forEach(row => row.remove());
+  const parts = splitCombinedValues(combined);
+
+  baseInput.value = parts[0] || "";
+  parts.slice(1).forEach(value => addPhoneRow(value));
+  syncTelefonnummerCombined();
+}
+
+function getContactEmailInputs(){
+  return Array.from(document.querySelectorAll(".kontakt-email-item"));
+}
+
+function getContactEmailValues(){
+  return getContactEmailInputs()
+    .map(input => String(input.value || "").trim())
+    .filter(Boolean);
+}
+
+function syncKontaktEmailCombined(){
+  const hidden = document.getElementById("kontakt_email");
+  if (!hidden) return;
+  hidden.value = getContactEmailValues().join(", ");
+}
+
+function refreshEmailFieldErrorState(){
+  const values = getContactEmailValues();
+  if (values.length === 0 || values.every(value => isValidEmail(value))){
+    setFieldError("kontakt_email", "");
+  }
+}
+
+function handleEmailFieldsChange(){
+  syncKontaktEmailCombined();
+  refreshEmailFieldErrorState();
+  scheduleDraftSave();
+  renderReviewSummary();
+}
+
+function attachEmailFieldListeners(input){
+  if (!input || input.dataset.emailBound === "1") return;
+  input.dataset.emailBound = "1";
+  input.addEventListener("input", handleEmailFieldsChange);
+  input.addEventListener("change", handleEmailFieldsChange);
+  input.addEventListener("blur", () => validateCustomerFields(false));
+}
+
+function setEmailFieldsDisabled(disabled){
+  getContactEmailInputs().forEach(input => {
+    input.disabled = !!disabled;
+  });
+  document.querySelectorAll(".email-remove-btn").forEach(btn => {
+    btn.disabled = !!disabled;
+  });
+  const addBtn = document.getElementById("emailAddBtn");
+  if (addBtn) addBtn.disabled = !!disabled;
+}
+
+function addEmailRow(initialValue){
+  const list = document.getElementById("kontakt_email_list");
+  if (!list) return;
+
+  const row = document.createElement("div");
+  row.className = "phone-row dynamic-email-row";
+
+  const input = document.createElement("input");
+  input.type = "email";
+  input.className = "kontakt-email-item";
+  input.placeholder = "E-Mail";
+  input.value = initialValue || "";
+  attachEmailFieldListeners(input);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "phone-remove-btn email-remove-btn";
+  removeBtn.setAttribute("aria-label", "E-Mail-Adresse entfernen");
+  removeBtn.innerText = "-";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    handleEmailFieldsChange();
+  });
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  list.appendChild(row);
+
+  if (customerLocked) setEmailFieldsDisabled(true);
+  syncKontaktEmailCombined();
+  if (!initialValue) input.focus();
+}
+
+function applyEmailValues(combined){
+  const list = document.getElementById("kontakt_email_list");
+  const baseInput = document.getElementById("kontakt_email_first");
+  if (!list || !baseInput) return;
+
+  list.querySelectorAll(".dynamic-email-row").forEach(row => row.remove());
+  const parts = splitCombinedValues(combined);
+
+  baseInput.value = parts[0] || "";
+  parts.slice(1).forEach(value => addEmailRow(value));
+  syncKontaktEmailCombined();
+}
+
+function applyFriendlyTechTriggerLabels(){
+  const selectIds = [
+    "netz_ueberwachungsart",
+    "batterie_ueberwachungsart",
+    "uebertragungsweg_ueberwachungsart",
+    "gma_ueberwachungsart"
+  ];
+
+  selectIds.forEach(id => {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    const placeholder = Array.from(select.options).find(option => option.value === "");
+    const empfang = Array.from(select.options).find(option => option.value === "empfang");
+    const zeit = Array.from(select.options).find(option => option.value === "zeit");
+
+    if (placeholder) placeholder.text = "---- Wann soll alarmiert werden? ----";
+    if (empfang) empfang.text = "Sofort";
+    if (zeit) zeit.text = "Erst nach Zeit (X)";
+  });
+}
+
+function parseDurationToMinutes(value){
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(",", ".")
+    .replace(/\s+/g, " ");
+  if (!normalized) return NaN;
+
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+  if (!match) return NaN;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount)) return NaN;
+
+  if (/(stunde|stunden|std|h)\b/.test(normalized)) {
+    return amount * 60;
+  }
+  return amount;
+}
+
+function getStehendeAusfalldauerDisplayValue(){
+  const selectedMode = getSelectValue("verbindung_stehend_ausfalldauer_select");
+  if (!selectedMode) return "";
+  if (selectedMode === "custom"){
+    return String(getInputValue("verbindung_stehend_ausfalldauer_custom") || "").trim();
+  }
+  return getSelectDisplayText("verbindung_stehend_ausfalldauer_select");
+}
+
+function syncStehendeAusfalldauer(){
+  const selectEl = document.getElementById("verbindung_stehend_ausfalldauer_select");
+  const customWrap = document.getElementById("verbindung_stehend_ausfalldauer_custom_wrap");
+  const customInput = document.getElementById("verbindung_stehend_ausfalldauer_custom");
+  const hiddenInput = document.getElementById("verbindung_stehend_ausfalldauer");
+  if (!selectEl || !customWrap || !customInput || !hiddenInput) return;
+
+  const isCustom = selectEl.value === "custom";
+  customWrap.style.display = isCustom ? "block" : "none";
+  customInput.disabled = verbindungLocked || !isCustom;
+  if (!isCustom) customInput.value = "";
+  hiddenInput.value = getStehendeAusfalldauerDisplayValue();
+}
+
+function applyStehendeAusfalldauerValue(rawValue, rawMode){
+  const selectEl = document.getElementById("verbindung_stehend_ausfalldauer_select");
+  const customInput = document.getElementById("verbindung_stehend_ausfalldauer_custom");
+  if (!selectEl || !customInput) return;
+
+  const value = String(rawValue || "").trim();
+  const mode = String(rawMode || "").trim();
+  const selectValues = Array.from(selectEl.options).map(option => option.value);
+  const hasHoursUnit = /(stunde|stunden|std|h)\b/i.test(value);
+  const parsedMinutes = parseDurationToMinutes(value);
+  const standardValue = Number.isFinite(parsedMinutes) ? String(Math.round(parsedMinutes)) : "";
+
+  if (mode && selectValues.includes(mode)){
+    selectEl.value = mode;
+  } else if (value && standardValue && selectValues.includes(standardValue) && !hasHoursUnit){
+    selectEl.value = standardValue;
+  } else if (value){
+    selectEl.value = "custom";
+    customInput.value = value;
+  } else {
+    selectEl.selectedIndex = 0;
+    customInput.value = "";
+  }
+
+  syncStehendeAusfalldauer();
+  refreshCustomSelects();
+}
+
+function bindStehendeAusfalldauerFields(){
+  const selectEl = document.getElementById("verbindung_stehend_ausfalldauer_select");
+  const customInput = document.getElementById("verbindung_stehend_ausfalldauer_custom");
+
+  if (selectEl && selectEl.dataset.durationBound !== "1"){
+    selectEl.dataset.durationBound = "1";
+    selectEl.addEventListener("change", () => syncStehendeAusfalldauer());
+  }
+
+  if (customInput && customInput.dataset.durationBound !== "1"){
+    customInput.dataset.durationBound = "1";
+    customInput.addEventListener("input", () => syncStehendeAusfalldauer());
+    customInput.addEventListener("change", () => syncStehendeAusfalldauer());
+  }
+
+  syncStehendeAusfalldauer();
+}
+
+function createZeitfensterDaySelect(className, selectedValue){
+  const select = document.createElement("select");
+  select.className = className;
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.selected = !selectedValue;
+  placeholder.innerText = "Tag";
+  select.appendChild(placeholder);
+
+  WEEKDAY_OPTIONS.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.value;
+    opt.innerText = item.label;
+    if (item.value === selectedValue) opt.selected = true;
+    select.appendChild(opt);
+  });
+  return select;
+}
+
+function createZeitfensterTimeSelect(className, selectedValue){
+  const select = document.createElement("select");
+  select.className = className;
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.selected = !selectedValue;
+  placeholder.innerText = "Uhrzeit";
+  select.appendChild(placeholder);
+
+  for (let hour = 0; hour < 24; hour += 1){
+    ["00", "30"].forEach(minute => {
+      const hh = String(hour).padStart(2, "0");
+      const value = hh + ":" + minute;
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.innerText = value;
+      if (value === selectedValue) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  return select;
+}
+
+function getStatusZeitfensterConfig(kind){
+  const configMap = {
+    scharf: {
+      ruleValue: "scharf_zeitfenster",
+      listId: "status_scharf_slots",
+      summaryId: "status_scharf_zeitfenster",
+      rawDataId: "status_scharf_zeitfenster_data",
+      addBtnId: "status_scharf_add_row"
+    },
+    unscharf: {
+      ruleValue: "unscharf_zeitfenster",
+      listId: "status_unscharf_slots",
+      summaryId: "status_unscharf_zeitfenster",
+      rawDataId: "status_unscharf_zeitfenster_data",
+      addBtnId: "status_unscharf_add_row"
+    }
+  };
+  return configMap[kind] || null;
+}
+
+function addStatusZeitfensterRow(kind, prefill, skipSideEffects){
+  const config = getStatusZeitfensterConfig(kind);
+  if (!config) return;
+
+  const list = document.getElementById(config.listId);
+  if (!list) return;
+
+  const data = prefill || {};
+  const row = document.createElement("div");
+  row.className = "zeitfenster-slot";
+
+  const fromDay = createZeitfensterDaySelect("ztf-from-day", data.fromDay || "");
+  const fromTime = createZeitfensterTimeSelect("ztf-from-time", data.fromTime || "");
+
+  const sep = document.createElement("span");
+  sep.className = "slot-sep";
+  sep.innerText = "bis";
+
+  const toDay = createZeitfensterDaySelect("ztf-to-day", data.toDay || "");
+  const toTime = createZeitfensterTimeSelect("ztf-to-time", data.toTime || "");
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "zeitfenster-remove-btn";
+  removeBtn.setAttribute("aria-label", "Zeitfenster entfernen");
+  removeBtn.innerText = "×";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    syncStatusZeitfensterSummary(kind);
+    scheduleDraftSave();
+    renderReviewSummary();
+    updateStepProgress();
+  });
+
+  [fromDay, fromTime, toDay, toTime].forEach(field => {
+    field.addEventListener("change", () => {
+      syncStatusZeitfensterSummary(kind);
+      scheduleDraftSave();
+      renderReviewSummary();
+    });
+  });
+
+  row.appendChild(fromDay);
+  row.appendChild(fromTime);
+  row.appendChild(sep);
+  row.appendChild(toDay);
+  row.appendChild(toTime);
+  row.appendChild(removeBtn);
+  list.appendChild(row);
+
+  initCustomSelects();
+  refreshCustomSelects();
+  syncStatusZeitfensterSummary(kind);
+  if (!skipSideEffects){
+    scheduleDraftSave();
+    renderReviewSummary();
+  }
+}
+
+function applyStatusZeitfensterData(kind, raw){
+  const config = getStatusZeitfensterConfig(kind);
+  if (!config) return;
+
+  const list = document.getElementById(config.listId);
+  if (!list) return;
+
+  list.innerHTML = "";
+  let entries = [];
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    if (Array.isArray(parsed)) entries = parsed;
+  } catch (error){
+    entries = [];
+  }
+
+  if (entries.length > 0){
+    entries.forEach(item => addStatusZeitfensterRow(kind, item, true));
+  }
+  syncStatusZeitfensterSummary(kind);
+}
+
+function validateStatusZeitfenster(kind, showAlert){
+  const config = getStatusZeitfensterConfig(kind);
+  if (!config) return false;
+
+  const rows = Array.from(document.querySelectorAll("#" + config.listId + " .zeitfenster-slot"));
+  if (rows.length === 0){
+    if (showAlert) alert("Bitte legen Sie mindestens ein Zeitfenster fest.");
+    return false;
+  }
+
+  let hasComplete = false;
+  let hasPartial = false;
+
+  rows.forEach(row => {
+    const fromDay = row.querySelector(".ztf-from-day")?.value || "";
+    const fromTime = row.querySelector(".ztf-from-time")?.value || "";
+    const toDay = row.querySelector(".ztf-to-day")?.value || "";
+    const toTime = row.querySelector(".ztf-to-time")?.value || "";
+
+    const filledCount = [fromDay, fromTime, toDay, toTime].filter(Boolean).length;
+    if (filledCount === 0) return;
+    if (filledCount === 4){
+      hasComplete = true;
+      return;
+    }
+    hasPartial = true;
+  });
+
+  if (hasPartial){
+    if (showAlert) alert("Bitte füllen Sie jedes Zeitfenster vollständig aus oder entfernen Sie unvollständige Zeilen.");
+    return false;
+  }
+  if (!hasComplete){
+    if (showAlert) alert("Bitte füllen Sie mindestens ein vollständiges Zeitfenster aus.");
+    return false;
+  }
+  return true;
+}
+
+function addScharfZeitfensterRow(prefill, skipSideEffects){
+  addStatusZeitfensterRow("scharf", prefill, skipSideEffects);
+}
+
+function addUnscharfZeitfensterRow(prefill, skipSideEffects){
+  addStatusZeitfensterRow("unscharf", prefill, skipSideEffects);
+}
+
+function applyScharfZeitfensterData(raw){
+  applyStatusZeitfensterData("scharf", raw);
+}
+
+function applyUnscharfZeitfensterData(raw){
+  applyStatusZeitfensterData("unscharf", raw);
+}
+
+function validateScharfZeitfenster(showAlert){
+  return validateStatusZeitfenster("scharf", showAlert);
+}
+
+function validateUnscharfZeitfenster(showAlert){
+  return validateStatusZeitfenster("unscharf", showAlert);
+}
+
+function toggleVerbindungArt(selectEl) {
+  const steh = document.getElementById("verbindung_stehend");
+  const bedarf = document.getElementById("verbindung_bedarf");
+  if (!selectEl || !steh || !bedarf) return;
+
+  const resetFields = (container) => {
+    Array.from(container.querySelectorAll("input, select, textarea")).forEach(el => {
+      if (el.tagName === "SELECT") {
+        el.selectedIndex = 0;
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      } else if (el.type === "checkbox" || el.type === "radio") {
+        el.checked = false;
+      } else {
+        el.value = "";
+      }
+    });
+  };
+
+  const isSteh = selectEl.value === "stehend";
+  const isBedarf = selectEl.value === "bedarf";
+
+  steh.style.display = isSteh ? "block" : "none";
+  bedarf.style.display = isBedarf ? "block" : "none";
+
+  Array.from(steh.querySelectorAll("input, select, textarea")).forEach(el => {
+    el.disabled = verbindungLocked || !isSteh;
+  });
+  Array.from(bedarf.querySelectorAll("input, select, textarea")).forEach(el => {
+    el.disabled = verbindungLocked || !isBedarf;
+  });
+
+  if (!isSteh) resetFields(steh);
+  if (!isBedarf) resetFields(bedarf);
+
+  syncStehendeAusfalldauer();
+  refreshCustomSelects();
+}
+
+function syncStatusZeitfensterSummary(kind){
+  const config = getStatusZeitfensterConfig(kind);
+  if (!config) return;
+
+  const summaryInput = document.getElementById(config.summaryId);
+  const rawDataInput = document.getElementById(config.rawDataId);
+  const addBtn = document.getElementById(config.addBtnId);
+  const rows = Array.from(document.querySelectorAll("#" + config.listId + " .zeitfenster-slot"));
+  const panelActive = getSelectValue("status_regel") === config.ruleValue;
+
+  const rawRows = [];
+  const parts = [];
+  rows.forEach(row => {
+    const fromDayEl = row.querySelector(".ztf-from-day");
+    const fromTimeEl = row.querySelector(".ztf-from-time");
+    const toDayEl = row.querySelector(".ztf-to-day");
+    const toTimeEl = row.querySelector(".ztf-to-time");
+    const removeBtn = row.querySelector(".zeitfenster-remove-btn");
+    if (!fromDayEl || !fromTimeEl || !toDayEl || !toTimeEl) return;
+
+    const rowDisabled = statusLocked || !panelActive;
+    fromDayEl.disabled = rowDisabled;
+    fromTimeEl.disabled = rowDisabled;
+    toDayEl.disabled = rowDisabled;
+    toTimeEl.disabled = rowDisabled;
+    if (removeBtn) removeBtn.disabled = rowDisabled;
+
+    const entry = {
+      fromDay: fromDayEl.value || "",
+      fromTime: fromTimeEl.value || "",
+      toDay: toDayEl.value || "",
+      toTime: toTimeEl.value || ""
+    };
+    rawRows.push(entry);
+
+    if (entry.fromDay && entry.fromTime && entry.toDay && entry.toTime){
+      parts.push(
+        getDayLabel(entry.fromDay) + " " + entry.fromTime +
+        " bis " + getDayLabel(entry.toDay) + " " + entry.toTime + " Uhr"
+      );
+    }
+  });
+
+  if (addBtn) addBtn.disabled = statusLocked || !panelActive;
+  if (summaryInput){
+    summaryInput.disabled = statusLocked || !panelActive;
+    summaryInput.value = panelActive ? parts.join(" | ") : "";
+  }
+  if (rawDataInput){
+    rawDataInput.value = JSON.stringify(rawRows);
+  }
+  refreshCustomSelects();
+}
+
+function syncAllStatusZeitfensterSummaries(){
+  syncStatusZeitfensterSummary("scharf");
+  syncStatusZeitfensterSummary("unscharf");
+}
+
+function syncScharfZeitfensterSummary(){
+  syncStatusZeitfensterSummary("scharf");
+}
+
+function syncUnscharfZeitfensterSummary(){
+  syncStatusZeitfensterSummary("unscharf");
+}
+
+function toggleStatusRegel(selectEl) {
+  const scharfZeitfensterWrap = document.getElementById("status_scharf_zeitfenster_wrap");
+  const unscharfZeitfensterWrap = document.getElementById("status_unscharf_zeitfenster_wrap");
+  const kontrollzeitWrap = document.getElementById("status_kontrollzeit_wrap");
+  const kontrollzeitInput = document.getElementById("status_kontrollzeit");
+  if (!selectEl || !scharfZeitfensterWrap || !unscharfZeitfensterWrap || !kontrollzeitWrap || !kontrollzeitInput) return;
+
+  const isScharfZeitfenster = selectEl.value === "scharf_zeitfenster";
+  const isUnscharfZeitfenster = selectEl.value === "unscharf_zeitfenster";
+  const isKontrollzeit = selectEl.value === "scharf_nie_kontrollzeit";
+  scharfZeitfensterWrap.style.display = isScharfZeitfenster ? "block" : "none";
+  unscharfZeitfensterWrap.style.display = isUnscharfZeitfenster ? "block" : "none";
+  kontrollzeitWrap.style.display = isKontrollzeit ? "block" : "none";
+  kontrollzeitInput.disabled = statusLocked || !isKontrollzeit;
+  refreshCustomSelects();
+  syncAllStatusZeitfensterSummaries();
+}
+
+function setTechnikSectionVisibility(checkboxId, optionsId) {
+  const checkbox = document.getElementById(checkboxId);
+  const options = document.getElementById(optionsId);
+  if (!checkbox || !options) return;
+
+  const isVisible = checkbox.checked;
+  options.style.display = isVisible ? "block" : "none";
+
+  const fields = Array.from(options.querySelectorAll("input, select, textarea"));
+  fields.forEach(el => {
+    el.disabled = techLocked || !isVisible;
+  });
+
+  if (!isVisible){
+    fields.forEach(el => {
+      if (el.tagName === "SELECT") {
+        el.selectedIndex = 0;
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      } else if (el.type === "checkbox" || el.type === "radio") {
+        el.checked = false;
+      } else {
+        el.value = "";
+      }
+    });
+
+    Array.from(options.querySelectorAll(".zeitfeld")).forEach(el => {
+      el.style.display = "none";
+    });
+    Array.from(options.querySelectorAll(".sub-tech-options")).forEach(el => {
+      el.style.display = "none";
+    });
+    refreshCustomSelects();
+    return;
+  }
+
+  const zeitMap = {
+    netz_options: ["netz_ueberwachungsart", "netzzeit"],
+    batterie_options: ["batterie_ueberwachungsart", "batteriezeit"],
+    uebertragungsweg_options: ["uebertragungsweg_ueberwachungsart", "uebertragungswegzeit"],
+    gma_options: ["gma_ueberwachungsart", "gmazeit"]
+  };
+  const mapEntry = zeitMap[optionsId];
+  if (!mapEntry) return;
+
+  const selectEl = document.getElementById(mapEntry[0]);
+  if (selectEl) toggleZeit(selectEl, mapEntry[1]);
+  refreshCustomSelects();
+}
+
+function syncTechnikSectionVisibility() {
+  setTechnikSectionVisibility("netz_aktiv", "netz_options");
+  setTechnikSectionVisibility("batterie_aktiv", "batterie_options");
+  setTechnikSectionVisibility("uebertragungsweg_aktiv", "uebertragungsweg_options");
+  setTechnikSectionVisibility("gma_aktiv", "gma_options");
+  refreshCustomSelects();
+}
+
+function setVerbindungSectionVisibility() {
+  const options = document.getElementById("verbindung_options");
+  const verbindungArt = document.getElementById("verbindung_art");
+  if (!options || !verbindungArt) return;
+
+  options.style.display = "block";
+
+  const fields = Array.from(options.querySelectorAll("input, select, textarea"));
+  fields.forEach(el => {
+    el.disabled = verbindungLocked;
+  });
+  toggleVerbindungArt(verbindungArt);
+  refreshCustomSelects();
+}
+
+function syncVerbindungSectionVisibility() {
+  setVerbindungSectionVisibility();
+}
+
+function setStatusSectionVisibility() {
+  const options = document.getElementById("statusOptions");
+  const statusSelect = document.getElementById("status_regel");
+  if (!options || !statusSelect) return;
+
+  options.style.display = "block";
+
+  const baseFields = Array.from(options.querySelectorAll("select"))
+    .filter(el => el.id === "status_regel");
+  baseFields.forEach(el => {
+    el.disabled = statusLocked;
+  });
+
+  toggleStatusRegel(statusSelect);
+  refreshCustomSelects();
+}
+
+function syncStatusSectionVisibility() {
+  setStatusSectionVisibility();
+}
+
+function syncAlarmDependencies() {
+  const techFieldset = document.getElementById("technikFieldset");
+  if (!techFieldset) return;
+
+  const btn = document.getElementById("saveTechBtn");
+  const techPanel = document.getElementById("technikPanel");
+  const techEnabled = getTechPreference() === "ja";
+
+  updateStepNavigation();
+  techFieldset.hidden = false;
+  techFieldset.style.display = "block";
+  techFieldset.classList.remove("tech-unselected");
+  techFieldset.classList.toggle("tech-enabled", techEnabled);
+  if (techPanel) {
+    techPanel.setAttribute("aria-hidden", techEnabled ? "false" : "true");
+  }
+  updateTechPreferenceButtons();
+
+  ["netz_aktiv", "batterie_aktiv", "uebertragungsweg_aktiv", "gma_aktiv"].forEach(id => {
+    const toggle = document.getElementById(id);
+    if (toggle) toggle.disabled = techLocked || !techEnabled;
+  });
+  if (btn){
+    btn.disabled = !techEnabled;
+    btn.innerText = "Speichern";
+  }
+  if (!techEnabled){
+    Array.from(techFieldset.querySelectorAll("#technikPanel input, #technikPanel select, #technikPanel textarea"))
+      .forEach(el => {
+        el.disabled = true;
+      });
+    refreshCustomSelects();
+    return;
+  }
+  syncTechnikSectionVisibility();
+  refreshCustomSelects();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const firstPhone = document.getElementById("telefonnummer_first");
+  const firstEmail = document.getElementById("kontakt_email_first");
+  if (firstPhone){
+    firstPhone.addEventListener("input", handlePhoneFieldsChange);
+    firstPhone.addEventListener("change", handlePhoneFieldsChange);
+  }
+  if (firstEmail){
+    attachEmailFieldListeners(firstEmail);
+  }
+
+  applyScharfZeitfensterData("[]");
+  applyUnscharfZeitfensterData("[]");
+  bindStehendeAusfalldauerFields();
+  applyFriendlyTechTriggerLabels();
+  initCustomSelects();
+  loadDraftLocally();
+  syncTelefonnummerCombined();
+  syncKontaktEmailCombined();
+  syncAlarmDependencies();
+  syncTechnikSectionVisibility();
+  syncVerbindungSectionVisibility();
+  syncStatusSectionVisibility();
+  syncAllStatusZeitfensterSummaries();
+  refreshCustomSelects();
+  bindStepNavigation();
+  setupLiveValidation();
+  bindAutoDraftSave();
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  updateSendButtonAvailability();
+
+});
+
+function getRadioValue(name) {
+  const checked = document.querySelector('input[name="' + name + '"]:checked');
+  return checked ? checked.value : "";
+}
+
+function getCheckboxList(selector) {
+  const values = Array.from(document.querySelectorAll(selector))
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+  return values.length ? values.join(", ") : "Keine";
+}
+
+function getSelectValue(id) {
+  const select = document.getElementById(id);
+  if (!select) return "";
+  const option = select.options[select.selectedIndex];
+  if (!option || option.disabled) return "";
+  return option.value === "" ? "" : select.value;
+}
+
+function getInputValue(id) {
+  const input = document.getElementById(id);
+  return input ? input.value : "";
+}
+
+function isElementVisible(el) {
+  if (!el) return false;
+  let current = el;
+  while (current && current !== document.body) {
+    const style = window.getComputedStyle(current);
+    if (style.display === "none" || style.visibility === "hidden") {
+      return false;
+    }
+    current = current.parentElement;
+  }
+  return true;
+}
+
+function getFieldDisplayText(el) {
+  if (!el) return "";
+  if (el.tagName === "SELECT") {
+    const option = el.options[el.selectedIndex];
+    if (!option || option.disabled || option.value === "") return "";
+    return (option.text || "").trim();
+  }
+  return String(el.value || "").trim();
+}
+
+function showInlineSavedRow(el, label, valueText) {
+  if (!el || !el.id) return;
+  const rowId = "saved_inline_" + el.id;
+  const configuredWrap = el.dataset.displayWrapId ? document.getElementById(el.dataset.displayWrapId) : null;
+  const wrap = configuredWrap || (
+    el.parentElement && el.parentElement.classList && el.parentElement.classList.contains("custom-select")
+      ? el.parentElement
+      : null
+  );
+
+  let row = document.getElementById(rowId);
+  if (!row) {
+    row = document.createElement("div");
+    row.id = rowId;
+    row.className = "customer-saved-row inline-saved-row";
+    if (wrap){
+      wrap.insertAdjacentElement("afterend", row);
+    } else {
+      el.insertAdjacentElement("afterend", row);
+    }
+  }
+  row.innerHTML =
+    "<span class=\"saved-label\">" + escapeHtml(label) + ":</span> " +
+    "<span class=\"saved-value\">" + escapeHtml(valueText || "-") + "</span>";
+  row.style.display = "block";
+
+  if (wrap){
+    wrap.dataset.savedHidden = "1";
+    wrap.style.display = "none";
+  } else {
+    el.dataset.savedHidden = "1";
+    el.style.display = "none";
+  }
+}
+
+function clearInlineSavedRows(fieldset) {
+  if (!fieldset) return;
+  fieldset.querySelectorAll(".inline-saved-row").forEach(row => row.remove());
+  fieldset.querySelectorAll("[data-saved-hidden=\"1\"]").forEach(el => {
+    el.style.display = "";
+    el.removeAttribute("data-saved-hidden");
+  });
+}
+
+
+let customerLocked = false;
+let alarmLocked = false;
+let techLocked = false;
+let verbindungLocked = false;
+let statusLocked = false;
+let draftTimer = null;
+let currentStepSection = "customerFieldset";
+let sectionHighlightTimeout = null;
+let latestReviewSnapshot = "";
+let latestCaseId = "";
+let skipAutoDraftSave = false;
+const DRAFT_STORAGE_KEY = "sn_aufschaltformular_draft_v1";
+
+function getTechPreference(){
+  const input = document.getElementById("technik_erforderlich");
+  return input && input.value === "nein" ? "nein" : "ja";
+}
+
+function updateTechPreferenceButtons(){
+  const preference = getTechPreference();
+  const yesBtn = document.getElementById("techToggleYes");
+  const noBtn = document.getElementById("techToggleNo");
+  if (yesBtn){
+    const active = preference === "ja";
+    yesBtn.classList.toggle("is-active", active);
+    yesBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+  if (noBtn){
+    const active = preference === "nein";
+    noBtn.classList.toggle("is-active", active);
+    noBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+}
+
+function setTechPreference(value){
+  const input = document.getElementById("technik_erforderlich");
+  if (!input) return;
+  input.value = value === "nein" ? "nein" : "ja";
+  syncAlarmDependencies();
+  renderReviewSummary();
+  updateStepProgress(value === "nein" ? "statusFieldset" : "technikFieldset");
+  saveDraftLocally(false);
+}
+
+function valueOrDash(value){
+  const text = String(value ?? "").trim();
+  return text ? text : "-";
+}
+
+function formatDateTime(date){
+  return date.toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function getSelectDisplayText(id){
+  const el = document.getElementById(id);
+  if (!el || el.tagName !== "SELECT") return "";
+  const option = el.options[el.selectedIndex];
+  if (!option || option.disabled || option.value === "") return "";
+  return (option.text || "").trim();
+}
+
+function isValidEmail(mail){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(mail || "").trim());
+}
+
+function setFieldError(fieldId, message){
+  const input = document.getElementById(fieldId);
+  if (!input) return false;
+  const errorId = fieldId + "_error";
+  const wrap = input.type === "hidden" ? document.getElementById(fieldId + "_wrap") : null;
+  const target = wrap || input;
+  const inputsToMark = wrap
+    ? Array.from(wrap.querySelectorAll("input, textarea, select")).filter(el => el.type !== "hidden")
+    : [input];
+  let errorEl = document.getElementById(errorId);
+  if (!errorEl){
+    errorEl = document.createElement("div");
+    errorEl.id = errorId;
+    errorEl.className = "field-error";
+    target.insertAdjacentElement("afterend", errorEl);
+  }
+
+  if (message){
+    errorEl.innerText = message;
+    errorEl.style.display = "block";
+    inputsToMark.forEach(el => el.classList.add("has-error"));
+    return false;
+  }
+
+  errorEl.innerText = "";
+  errorEl.style.display = "none";
+  inputsToMark.forEach(el => el.classList.remove("has-error"));
+  return true;
+}
+
+function setConsentError(message){
+  const wrap = document.getElementById("privacyCheckWrap");
+  const errorEl = document.getElementById("datenschutz_error");
+  if (!wrap || !errorEl) return false;
+
+  if (message){
+    errorEl.innerText = message;
+    errorEl.style.display = "block";
+    wrap.classList.add("has-error");
+    return false;
+  }
+
+  errorEl.innerText = "";
+  errorEl.style.display = "none";
+  wrap.classList.remove("has-error");
+  return true;
+}
+
+function validateCustomerFields(showAlert){
+  const adresseEl = document.getElementById("kunde");
+  const mailHiddenEl = document.getElementById("kontakt_email");
+  const emailInputs = getContactEmailInputs();
+  const firstEmailEl = emailInputs[0] || document.getElementById("kontakt_email_first");
+  if (!adresseEl || !mailHiddenEl || !firstEmailEl) return true;
+
+  const adresse = (adresseEl.value || "").trim();
+  syncKontaktEmailCombined();
+  const mail = (mailHiddenEl.value || "").trim();
+  const invalidMail = getContactEmailValues().find(value => !isValidEmail(value));
+  let valid = true;
+  let firstInvalid = null;
+
+  if (!adresse){
+    valid = false;
+    firstInvalid = firstInvalid || adresseEl;
+    setFieldError("kunde", "Bitte geben Sie die Adresse ein.");
+  } else {
+    setFieldError("kunde", "");
+  }
+
+  if (!mail){
+    valid = false;
+    firstInvalid = firstInvalid || firstEmailEl;
+    setFieldError("kontakt_email", "Bitte geben Sie eine E-Mail-Adresse ein.");
+  } else if (invalidMail){
+    valid = false;
+    firstInvalid = firstInvalid || firstEmailEl;
+    setFieldError("kontakt_email", "Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+  } else {
+    setFieldError("kontakt_email", "");
+  }
+
+  if (!valid && showAlert){
+    alert("Bitte prüfen Sie die markierten Felder in den Kundendaten.");
+    if (firstInvalid) firstInvalid.focus();
+  }
+
+  return valid;
+}
+
+function validateConsent(showAlert){
+  const checkbox = document.getElementById("datenschutz_einwilligung");
+  if (!checkbox) return true;
+  if (checkbox.checked){
+    setConsentError("");
+    return true;
+  }
+
+  setConsentError("Bitte stimmen Sie der Verarbeitung Ihrer Daten zu.");
+  if (showAlert){
+    alert("Bitte bestätigen Sie die Datenschutzeinwilligung.");
+    checkbox.focus();
+  }
+  return false;
+}
+
+function updateSendButtonAvailability(){
+  const sendBtn = document.getElementById("sendBtn");
+  if (!sendBtn) return;
+  if (!alreadySent) sendBtn.disabled = false;
+}
+
+function updateStepNavigation() {
+  const stepButtons = Array.from(document.querySelectorAll(".step-item"));
+  const showTechStep = getTechPreference() === "ja";
+  let visibleIndex = 0;
+
+  stepButtons.forEach((btn) => {
+    const isTechStep = btn.dataset.step === "step-tech";
+    const isVisible = !isTechStep || showTechStep;
+    btn.hidden = !isVisible;
+    btn.setAttribute("aria-hidden", isVisible ? "false" : "true");
+    const indexEl = btn.querySelector(".step-index");
+    if (indexEl && isVisible) {
+      visibleIndex += 1;
+      indexEl.innerText = String(visibleIndex);
+    }
+  });
+}
+
+function flashSectionHighlight(section) {
+  if (!section) return;
+  document.querySelectorAll("[data-step-section].section-focus").forEach(el => el.classList.remove("section-focus"));
+  if (sectionHighlightTimeout !== null) {
+    window.clearTimeout(sectionHighlightTimeout);
+  }
+  void section.offsetWidth;
+  section.classList.add("section-focus");
+  sectionHighlightTimeout = window.setTimeout(() => {
+    section.classList.remove("section-focus");
+    sectionHighlightTimeout = null;
+  }, 1800);
+}
+
+function getSectionScrollTop(section) {
+  const stepper = document.querySelector(".stepper");
+  const isSticky = !!stepper && window.getComputedStyle(stepper).position === "sticky";
+  const offset = isSticky ? stepper.getBoundingClientRect().height + 20 : 20;
+  return Math.max(window.scrollY + section.getBoundingClientRect().top - offset, 0);
+}
+
+function jumpToSection(sectionId){
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  currentStepSection = sectionId;
+  window.scrollTo({ top: getSectionScrollTop(section), behavior: "smooth" });
+  flashSectionHighlight(section);
+  updateStepProgress(sectionId);
+}
+
+function bindStepNavigation(){
+  document.querySelectorAll(".step-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.target;
+      if (target) jumpToSection(target);
+    });
+  });
+
+  document.querySelectorAll("[data-step-section]").forEach(section => {
+    section.querySelectorAll("input, select, textarea, button").forEach(el => {
+      el.addEventListener("focus", () => {
+        const sectionId = section.id === "reviewFieldset" ? "privacyFieldset" : section.id;
+        currentStepSection = sectionId;
+        updateStepProgress(sectionId);
+      });
+    });
+  });
+}
+
+function updateStepProgress(activeSectionId){
+  if (activeSectionId){
+    currentStepSection = activeSectionId === "reviewFieldset" ? "privacyFieldset" : activeSectionId;
+  }
+  if (getTechPreference() === "nein" && currentStepSection === "technikFieldset"){
+    currentStepSection = "statusFieldset";
+  }
+
+  updateStepNavigation();
+
+  const consentChecked = !!document.getElementById("datenschutz_einwilligung")?.checked;
+  const relevantSteps = [
+    "step-customer",
+    "step-alarm",
+    "step-verbindung",
+    "step-tech",
+    "step-status",
+    "step-review"
+  ].filter(step => step !== "step-tech" || getTechPreference() === "ja");
+
+  const completedMap = {
+    "step-customer": customerLocked,
+    "step-alarm": alarmLocked,
+    "step-tech": getTechPreference() === "nein" || techLocked,
+    "step-verbindung": verbindungLocked,
+    "step-status": statusLocked,
+    "step-review": consentChecked
+  };
+  const totalSteps = relevantSteps.length;
+  const completedCount = relevantSteps.filter(step => !!completedMap[step]).length;
+
+  document.querySelectorAll(".step-item").forEach(btn => {
+    const step = btn.dataset.step;
+    const target = btn.dataset.target;
+    const isVisible = !btn.hidden;
+    const isActive = isVisible && target === currentStepSection;
+    const isComplete = isVisible && !!completedMap[step];
+    btn.classList.toggle("active", isActive);
+    btn.classList.toggle("complete", isComplete);
+    btn.classList.remove("is-muted");
+    btn.setAttribute("aria-current", isActive ? "step" : "false");
+    btn.setAttribute("aria-disabled", "false");
+  });
+
+  const text = document.getElementById("stepProgressText");
+  if (text){
+    text.innerText = completedCount + "/" + totalSteps + " Bereiche gespeichert";
+  }
+}
+
+function flashSavedButton(btnId){
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.classList.remove("saved-flash");
+  // Restart animation on repeated save clicks.
+  void btn.offsetWidth;
+  btn.classList.add("saved-flash");
+}
+
+function showSectionSaveFeedback(sectionLabel, btnId){
+  flashSavedButton(btnId);
+}
+
+function showSectionEditFeedback(sectionLabel){
+  return;
+}
+
+function collectDraftData(){
+  const form = document.getElementById("aufschaltformular");
+  const data = {};
+  if (!form) return data;
+
+  form.querySelectorAll("input, select, textarea").forEach(el => {
+    if (!el.id) return;
+    if (el.type === "button" || el.type === "submit") return;
+    if (el.classList && el.classList.contains("telefonnummer-item")) return;
+    if (el.classList && el.classList.contains("kontakt-email-item")) return;
+    if (el.type === "checkbox" || el.type === "radio"){
+      data[el.id] = !!el.checked;
+      return;
+    }
+    data[el.id] = el.value;
+  });
+
+  return data;
+}
+
+function applyDraftData(data){
+  if (!data || typeof data !== "object") return;
+
+  Object.keys(data).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === "checkbox" || el.type === "radio"){
+      el.checked = !!data[id];
+      return;
+    }
+    if (el.tagName === "SELECT"){
+      const values = Array.from(el.options).map(opt => opt.value);
+      if (values.includes(data[id])){
+        el.value = data[id];
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return;
+    }
+    el.value = data[id];
+  });
+
+  const statusSelect = document.getElementById("status_regel");
+  if (statusSelect && !statusSelect.value){
+    let legacyStatusValue = "";
+    if (data.status_regel){
+      legacyStatusValue = data.status_regel;
+    } else if (data.status_scharf_regel === "zeitfenster"){
+      legacyStatusValue = "scharf_zeitfenster";
+    } else if (data.status_unscharf_regel === "zeitfenster"){
+      legacyStatusValue = "unscharf_zeitfenster";
+    } else if (data.status_scharf_regel === "kontrollzeit"){
+      legacyStatusValue = "scharf_nie_kontrollzeit";
+    } else if (
+      data.status_scharf_regel === "gemaess_unscharf" ||
+      data.status_unscharf_regel === "nie"
+    ){
+      legacyStatusValue = "scharf_immer";
+    }
+
+    if (legacyStatusValue){
+      statusSelect.value = legacyStatusValue;
+      statusSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  const kontrollzeitInput = document.getElementById("status_kontrollzeit");
+  if (kontrollzeitInput && !kontrollzeitInput.value && data.status_scharf_kontrollzeit){
+    kontrollzeitInput.value = data.status_scharf_kontrollzeit;
+  }
+
+  const techSelects = [
+    ["netz_ueberwachungsart", "netzzeit"],
+    ["batterie_ueberwachungsart", "batteriezeit"],
+    ["uebertragungsweg_ueberwachungsart", "uebertragungswegzeit"],
+    ["gma_ueberwachungsart", "gmazeit"]
+  ];
+  techSelects.forEach(entry => {
+    const selectEl = document.getElementById(entry[0]);
+    if (selectEl) toggleZeit(selectEl, entry[1]);
+  });
+
+  applyPhoneValues(data.telefonnummer || data.telefonnummer_first || "");
+  applyEmailValues(data.kontakt_email || data.kontakt_email_first || "");
+  applyStehendeAusfalldauerValue(
+    data.verbindung_stehend_ausfalldauer || "",
+    data.verbindung_stehend_ausfalldauer_select || ""
+  );
+  applyScharfZeitfensterData(data.status_scharf_zeitfenster_data || "[]");
+  applyUnscharfZeitfensterData(data.status_unscharf_zeitfenster_data || "[]");
+  syncTelefonnummerCombined();
+  syncKontaktEmailCombined();
+  syncAllStatusZeitfensterSummaries();
+}
+
+function saveDraftLocally(showMessage){
+  if (skipAutoDraftSave) return;
+  try {
+    const payload = {
+      savedAt: new Date().toISOString(),
+      data: collectDraftData()
+    };
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+    if (showMessage) return;
+  } catch (error){
+    console.error(error);
+    if (showMessage) return;
+  }
+}
+
+function clearDraftLocally(){
+  if (draftTimer){
+    window.clearTimeout(draftTimer);
+    draftTimer = null;
+  }
+  skipAutoDraftSave = true;
+  localStorage.removeItem(DRAFT_STORAGE_KEY);
+  window.setTimeout(() => window.location.reload(), 120);
+}
+
+function loadDraftLocally(){
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data) return;
+    applyDraftData(parsed.data);
+  } catch (error){
+    console.error(error);
+  }
+}
+
+function scheduleDraftSave(){
+  if (draftTimer) window.clearTimeout(draftTimer);
+  draftTimer = window.setTimeout(() => saveDraftLocally(false), 350);
+}
+
+function bindAutoDraftSave(){
+  const form = document.getElementById("aufschaltformular");
+  if (!form) return;
+
+  form.querySelectorAll("input, select, textarea").forEach(el => {
+    if (el.type === "button" || el.type === "submit") return;
+    el.addEventListener("change", () => {
+      scheduleDraftSave();
+      renderReviewSummary();
+      updateStepProgress();
+    });
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA"){
+      el.addEventListener("input", () => {
+        scheduleDraftSave();
+        renderReviewSummary();
+      });
+    }
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (!alreadySent && !skipAutoDraftSave){
+      saveDraftLocally(false);
+    }
+  });
+}
+
+function setupLiveValidation(){
+  const adresseEl = document.getElementById("kunde");
+  const firstEmailEl = document.getElementById("kontakt_email_first");
+  const consentEl = document.getElementById("datenschutz_einwilligung");
+
+  if (adresseEl){
+    adresseEl.addEventListener("blur", () => validateCustomerFields(false));
+    adresseEl.addEventListener("input", () => {
+      if ((adresseEl.value || "").trim()) setFieldError("kunde", "");
+    });
+  }
+
+  if (firstEmailEl){
+    attachEmailFieldListeners(firstEmailEl);
+  }
+
+  if (consentEl){
+    consentEl.addEventListener("change", () => {
+      setConsentError("");
+      updateSendButtonAvailability();
+      updateStepProgress();
+      scheduleDraftSave();
+    });
+  }
+}
+
+function getTechDetails(prefix){
+  const parts = [];
+  const artValue = getSelectValue(prefix + "_ueberwachungsart");
+  const artText = getSelectDisplayText(prefix + "_ueberwachungsart");
+  const zeit = getInputValue(prefix + "_zeit");
+  const alarm = getSelectDisplayText(prefix + "_alarmierung");
+  const rueck = getSelectDisplayText(prefix + "_rueckmeldung");
+
+  if (artText) parts.push("Überwachung: " + artText);
+  if (artValue === "zeit" && (zeit || "").trim()) parts.push("Zeit (X): " + (zeit || "").trim());
+  if (alarm) parts.push("Benachrichtigung: " + alarm);
+  if (rueck) parts.push("Rückmeldung: " + rueck);
+
+  return parts.length ? parts.join(" | ") : "-";
+}
+
+function getVerbindungDetails(){
+  const art = getSelectValue("verbindung_art");
+  if (!art) return "-";
+
+  if (art === "stehend"){
+    const parts = [];
+    parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+    parts.push("Max. Ausfalldauer: " + valueOrDash(getStehendeAusfalldauerDisplayValue()));
+    parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_stehend_alarmierung")));
+    parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
+    return parts.join(" | ");
+  }
+
+  const parts = [];
+  parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+  parts.push("Intervall: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_intervall")));
+  parts.push("Alarmierung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
+  parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
+  parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
+  return parts.join(" | ");
+}
+
+function getStatusDetails(){
+  const statusRegel = getSelectDisplayText("status_regel");
+  const scharfZeitfenster = (getInputValue("status_scharf_zeitfenster") || "").trim();
+  const unscharfZeitfenster = (getInputValue("status_unscharf_zeitfenster") || "").trim();
+  const kontrollzeit = (getInputValue("status_kontrollzeit") || "").trim();
+  const statusRegelValue = getSelectValue("status_regel");
+
+  if (!statusRegel && !scharfZeitfenster && !unscharfZeitfenster && !kontrollzeit){
+    return "-";
+  }
+
+  const parts = ["Statusregel: " + valueOrDash(statusRegel)];
+
+  if (statusRegelValue === "scharf_zeitfenster" && scharfZeitfenster){
+    parts.push("Scharf in Zeitfenstern: " + scharfZeitfenster);
+  }
+  if (statusRegelValue === "unscharf_zeitfenster" && unscharfZeitfenster){
+    parts.push("Unscharf in Zeitfenstern: " + unscharfZeitfenster);
+  }
+  if (statusRegelValue === "scharf_nie_kontrollzeit" && kontrollzeit){
+    parts.push("Tägliche Kontrollzeit: " + kontrollzeit);
+  }
+  return parts.join(" | ");
+}
+
+function hasMeaningfulEmailValue(value){
+  const text = String(value ?? "").trim();
+  return !!text && text !== "-" && text !== "Keine";
+}
+
+function toEmailSummaryLines(summary){
+  return String(summary ?? "")
+    .split("|")
+    .map(part => part.trim())
+    .filter(part => part && part !== "-" && !part.endsWith(": -"))
+    .join("\n");
+}
+
+function getEmailBlockStyle(text){
+  return hasMeaningfulEmailValue(text) ? "" : "display:none;";
+}
+
+function getEmailKundendatenText(){
+  const lines = [];
+  const fields = [
+    ["Objekt", getInputValue("standort")],
+    ["Adresse", getInputValue("kunde")],
+    ["Telefonnummer", getInputValue("telefonnummer")],
+    ["E-Mail", getInputValue("kontakt_email")]
+  ];
+
+  fields.forEach(([label, value]) => {
+    if (hasMeaningfulEmailValue(value)) {
+      lines.push(label + ": " + String(value).trim());
+    }
+  });
+
+  return lines.join("\n");
+}
+
+function getEmailAlarmText(){
+  const lines = [];
+  const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
+    .filter(cb => cb.checked)
+    .map(cb => cb.value)
+    .join(", ");
+  const sonstige = getInputValue("sonstige_alarme");
+
+  if (hasMeaningfulEmailValue(alarmValues)) {
+    lines.push("Ausgewählte Alarmarten: " + alarmValues);
+  }
+
+  if (hasMeaningfulEmailValue(sonstige)) {
+    lines.push("Sonstige Alarme: " + String(sonstige).trim());
+  }
+
+  return lines.join("\n");
+}
+
+function buildEmailTitledBlock(title, summary){
+  const details = toEmailSummaryLines(summary);
+  if (!hasMeaningfulEmailValue(details)) return "";
+  return title + "\n" + details;
+}
+
+function getEmailVerbindungText(){
+  if (!getSelectValue("verbindung_art")) return "";
+  return toEmailSummaryLines(getVerbindungDetails());
+}
+
+function getEmailTechnikText(){
+  if (getTechPreference() === "nein") return "";
+  const blocks = [];
+  const configs = [
+    ["\u00DCbertragungsweg-St\u00F6rung", "uebertragungsweg"],
+    ["Netzstörung (Stromausfall/Stromstörung)", "netz"],
+    ["Batteriestörung", "batterie"],
+    ["Störung Gefahrenmeldeanlage", "gma"]
+  ];
+
+  configs.forEach(([title, prefix]) => {
+    if (!document.getElementById(prefix + "_aktiv")?.checked) return;
+    const block = buildEmailTitledBlock(title, getTechDetails(prefix));
+    if (hasMeaningfulEmailValue(block)) {
+      blocks.push(block);
+    }
+  });
+
+  return blocks.join("\n\n");
+}
+
+function getEmailStatusText(){
+  return toEmailSummaryLines(getStatusDetails());
+}
+
+function getEmailDatenschutzText(){
+  return document.getElementById("datenschutz_einwilligung")?.checked ? "Einwilligung: Ja" : "";
+}
+function buildReviewSections(){
+  const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  const techRows = [];
+  if (getTechPreference() === "nein"){
+    techRows.push({ label: "Technische St\u00F6rungen", value: "Nein" });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("netz_aktiv")?.checked){
+    techRows.push({ label: "Netzstörung (Stromausfall/Stromstörung)", value: getTechDetails("netz") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("batterie_aktiv")?.checked){
+    techRows.push({ label: "Batteriestörung", value: getTechDetails("batterie") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("uebertragungsweg_aktiv")?.checked){
+    techRows.push({ label: "\u00DCbertragungsweg-St\u00F6rung", value: getTechDetails("uebertragungsweg") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("gma_aktiv")?.checked){
+    techRows.push({ label: "Störung Gefahrenmeldeanlage", value: getTechDetails("gma") });
+  }
+  if (techRows.length === 0){
+    techRows.push({
+      label: "Technische Störungen",
+      value: "Nicht ausgefüllt"
+    });
+  }
+
+  return [
+    {
+      title: "Kundendaten",
+      target: "customerFieldset",
+      rows: [
+        { label: "Objekt", value: valueOrDash(getInputValue("standort")) },
+        { label: "Adresse", value: valueOrDash(getInputValue("kunde")) },
+        { label: "Telefonnummer", value: valueOrDash(getInputValue("telefonnummer")) },
+        { label: "E-Mail", value: valueOrDash(getInputValue("kontakt_email")) }
+      ]
+    },
+    {
+      title: "Zu überwachende Kriterien",
+      target: "alarmFieldset",
+      rows: [
+        { label: "Ausgewählte Alarmarten", value: alarmValues.length ? alarmValues.join(", ") : "-" },
+        { label: "Sonstige Alarme", value: valueOrDash(getInputValue("sonstige_alarme")) }
+      ]
+    },
+    {
+      title: "Verbindungsüberwachungen",
+      target: "verbindungFieldset",
+      rows: [
+        { label: "Konfiguration", value: getVerbindungDetails() }
+      ]
+    },
+    {
+      title: "Technische Störungen",
+      target: "technikFieldset",
+      rows: techRows
+    },
+    {
+      title: "Statusregel",
+      target: "statusFieldset",
+      rows: [
+        { label: "Konfiguration", value: getStatusDetails() }
+      ]
+    }
+  ];
+}
+
+function renderReviewSummary(){
+  const wrap = document.getElementById("reviewContent");
+  const sections = buildReviewSections();
+  const html = sections.map(section => {
+    const rowsHtml = section.rows.map(row =>
+      "<div class=\"review-row\">" +
+        "<div class=\"review-label\">" + escapeHtml(row.label) + "</div>" +
+        "<div class=\"review-value\">" + escapeHtml(valueOrDash(row.value)) + "</div>" +
+      "</div>"
+    ).join("");
+
+    return (
+      "<article class=\"review-section\">" +
+        "<div class=\"review-header\">" +
+          "<h3 class=\"review-title\">" + escapeHtml(section.title) + "</h3>" +
+          "<button type=\"button\" class=\"review-edit\" data-edit-target=\"" + escapeHtml(section.target) + "\">Bearbeiten</button>" +
+        "</div>" +
+        rowsHtml +
+      "</article>"
+    );
+  }).join("");
+
+  latestReviewSnapshot = html;
+
+  if (!wrap) return;
+
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll(".review-edit").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.editTarget;
+      if (target) jumpToSection(target);
+    });
+  });
+
+  const updatedEl = document.getElementById("reviewUpdatedAt");
+  if (updatedEl){
+    updatedEl.innerText = "Letzte Aktualisierung: " + formatDateTime(new Date());
+  }
+}
+
+function validateBeforeSubmit(){
+  return true;
+}
+
+function generateCaseId(){
+  const now = new Date();
+  const stamp = now.toISOString().replace(/[-:TZ.]/g, "").slice(0, 12);
+  const random = Math.floor(Math.random() * 900 + 100);
+  return "SN-" + stamp + "-" + random;
+}
+
+function downloadSummaryPdf(){
+  const caseId = latestCaseId || generateCaseId();
+  const snapshot = latestReviewSnapshot || "";
+  if (!snapshot){
+    alert("Die Zusammenfassung ist noch nicht verfügbar.");
+    return;
+  }
+
+  const win = window.open("", "_blank", "width=960,height=760");
+  if (!win){
+    alert("Bitte erlauben Sie Pop-ups, um die PDF-Ansicht zu öffnen.");
+    return;
+  }
+
+  const html = "<!DOCTYPE html>" +
+    "<html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Aufschaltformular " + escapeHtml(caseId) + "</title>" +
+    "<style>" +
+      "body{font-family:Arial,sans-serif;color:#102a43;margin:24px;}" +
+      "h1{margin:0 0 6px;font-size:24px;}" +
+      "p{margin:0 0 14px;color:#334e68;}" +
+      ".review-section{border:1px solid #d9e2ec;border-radius:10px;padding:10px 12px;margin-bottom:10px;}" +
+      ".review-title{margin:0 0 8px;font-size:16px;color:#243b53;}" +
+      ".review-row{display:grid;grid-template-columns:220px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid #e6edf3;}" +
+      ".review-row:last-child{border-bottom:none;}" +
+      ".review-label{font-weight:700;color:#334e68;}" +
+      ".review-value{color:#102a43;}" +
+      ".review-edit{display:none;}" +
+    "</style></head><body>" +
+    "<h1>Aufschaltformular</h1>" +
+    "<p>Vorgangsnummer: <strong>" + escapeHtml(caseId) + "</strong><br>Erstellt am: " + escapeHtml(formatDateTime(new Date())) + "</p>" +
+    snapshot +
+    "</body></html>";
+
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  window.setTimeout(() => win.print(), 250);
+}
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function hideSavedRow(rowId){
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  row.innerHTML = "";
+  row.style.display = "none";
+}
+
+function resetSectionFieldValues(container){
+  if (!container) return;
+
+  Array.from(container.querySelectorAll("input, select, textarea")).forEach(el => {
+    if (!el.id) return;
+    if (el.type === "button" || el.type === "submit") return;
+    el.disabled = false;
+
+    if (el.tagName === "SELECT"){
+      el.selectedIndex = 0;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+      return;
+    }
+
+    if (el.type === "checkbox" || el.type === "radio"){
+      el.checked = false;
+      return;
+    }
+
+    el.value = "";
+  });
+}
+
+function resetCustomerSection(){
+  const standortEl = document.getElementById("standort");
+  const kundeEl = document.getElementById("kunde");
+  const telefonWrapEl = document.getElementById("telefonnummer_wrap");
+  const mailWrapEl = document.getElementById("kontakt_email_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (standortEl){
+    standortEl.value = "";
+    standortEl.disabled = false;
+    standortEl.style.display = "";
+  }
+  if (kundeEl){
+    kundeEl.value = "";
+    kundeEl.disabled = false;
+    kundeEl.style.display = "";
+  }
+  if (telefonWrapEl) telefonWrapEl.style.display = "";
+  if (mailWrapEl) mailWrapEl.style.display = "";
+
+  applyPhoneValues("");
+  applyEmailValues("");
+  setPhoneFieldsDisabled(false);
+  setEmailFieldsDisabled(false);
+  syncTelefonnummerCombined();
+  syncKontaktEmailCombined();
+
+  ["saved_standort", "saved_kunde", "saved_telefonnummer", "saved_kontakt_email"].forEach(hideSavedRow);
+  setFieldError("kunde", "");
+  setFieldError("kontakt_email", "");
+
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function resetAlarmSection(){
+  const checkboxes = Array.from(document.querySelectorAll(".alarm-kategorie"));
+  const sonstigeEl = document.getElementById("sonstige_alarme");
+  const btn = document.getElementById("saveAlarmBtn");
+
+  checkboxes.forEach(cb => {
+    cb.checked = false;
+    cb.disabled = false;
+  });
+  if (sonstigeEl){
+    sonstigeEl.value = "";
+    sonstigeEl.disabled = false;
+    sonstigeEl.style.display = "";
+  }
+  hideSavedRow("saved_sonstige_alarme");
+
+  alarmLocked = false;
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+
+  syncAlarmDependencies();
+  renderReviewSummary();
+  updateStepProgress("alarmFieldset");
+  saveDraftLocally(false);
+}
+
+function resetVerbindungSection(){
+  const fieldset = document.getElementById("verbindungFieldset");
+  const options = document.getElementById("verbindung_options");
+  const summary = document.getElementById("verbindungSummary");
+  const btn = document.getElementById("saveVerbindungBtn");
+  if (!fieldset) return;
+
+  verbindungLocked = false;
+  fieldset.classList.remove("verbindung-frozen");
+  fieldset.querySelectorAll(".verbindung-filled").forEach(el => el.classList.remove("verbindung-filled"));
+  fieldset.querySelectorAll(".verbindung-filled-label").forEach(el => el.classList.remove("verbindung-filled-label"));
+  fieldset.querySelectorAll(".verbindung-filled-box").forEach(el => el.classList.remove("verbindung-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  resetSectionFieldValues(options);
+  applyStehendeAusfalldauerValue("", "");
+
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+
+  syncVerbindungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("verbindungFieldset");
+  saveDraftLocally(false);
+}
+
+function resetTechSection(){
+  const fieldset = document.getElementById("technikFieldset");
+  const panel = document.getElementById("technikPanel");
+  const summary = document.getElementById("techSummary");
+  const btn = document.getElementById("saveTechBtn");
+  const preferenceInput = document.getElementById("technik_erforderlich");
+  if (!fieldset || !panel) return;
+
+  techLocked = false;
+  fieldset.classList.remove("tech-frozen");
+  fieldset.querySelectorAll(".tech-filled").forEach(el => el.classList.remove("tech-filled"));
+  fieldset.querySelectorAll(".tech-filled-label").forEach(el => el.classList.remove("tech-filled-label"));
+  fieldset.querySelectorAll(".tech-filled-box").forEach(el => el.classList.remove("tech-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  resetSectionFieldValues(panel);
+  if (preferenceInput) preferenceInput.value = "ja";
+
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+
+  syncAlarmDependencies();
+  syncTechnikSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("technikFieldset");
+  saveDraftLocally(false);
+}
+
+function resetStatusSection(){
+  const fieldset = document.getElementById("statusFieldset");
+  const summary = document.getElementById("statusSummary");
+  const btn = document.getElementById("saveStatusBtn");
+  const statusSelect = document.getElementById("status_regel");
+  const kontrollzeitInput = document.getElementById("status_kontrollzeit");
+  if (!fieldset || !statusSelect) return;
+
+  statusLocked = false;
+  fieldset.classList.remove("status-frozen");
+  fieldset.querySelectorAll(".status-filled").forEach(el => el.classList.remove("status-filled"));
+  fieldset.querySelectorAll(".status-filled-label").forEach(el => el.classList.remove("status-filled-label"));
+  fieldset.querySelectorAll(".status-filled-box").forEach(el => el.classList.remove("status-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  statusSelect.selectedIndex = 0;
+  statusSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  if (kontrollzeitInput) kontrollzeitInput.value = "";
+  applyScharfZeitfensterData("[]");
+  applyUnscharfZeitfensterData("[]");
+
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+
+  syncStatusSectionVisibility();
+  syncAllStatusZeitfensterSummaries();
+  renderReviewSummary();
+  updateStepProgress("statusFieldset");
+  saveDraftLocally(false);
+}
+
+function saveCustomerData(){
+  const objektEl = document.getElementById("standort");
+  const adresseEl = document.getElementById("kunde");
+  const telefonHiddenEl = document.getElementById("telefonnummer");
+  const telefonWrapEl = document.getElementById("telefonnummer_wrap");
+  const mailHiddenEl = document.getElementById("kontakt_email");
+  const mailWrapEl = document.getElementById("kontakt_email_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+  const savedRows = [
+    { input: objektEl, savedId: "saved_standort", label: "Objekt" },
+    { input: adresseEl, savedId: "saved_kunde", label: "Adresse" },
+    { input: telefonWrapEl, savedId: "saved_telefonnummer", label: "Telefonnummer" },
+    { input: mailWrapEl, savedId: "saved_kontakt_email", label: "E-Mail" }
+  ];
+
+  if (customerLocked){
+    showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
+    return;
+  }
+
+  syncTelefonnummerCombined();
+  syncKontaktEmailCombined();
+  const objekt = (objektEl.value || "").trim();
+  const adresse = (adresseEl.value || "").trim();
+  const telefon = (telefonHiddenEl?.value || "").trim();
+  const mail = (mailHiddenEl?.value || "").trim();
+
+  if (!validateCustomerFields(true)){
+    return;
+  }
+
+  const valuesById = {
+    saved_standort: objekt || "-",
+    saved_kunde: adresse,
+    saved_telefonnummer: telefon || "-",
+    saved_kontakt_email: mail
+  };
+
+  savedRows.forEach(item => {
+    const savedEl = document.getElementById(item.savedId);
+    if (savedEl){
+      savedEl.innerHTML =
+        "<span class=\"saved-label\">" + item.label + ":</span> " +
+        "<span class=\"saved-value\">" + escapeHtml(valuesById[item.savedId]) + "</span>";
+      savedEl.style.display = "block";
+    }
+    if (item.input){
+      if ("disabled" in item.input) item.input.disabled = true;
+      item.input.style.display = "none";
+    }
+  });
+  setPhoneFieldsDisabled(true);
+  setEmailFieldsDisabled(true);
+
+  customerLocked = true;
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+  showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+}
+
+function saveAlarmCriteria(){
+  const checkboxes = Array.from(document.querySelectorAll(".alarm-kategorie"));
+  const sonstigeEl = document.getElementById("sonstige_alarme");
+  const savedSonstigeEl = document.getElementById("saved_sonstige_alarme");
+  const btn = document.getElementById("saveAlarmBtn");
+
+  if (alarmLocked){
+    showSectionSaveFeedback("Zu überwachende Kriterien", "saveAlarmBtn");
+    return;
+  }
+
+  const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+  const sonstige = (sonstigeEl.value || "").trim();
+
+  if (selected.length === 0 && !sonstige){
+    alert("Bitte wählen Sie mindestens eine Alarmart oder tragen Sie etwas unter Sonstige Alarme ein.");
+    return;
+  }
+
+  checkboxes.forEach(cb => cb.disabled = true);
+  if (sonstigeEl){
+    sonstigeEl.disabled = true;
+    sonstigeEl.style.display = "none";
+  }
+  if (savedSonstigeEl){
+    savedSonstigeEl.innerHTML =
+      "<span class=\"saved-label\">Sonstige Alarme:</span> " +
+      "<span class=\"saved-value\">" + escapeHtml(sonstige || "-") + "</span>";
+    savedSonstigeEl.style.display = "block";
+  }
+
+  alarmLocked = true;
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+  syncAlarmDependencies();
+  showSectionSaveFeedback("Zu überwachende Kriterien", "saveAlarmBtn");
+  renderReviewSummary();
+  updateStepProgress("alarmFieldset");
+  saveDraftLocally(false);
+}
+
+function saveTechCriteria(){
+  const fieldset = document.getElementById("technikFieldset");
+  const btn = document.getElementById("saveTechBtn");
+  const summary = document.getElementById("techSummary");
+
+  if (!fieldset){
+    alert("Der Bereich Technische Störungen wurde nicht gefunden.");
+    return;
+  }
+
+  const inputs = Array.from(fieldset.querySelectorAll("input, select, textarea"))
+    .filter(el => el.id !== "saveTechBtn");
+
+  const clearLegacyClasses = () => {
+    fieldset.classList.remove("tech-frozen");
+    fieldset.querySelectorAll(".tech-filled").forEach(el => el.classList.remove("tech-filled"));
+    fieldset.querySelectorAll(".tech-filled-label").forEach(el => el.classList.remove("tech-filled-label"));
+    fieldset.querySelectorAll(".tech-filled-box").forEach(el => el.classList.remove("tech-filled-box"));
+  };
+
+  const fieldLabels = {
+    uebertragungsweg_ueberwachungsart: "\u00DCberwachungsart",
+    uebertragungsweg_zeit: "Zeit (X)",
+    uebertragungsweg_alarmierung: "Art der Benachrichtigung",
+    uebertragungsweg_rueckmeldung: "R\u00FCckmeldung bei Entwarnung",
+    netz_ueberwachungsart: "Überwachungsart",
+    netz_zeit: "Zeit (X)",
+    netz_alarmierung: "Art der Benachrichtigung",
+    netz_rueckmeldung: "Rückmeldung bei Entwarnung",
+    batterie_ueberwachungsart: "Überwachungsart",
+    batterie_zeit: "Zeit (X)",
+    batterie_alarmierung: "Art der Benachrichtigung",
+    batterie_rueckmeldung: "Rückmeldung bei Entwarnung",
+    gma_ueberwachungsart: "Überwachungsart",
+    gma_zeit: "Zeit (X)",
+    gma_alarmierung: "Art der Benachrichtigung",
+    gma_rueckmeldung: "Rückmeldung bei Entwarnung"
+  };
+
+  if (techLocked){
+    showSectionSaveFeedback("Technische Störungen", "saveTechBtn");
+    return;
+  }
+
+  clearLegacyClasses();
+  clearInlineSavedRows(fieldset);
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  inputs.forEach(el => {
+    if (el.type === "checkbox" || el.type === "radio") {
+      el.disabled = true;
+      return;
+    }
+
+    const visible = isElementVisible(el);
+    const value = getFieldDisplayText(el);
+    el.disabled = true;
+
+    if (visible) {
+      const label = fieldLabels[el.id] || "Wert";
+      showInlineSavedRow(el, label, value || "-");
+    }
+  });
+
+  techLocked = true;
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+  showSectionSaveFeedback("Technische Störungen", "saveTechBtn");
+  renderReviewSummary();
+  updateStepProgress("technikFieldset");
+  saveDraftLocally(false);
+}
+
+function saveVerbindungCriteria(){
+  const fieldset = document.getElementById("verbindungFieldset");
+  const btn = document.getElementById("saveVerbindungBtn");
+  const options = document.getElementById("verbindung_options");
+  const summary = document.getElementById("verbindungSummary");
+
+  if (!fieldset){
+    alert("Der Bereich Verbindungsüberwachung wurde nicht gefunden.");
+    return;
+  }
+
+  const inputs = Array.from(fieldset.querySelectorAll("input, select, textarea"))
+    .filter(el => el.id !== "saveVerbindungBtn");
+
+  const clearLegacyClasses = () => {
+    fieldset.classList.remove("verbindung-frozen");
+    fieldset.querySelectorAll(".verbindung-filled").forEach(el => el.classList.remove("verbindung-filled"));
+    fieldset.querySelectorAll(".verbindung-filled-label").forEach(el => el.classList.remove("verbindung-filled-label"));
+    fieldset.querySelectorAll(".verbindung-filled-box").forEach(el => el.classList.remove("verbindung-filled-box"));
+  };
+
+  const fieldLabels = {
+    verbindung_art: "Verbindungsart",
+    verbindung_stehend_ausfalldauer_select: "Maximale Ausfalldauer",
+    verbindung_stehend_ausfalldauer_custom: "Benutzerdefinierte Ausfalldauer",
+    verbindung_stehend_alarmierung: "Art der Benachrichtigung",
+    verbindung_stehend_rueckmeldung: "Rückmeldung nach Neustart per E-Mail",
+    verbindung_bedarf_intervall: "Überwachungsintervall",
+    verbindung_bedarf_alarm_wann: "Alarmierung",
+    verbindung_bedarf_alarmierung: "Art der Benachrichtigung",
+    verbindung_bedarf_rueckmeldung: "Rückmeldung nach Neustart per E-Mail"
+  };
+
+  if (verbindungLocked){
+    showSectionSaveFeedback("Verbindungsüberwachungen", "saveVerbindungBtn");
+    return;
+  }
+
+  const art = getSelectValue("verbindung_art");
+
+  if (!art){
+    alert("Bitte wählen Sie eine Verbindungsart.");
+    return;
+  }
+
+  if (art === "stehend"){
+    const ausfall = getStehendeAusfalldauerDisplayValue();
+    const ausfallMin = parseDurationToMinutes(ausfall);
+    if (!ausfall || !Number.isFinite(ausfallMin) || ausfallMin < 15){
+      alert("Bitte geben Sie bei stehender Verbindung mindestens 15 Minuten Ausfalldauer an.");
+      return;
+    }
+    if (!getSelectValue("verbindung_stehend_alarmierung")){
+      alert("Bitte wählen Sie die Art der Benachrichtigung für die stehende Verbindung.");
+      return;
+    }
+    if (!getSelectValue("verbindung_stehend_rueckmeldung")){
+      alert("Bitte wählen Sie, ob eine Rückmeldung nach Neustart per E-Mail erfolgen soll.");
+      return;
+    }
+  }
+
+  if (art === "bedarf"){
+    if (!getSelectValue("verbindung_bedarf_intervall")){
+      alert("Bitte wählen Sie das Überwachungsintervall für die Bedarfsverbindung.");
+      return;
+    }
+    const alarmWann = getSelectValue("verbindung_bedarf_alarm_wann");
+    if (!alarmWann){
+      alert("Bitte wählen Sie, wann alarmiert werden soll.");
+      return;
+    }
+    if (!getSelectValue("verbindung_bedarf_alarmierung")){
+      alert("Bitte wählen Sie die Art der Benachrichtigung für die Bedarfsverbindung.");
+      return;
+    }
+    if (!getSelectValue("verbindung_bedarf_rueckmeldung")){
+      alert("Bitte wählen Sie, ob eine Rückmeldung nach Neustart per E-Mail erfolgen soll.");
+      return;
+    }
+  }
+
+  clearLegacyClasses();
+  clearInlineSavedRows(fieldset);
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  inputs.forEach(el => {
+    if (el.type === "checkbox" || el.type === "radio") {
+      el.disabled = true;
+      return;
+    }
+
+    const visible = isElementVisible(el);
+    const value = getFieldDisplayText(el);
+    el.disabled = true;
+
+    if (visible) {
+      const label = fieldLabels[el.id] || "Wert";
+      showInlineSavedRow(el, label, value || "-");
+    }
+  });
+
+  if (options) options.style.display = "block";
+
+  verbindungLocked = true;
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+  showSectionSaveFeedback("Verbindungsüberwachungen", "saveVerbindungBtn");
+  renderReviewSummary();
+  updateStepProgress("verbindungFieldset");
+  saveDraftLocally(false);
+}
+
+function saveStatusCriteria(){
+  const fieldset = document.getElementById("statusFieldset");
+  const btn = document.getElementById("saveStatusBtn");
+  const options = document.getElementById("statusOptions");
+  const summary = document.getElementById("statusSummary");
+
+  if (!fieldset){
+    alert("Der Bereich Statusregel wurde nicht gefunden.");
+    return;
+  }
+
+  const inputs = Array.from(fieldset.querySelectorAll("input, select, textarea"))
+    .filter(el => el.id !== "saveStatusBtn");
+
+  const clearLegacyClasses = () => {
+    fieldset.classList.remove("status-frozen");
+    fieldset.querySelectorAll(".status-filled").forEach(el => el.classList.remove("status-filled"));
+    fieldset.querySelectorAll(".status-filled-label").forEach(el => el.classList.remove("status-filled-label"));
+    fieldset.querySelectorAll(".status-filled-box").forEach(el => el.classList.remove("status-filled-box"));
+  };
+
+  const fieldLabels = {
+    status_regel: "Statusregel",
+    status_scharf_zeitfenster: "Scharf in Zeitfenstern",
+    status_unscharf_zeitfenster: "Unscharf in Zeitfenstern",
+    status_kontrollzeit: "Tägliche Kontrollzeit"
+  };
+
+  if (statusLocked){
+    showSectionSaveFeedback("Statusregel", "saveStatusBtn");
+    return;
+  }
+
+  const statusValue = getSelectValue("status_regel");
+
+  if (!statusValue){
+    alert("Bitte wählen Sie eine Statusregel.");
+    return;
+  }
+
+  const statusKontrollzeit = (document.getElementById("status_kontrollzeit")?.value || "").trim();
+
+  if (statusValue === "scharf_zeitfenster"){
+    if (!validateScharfZeitfenster(true)){
+      return;
+    }
+    syncScharfZeitfensterSummary();
+  }
+  if (statusValue === "unscharf_zeitfenster"){
+    if (!validateUnscharfZeitfenster(true)){
+      return;
+    }
+    syncUnscharfZeitfensterSummary();
+  }
+  if (statusValue === "scharf_nie_kontrollzeit" && !statusKontrollzeit){
+    alert("Bitte geben Sie die tägliche Kontrollzeit an.");
+    return;
+  }
+
+  clearLegacyClasses();
+  clearInlineSavedRows(fieldset);
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  inputs.forEach(el => {
+    if (el.type === "checkbox" || el.type === "radio") {
+      el.disabled = true;
+      return;
+    }
+
+    if (el.closest("#status_scharf_slots") || el.closest("#status_unscharf_slots")){
+      el.disabled = true;
+      return;
+    }
+
+    const visible = isElementVisible(el);
+    const value = getFieldDisplayText(el);
+    el.disabled = true;
+
+    if (visible) {
+      const label = fieldLabels[el.id] || "Wert";
+      showInlineSavedRow(el, label, value || "-");
+    }
+  });
+
+  if (options) options.style.display = "block";
+
+  statusLocked = true;
+  syncAllStatusZeitfensterSummaries();
+  if (btn){
+    btn.disabled = false;
+    btn.innerText = "Speichern";
+  }
+  showSectionSaveFeedback("Statusregel", "saveStatusBtn");
+  renderReviewSummary();
+  updateStepProgress("statusFieldset");
+  saveDraftLocally(false);
+}
+
+function formularSenden(e) {
+  e.preventDefault();
+
+  if (!validateBeforeSubmit()) return;
+
+  renderReviewSummary();
+  updateStepProgress("privacyFieldset");
+
+  if (alreadySent) return;
+  alreadySent = true;
+
+  const btn = document.getElementById("sendBtn");
+  const originalBtnText = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = "Wird übermittelt...";
+
+  const caseId = generateCaseId();
+  latestCaseId = caseId;
+
+  const kundendatenText = getEmailKundendatenText();
+  const alarmText = getEmailAlarmText();
+  const verbindungText = getEmailVerbindungText();
+  const technikText = getEmailTechnikText();
+  const statusText = getEmailStatusText();
+  const datenschutzText = getEmailDatenschutzText();
+  const statusRegelValue = getSelectValue("status_regel");
+  const statusRegelText = getSelectDisplayText("status_regel");
+  const statusScharfZeitfenster = statusRegelValue === "scharf_zeitfenster"
+    ? getInputValue("status_scharf_zeitfenster")
+    : "";
+  const statusUnscharfZeitfenster = statusRegelValue === "unscharf_zeitfenster"
+    ? getInputValue("status_unscharf_zeitfenster")
+    : "";
+  const statusKontrollzeit = statusRegelValue === "scharf_nie_kontrollzeit"
+    ? getInputValue("status_kontrollzeit")
+    : "";
+
+  const params = {
+    vorgangsnummer: caseId,
+    kunde: document.getElementById("kunde").value,
+    standort: document.getElementById("standort").value,
+    telefonnummer: document.getElementById("telefonnummer").value,
+    kontakt_email: document.getElementById("kontakt_email").value,
+    alarm_kategorien: getCheckboxList(".alarm-kategorie"),
+    sonstige_alarme: document.getElementById("sonstige_alarme").value,
+    netz_aktiv: document.getElementById("netz_aktiv").checked ? "Ja" : "Nein",
+    netz_ueberwachungsart: getSelectDisplayText("netz_ueberwachungsart"),
+    netz_zeit: document.getElementById("netz_zeit").value,
+    netz_alarmierung: getSelectDisplayText("netz_alarmierung"),
+    netz_rueckmeldung: getSelectDisplayText("netz_rueckmeldung"),
+    batterie_aktiv: document.getElementById("batterie_aktiv").checked ? "Ja" : "Nein",
+    batterie_ueberwachungsart: getSelectDisplayText("batterie_ueberwachungsart"),
+    batterie_zeit: document.getElementById("batterie_zeit").value,
+    batterie_alarmierung: getSelectDisplayText("batterie_alarmierung"),
+    batterie_rueckmeldung: getSelectDisplayText("batterie_rueckmeldung"),
+    uebertragungsweg_aktiv: document.getElementById("uebertragungsweg_aktiv").checked ? "Ja" : "Nein",
+    uebertragungsweg_ueberwachungsart: getSelectDisplayText("uebertragungsweg_ueberwachungsart"),
+    uebertragungsweg_zeit: document.getElementById("uebertragungsweg_zeit").value,
+    uebertragungsweg_alarmierung: getSelectDisplayText("uebertragungsweg_alarmierung"),
+    uebertragungsweg_rueckmeldung: getSelectDisplayText("uebertragungsweg_rueckmeldung"),
+    gma_aktiv: document.getElementById("gma_aktiv").checked ? "Ja" : "Nein",
+    gma_ueberwachungsart: getSelectDisplayText("gma_ueberwachungsart"),
+    gma_zeit: document.getElementById("gma_zeit").value,
+    gma_alarmierung: getSelectDisplayText("gma_alarmierung"),
+    gma_rueckmeldung: getSelectDisplayText("gma_rueckmeldung"),
+    verbindung_art: getSelectDisplayText("verbindung_art"),
+    verbindung_stehend_ausfalldauer: getStehendeAusfalldauerDisplayValue(),
+    verbindung_stehend_alarmierung: getSelectDisplayText("verbindung_stehend_alarmierung"),
+    verbindung_stehend_rueckmeldung: getSelectDisplayText("verbindung_stehend_rueckmeldung"),
+    verbindung_bedarf_intervall: getSelectDisplayText("verbindung_bedarf_intervall"),
+    verbindung_bedarf_alarm_wann: getSelectDisplayText("verbindung_bedarf_alarm_wann"),
+    verbindung_bedarf_alarmierung: getSelectDisplayText("verbindung_bedarf_alarmierung"),
+    verbindung_bedarf_rueckmeldung: getSelectDisplayText("verbindung_bedarf_rueckmeldung"),
+    status_regel: statusRegelText,
+    status_scharf_zeitfenster: statusScharfZeitfenster,
+    status_unscharf_zeitfenster: statusUnscharfZeitfenster,
+    status_kontrollzeit: statusKontrollzeit,
+    status_unscharf_regel: statusRegelValue === "unscharf_zeitfenster" ? statusRegelText : "",
+    status_scharf_regel: ["scharf_immer", "scharf_nie_kontrollzeit", "scharf_zeitfenster"].includes(statusRegelValue)
+      ? statusRegelText
+      : "",
+    status_scharf_kontrollzeit: statusKontrollzeit,
+    datenschutz_einwilligung: document.getElementById("datenschutz_einwilligung")?.checked ? "Ja" : "Nein",
+    kundendaten_text: kundendatenText,
+    kundendaten_display: getEmailBlockStyle(kundendatenText),
+    alarm_text: alarmText,
+    alarm_display: getEmailBlockStyle(alarmText),
+    verbindung_text: verbindungText,
+    verbindung_display: getEmailBlockStyle(verbindungText),
+    technik_text: technikText,
+    technik_display: getEmailBlockStyle(technikText),
+    status_text: statusText,
+    status_display: getEmailBlockStyle(statusText),
+    datenschutz_text: datenschutzText,
+    datenschutz_display: getEmailBlockStyle(datenschutzText),
+    datum: new Date().toLocaleString("de-DE")
+  };
+
+  emailjs.send(
+    "service_vnlczqu",
+    "template_chjz2oi",
+    params
+  ).then(
+    () => {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      const now = new Date();
+      const timeEl = document.getElementById("thanksTime");
+      if (timeEl) timeEl.innerText = formatDateTime(now);
+      document.getElementById("formular").style.display = "none";
+      document.getElementById("danke").style.display = "block";
+    },
+    (error) => {
+      alert("Fehler beim Übermitteln: " + error.text);
+      console.error(error);
+
+      alreadySent = false;
+      btn.innerText = originalBtnText;
+      updateSendButtonAvailability();
+    }
+  );
+}
+</script>
+</head>
+
+<body>
+<div class="box">
+<div id="formular">
+
+<img
+  class="brand-logo"
+  src="https://www.sicherheit-nord.de/assets/Logos/Logos-Farbe/SN_Logo.png"
+  alt="Sicherheit Nord Logo"
+>
+<h2 class="page-title">Aufschaltformular</h2>
+
+<div class="stepper-head">
+  <span>Schrittf&uuml;hrung</span>
+  <span id="stepProgressText">0/6 Bereiche gespeichert</span>
+</div>
+<nav class="stepper" aria-label="Formularschritte">
+  <div class="stepper-list">
+    <button type="button" class="step-item active" data-step="step-customer" data-target="customerFieldset">
+      <span class="step-index">1</span><span class="step-name">Kunde</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-alarm" data-target="alarmFieldset">
+      <span class="step-index">2</span><span class="step-name">Alarm</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-verbindung" data-target="verbindungFieldset">
+      <span class="step-index">3</span><span class="step-name">Verbindung</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-tech" data-target="technikFieldset">
+      <span class="step-index">4</span><span class="step-name">St&ouml;rungen</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-status" data-target="statusFieldset">
+      <span class="step-index">4</span><span class="step-name">Status</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-review" data-target="privacyFieldset">
+      <span class="step-index">5</span><span class="step-name">Datenschutz</span>
+    </button>
+  </div>
+</nav>
+
+<form id="aufschaltformular" onsubmit="formularSenden(event)">
+
+<fieldset id="customerFieldset" data-step-section>
+  <legend>Kundendaten</legend>
+  <p class="section-caption">Bitte tragen Sie hier die Basisdaten für Objekt und Kontakt ein.</p>
+  <div class="customer-input-row">
+    <input type="text" id="standort" placeholder="Objekt">
+    <div class="customer-saved-row" id="saved_standort"></div>
+  </div>
+  <div class="customer-input-row">
+    <input type="text" id="kunde" placeholder="Adresse">
+    <div class="customer-saved-row" id="saved_kunde"></div>
+  </div>
+  <div class="customer-input-row">
+    <div id="telefonnummer_wrap" class="multi-phone-wrap">
+      <div id="telefonnummer_list" class="phone-list">
+        <div class="phone-row">
+          <input type="tel" id="telefonnummer_first" class="telefonnummer-item" placeholder="Telefonnummer">
+          <button type="button" id="phoneAddBtn" class="phone-add-btn" onclick="addPhoneRow()" aria-label="Weitere Telefonnummer hinzufügen">+</button>
+        </div>
+      </div>
+      <input type="hidden" id="telefonnummer" value="">
+    </div>
+    <div class="customer-saved-row" id="saved_telefonnummer"></div>
+  </div>
+  <div class="customer-input-row">
+    <div id="kontakt_email_wrap" class="multi-phone-wrap">
+      <div id="kontakt_email_list" class="phone-list">
+        <div class="phone-row">
+          <input type="email" id="kontakt_email_first" class="kontakt-email-item" placeholder="E-Mail">
+          <button type="button" id="emailAddBtn" class="phone-add-btn" onclick="addEmailRow()" aria-label="Weitere E-Mail-Adresse hinzufuegen">+</button>
+        </div>
+      </div>
+      <input type="hidden" id="kontakt_email" value="">
+    </div>
+    <div class="customer-saved-row" id="saved_kontakt_email"></div>
+  </div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveCustomerBtn" onclick="saveCustomerData()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetCustomerBtn" onclick="resetCustomerSection()">Zurücksetzen</button>
+  </div>
+</fieldset>
+
+<fieldset id="alarmFieldset" data-step-section>
+  <legend>Zu überwachende Kriterien</legend>
+  <p class="section-caption">Wählen Sie die Alarmarten, die an die Leitstelle gemeldet werden sollen.</p>
+  <label><input type="checkbox" class="alarm-kategorie" value="Medizinischer Notruf"> Medizinischer Notruf</label>
+  <label><input type="checkbox" class="alarm-kategorie" value="Feuer"> Feuer</label>
+  <label><input type="checkbox" class="alarm-kategorie" value="&Uuml;berfall"> &Uuml;berfall</label>
+  <label><input type="checkbox" class="alarm-kategorie" value="Einbruch"> Einbruch</label>
+  <label><input type="checkbox" class="alarm-kategorie" value="Sabotage"> Sabotage</label>
+
+  <div class="customer-input-row">
+    <label for="sonstige_alarme">Sonstige Alarme:</label>
+    <input type="text" id="sonstige_alarme" placeholder="z. B. Gasalarm, CO-Melder, Wassermelder">
+    <div class="customer-saved-row" id="saved_sonstige_alarme"></div>
+  </div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveAlarmBtn" onclick="saveAlarmCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetAlarmBtn" onclick="resetAlarmSection()">Zurücksetzen</button>
+  </div>
+</fieldset>
+
+<fieldset id="verbindungFieldset" data-step-section>
+  <legend>Verbindungs&uuml;berwachungen</legend>
+  <p class="section-caption">Legen Sie fest, wie Verbindungsabbrüche erkannt und gemeldet werden.</p>
+  <div class="technik-box">
+    <div id="verbindung_options" class="tech-options">
+      <select id="verbindung_art" onchange="toggleVerbindungArt(this)">
+        <option value="" selected>---- Überwachungsart auswählen ----</option>
+        <option value="stehend" data-label-html="Stehende Verbindung <span class='select-note-inline'>(dauerhaft)</span>">Stehende Verbindung (dauerhaft)</option>
+        <option value="bedarf" data-label-html="Bedarfsverbindung <span class='select-note-inline'>(wird max. 2x pro Tag geprüft)</span>">Bedarfsverbindung (wird max. 2x pro Tag geprüft)</option>
+      </select>
+
+      <div id="verbindung_stehend" class="sub-tech-options">
+        <select id="verbindung_stehend_ausfalldauer_select">
+          <option value="" selected>---- Maximale Ausfalldauer ausw&auml;hlen ----</option>
+          <option value="custom">Benutzerdefiniert</option>
+          <option value="15">15 Minuten</option>
+          <option value="30">30 Minuten</option>
+          <option value="45">45 Minuten</option>
+          <option value="60">60 Minuten</option>
+          <option value="75">75 Minuten</option>
+          <option value="90">90 Minuten</option>
+          <option value="105">105 Minuten</option>
+          <option value="120">120 Minuten</option>
+          <option value="135">135 Minuten</option>
+          <option value="150">150 Minuten</option>
+          <option value="165">165 Minuten</option>
+          <option value="180">180 Minuten</option>
+          <option value="195">195 Minuten</option>
+          <option value="210">210 Minuten</option>
+          <option value="225">225 Minuten</option>
+          <option value="240">240 Minuten</option>
+        </select>
+
+        <div id="verbindung_stehend_ausfalldauer_custom_wrap" class="zeitfeld">
+          <input type="text" id="verbindung_stehend_ausfalldauer_custom" placeholder="(Mindestens 15 Minuten)">
+        </div>
+        <input type="hidden" id="verbindung_stehend_ausfalldauer" value="">
+
+        <select id="verbindung_stehend_alarmierung">
+          <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+          <option value="telefon_24">Telefon</option>
+          <option value="mail">E-Mail</option>
+          <option value="telefon_mail">Telefon &amp; E-Mail</option>
+        </select>
+
+        <select id="verbindung_stehend_rueckmeldung">
+          <option value="" selected>---- Rückmeldung nach Neustart per E-Mail auswählen ----</option>
+          <option value="ja">Ja</option>
+          <option value="nein">Nein</option>
+        </select>
+      </div>
+
+      <div id="verbindung_bedarf" class="sub-tech-options">
+
+        <select id="verbindung_bedarf_intervall">
+          <option value="" selected>---- Überwachungsintervall auswählen ----</option>
+          <option value="12h">Ein mal am Tag (alle 12 Stunden)</option>
+          <option value="6h">Zwei mal am Tag (alle 6 Stunden)</option>
+        </select>
+
+        <select id="verbindung_bedarf_alarm_wann">
+          <option value="" selected>---- Wann soll alarmiert werden? ----</option>
+          <option value="sofort">Jederzeit</option>
+          <option value="zeit">Nur von 8:00 - 20:00 Uhr</option>
+        </select>
+
+        <select id="verbindung_bedarf_alarmierung">
+          <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+          <option value="telefon_24">Telefon</option>
+          <option value="mail">E-Mail</option>
+          <option value="telefon_mail">Telefon &amp; E-Mail</option>
+        </select>
+
+        <select id="verbindung_bedarf_rueckmeldung">
+          <option value="" selected>---- Rückmeldung nach Neustart per E-Mail auswählen ----</option>
+          <option value="ja">Ja</option>
+          <option value="nein">Nein</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="verbindungSummary" class="customer-saved-row"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveVerbindungBtn" onclick="saveVerbindungCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetVerbindungBtn" onclick="resetVerbindungSection()">Zurücksetzen</button>
+  </div>
+</fieldset>
+
+<fieldset id="technikFieldset" data-step-section>
+  <legend class="legend-with-toggle">
+    <span>Technische St&ouml;rungen</span>
+    <span class="legend-toggle-actions" role="group" aria-label="Technische Störungen anzeigen">
+      <button type="button" id="techToggleYes" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setTechPreference('ja')">Ja</button>
+      <button type="button" id="techToggleNo" class="legend-toggle-btn" aria-pressed="false" onclick="setTechPreference('nein')">Nein</button>
+    </span>
+  </legend>
+  <input type="hidden" id="technik_erforderlich" value="ja">
+  <div id="technikPanel" class="tech-panel" aria-hidden="true">
+  <p class="section-caption">Wählen Sie hier die technischen Störungen aus, die überwacht werden sollen.</p>
+  <!-- NETZ -->
+  <div class="technik-box">
+    <label class="tech-check-label">
+      <span class="tech-check-main">
+        <input type="checkbox" id="netz_aktiv" onchange="setTechnikSectionVisibility('netz_aktiv','netz_options')">
+        <span>Netzst&ouml;rung</span>
+      </span>
+      <span class="tech-check-note">(Stromausfall/Stromst&ouml;rung)</span>
+    </label>
+    <div id="netz_options" class="tech-options">
+
+    <select id="netz_ueberwachungsart" onchange="toggleZeit(this,'netzzeit')">
+      <option value="" selected>---- Wann soll alarmiert werden? ----</option>
+      <option value="empfang">Sofort</option>
+      <option value="zeit">Erst nach Zeit (X)</option>
+    </select>
+
+    <div id="netzzeit" class="zeitfeld">
+      <input type="text" id="netz_zeit" placeholder="(z.B. 30 Minuten)">
+    </div>
+
+    <select id="netz_alarmierung">
+      <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+      <option value="telefon_24">Telefon</option>
+      <option value="mail">E-Mail</option>
+      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+    </select>
+
+    <select id="netz_rueckmeldung">
+      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
+      <option value="klar_sms">SMS</option>
+      <option value="klar_mail">E-Mail</option>
+      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+    </select>
+    </div>
+  </div>
+
+  <!-- BATTERIE -->
+  <div class="technik-box">
+    <label class="tech-check-label">
+      <span class="tech-check-main">
+        <input type="checkbox" id="batterie_aktiv" onchange="setTechnikSectionVisibility('batterie_aktiv','batterie_options')">
+        <span>Batteriest&ouml;rung</span>
+      </span>
+      <span class="tech-check-note">(Batterie leer/defekt)</span>
+    </label>
+    <div id="batterie_options" class="tech-options">
+
+    <select id="batterie_ueberwachungsart" onchange="toggleZeit(this,'batteriezeit')">
+      <option value="" selected>---- Wann soll alarmiert werden? ----</option>
+      <option value="empfang">Sofort</option>
+      <option value="zeit">Erst nach Zeit (X)</option>
+    </select>
+
+    <div id="batteriezeit" class="zeitfeld">
+      <input type="text" id="batterie_zeit" placeholder="(z.B. 30 Minuten)">
+    </div>
+
+    <select id="batterie_alarmierung">
+      <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+      <option value="telefon_24">Telefon</option>
+      <option value="mail">E-Mail</option>
+      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+    </select>
+
+    <select id="batterie_rueckmeldung">
+      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
+      <option value="klar_sms">SMS</option>
+      <option value="klar_mail">E-Mail</option>
+      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+    </select>
+    </div>
+  </div>
+
+  <!-- UEBERTRAGUNGSWEG -->
+  <div class="technik-box">
+    <label class="tech-check-label">
+      <span class="tech-check-main">
+        <input type="checkbox" id="uebertragungsweg_aktiv" onchange="setTechnikSectionVisibility('uebertragungsweg_aktiv','uebertragungsweg_options')">
+        <span>&Uuml;bertragungsweg-St&ouml;rung</span>
+      </span>
+      <span class="tech-check-note">(Internet/Mobilfunk ausgefallen)</span>
+    </label>
+    <div id="uebertragungsweg_options" class="tech-options">
+
+    <select id="uebertragungsweg_ueberwachungsart" onchange="toggleZeit(this,'uebertragungswegzeit')">
+      <option value="" selected>---- Wann soll alarmiert werden? ----</option>
+      <option value="empfang">Sofort</option>
+      <option value="zeit">Erst nach Zeit (X)</option>
+    </select>
+
+    <div id="uebertragungswegzeit" class="zeitfeld">
+      <input type="text" id="uebertragungsweg_zeit" placeholder="(z.B. 30 Minuten)">
+    </div>
+
+    <select id="uebertragungsweg_alarmierung">
+      <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+      <option value="telefon_24">Telefon</option>
+      <option value="mail">E-Mail</option>
+      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+    </select>
+
+    <select id="uebertragungsweg_rueckmeldung">
+      <option value="" selected>---- R&uuml;ckmeldung bei Entwarnung ausw&auml;hlen ----</option>
+      <option value="klar_sms">SMS</option>
+      <option value="klar_mail">E-Mail</option>
+      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+    </select>
+    </div>
+  </div>
+
+  <!-- GMA -->
+  <div class="technik-box">
+    <label class="tech-check-label">
+      <span class="tech-check-main">
+        <input type="checkbox" id="gma_aktiv" onchange="setTechnikSectionVisibility('gma_aktiv','gma_options')">
+        <span>St&ouml;rung der Gefahrenmeldeanlage</span>
+      </span>
+      <span class="tech-check-note">(technischer Fehler in der Alarmanlage)</span>
+    </label>
+    <div id="gma_options" class="tech-options">
+
+    <select id="gma_ueberwachungsart" onchange="toggleZeit(this,'gmazeit')">
+      <option value="" selected>---- Wann soll alarmiert werden? ----</option>
+      <option value="empfang">Sofort</option>
+      <option value="zeit">Erst nach Zeit (X)</option>
+    </select>
+
+    <div id="gmazeit" class="zeitfeld">
+      <input type="text" id="gma_zeit" placeholder="(z.B. 30 Minuten)">
+    </div>
+
+    <select id="gma_alarmierung">
+      <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+      <option value="telefon_24">Telefon</option>
+      <option value="mail">E-Mail</option>
+      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+    </select>
+
+    <select id="gma_rueckmeldung">
+      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
+      <option value="klar_sms">SMS</option>
+      <option value="klar_mail">E-Mail</option>
+      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+    </select>
+    </div>
+  </div>
+
+  <div id="techSummary" class="customer-saved-row"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveTechBtn" onclick="saveTechCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetTechBtn" onclick="resetTechSection()">Zurücksetzen</button>
+  </div>
+  </div>
+</fieldset>
+
+<fieldset id="statusFieldset" data-step-section>
+  <legend>Scharf- und Unscharfschaltung der Anlage</legend>
+  <p class="section-caption">Legen Sie hier fest, wann die Anlage scharf- oder unscharf geschaltet sein darf.</p>
+
+  <div id="statusOptions" class="status-options">
+    <select id="status_regel" onchange="toggleStatusRegel(this)">
+      <option value="" selected>---- Statusregel auswählen ----</option>
+      <option value="scharf_immer" data-label-html="Die Anlage ist <strong>dauerhaft scharf</strong> geschaltet.">Die Anlage ist dauerhaft scharf geschaltet.</option>
+      <option value="scharf_nie_kontrollzeit">Nur tägliche Statuskontrolle zur Kontrollzeit</option>
+      <option value="scharf_zeitfenster" data-label-html="Die Anlage wird nur zu bestimmten Zeiten <strong>scharf</strong> geschaltet.">Die Anlage wird nur zu bestimmten Zeiten scharf geschaltet.</option>
+      <option value="unscharf_zeitfenster" data-label-html="Die Anlage wird nur zu bestimmten Zeiten <strong>unscharf</strong> geschaltet.">Die Anlage wird nur zu bestimmten Zeiten unscharf geschaltet.</option>
+    </select>
+
+    <div id="status_scharf_zeitfenster_wrap" class="zeitfenster-panel">
+      <p class="zeitfenster-panel-head">Zeitfenster für Scharf festlegen</p>
+      <div id="status_scharf_slots" class="zeitfenster-slot-list"></div>
+      <button type="button" id="status_scharf_add_row" class="zeitfenster-add-btn" onclick="addScharfZeitfensterRow()">
+        + Zeitfenster hinzufügen
+      </button>
+      <input type="hidden" id="status_scharf_zeitfenster" value="">
+      <input type="hidden" id="status_scharf_zeitfenster_data" value="[]">
+    </div>
+
+    <div id="status_unscharf_zeitfenster_wrap" class="zeitfenster-panel">
+      <p class="zeitfenster-panel-head">Zeitfenster für Unscharf festlegen</p>
+      <div id="status_unscharf_slots" class="zeitfenster-slot-list"></div>
+      <button type="button" id="status_unscharf_add_row" class="zeitfenster-add-btn" onclick="addUnscharfZeitfensterRow()">
+        + Zeitfenster hinzufügen
+      </button>
+      <input type="hidden" id="status_unscharf_zeitfenster" value="">
+      <input type="hidden" id="status_unscharf_zeitfenster_data" value="[]">
+    </div>
+
+    <div id="status_kontrollzeit_wrap" class="status-extra">
+      <input type="text" id="status_kontrollzeit" placeholder="Tägliche Kontrollzeit (z. B. 22:00)">
+    </div>
+  </div>
+
+  <div id="statusSummary" class="customer-saved-row"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveStatusBtn" onclick="saveStatusCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetStatusBtn" onclick="resetStatusSection()">Zurücksetzen</button>
+  </div>
+</fieldset>
+
+
+
+
+
+
+
+<fieldset id="privacyFieldset" data-step-section>
+  <legend>Datenschutz und Einwilligung</legend>
+  <div class="privacy-box">
+    Ihre Angaben werden ausschließlich zur Bearbeitung Ihrer Aufschaltung und zur Kontaktaufnahme durch unser Aufschaltungs-Team verarbeitet.
+    Nach Abschluss des Vorgangs werden die Daten gemäß gesetzlichen Aufbewahrungsfristen gespeichert.
+  </div>
+  <label class="privacy-check" id="privacyCheckWrap">
+    <input type="checkbox" id="datenschutz_einwilligung">
+    <span>Ich stimme zu, dass meine Angaben für die Bearbeitung der Aufschaltung verarbeitet und für Rückfragen verwendet werden dürfen.</span>
+  </label>
+  <div class="field-error" id="datenschutz_error"></div>
+</fieldset>
+
+<div class="action-row">
+  <button type="button" class="ghost-btn" onclick="clearDraftLocally()">Formular zurücksetzen</button>
+  <button type="submit" id="sendBtn">Angaben übermitteln</button>
+</div>
+
+</form>
+</div>
+
+<div id="danke">
+  <h2>Vielen Dank!</h2>
+  <p>Ihre Angaben wurden erfolgreich übermittelt.</p>
+  <div class="success-meta">
+    <strong>&Uuml;bermittelt am:</strong> <span id="thanksTime">-</span>
+  </div>
+  <button type="button" class="secondary-btn" onclick="downloadSummaryPdf()">Zusammenfassung als PDF drucken</button>
+</div>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
