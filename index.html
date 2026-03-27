@@ -11,6 +11,12 @@
   :root {
     --bg-top: #295e70;
     --bg-bottom: #214f60;
+    --sn-green-top: #326d82;
+    --sn-green-bottom: #295e70;
+    --sn-green-soft-top: #f2f8f9;
+    --sn-green-soft-bottom: #e4eef1;
+    --sn-green-line: #a8c1c9;
+    --sn-green-text: #295e70;
     --card: rgba(255, 255, 255, 0.88);
     --card-solid: #ffffff;
     --line: #d7e0ea;
@@ -516,6 +522,12 @@
     color: #22384f;
   }
 
+  .saved-contact-lines {
+    display: grid;
+    gap: 4px;
+    margin-top: 7px;
+  }
+
   .technik-box {
     border: 1px solid #d5e2ee;
     border-radius: 16px;
@@ -592,20 +604,39 @@
     flex-wrap: wrap;
   }
 
+  .legend-toggle-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 8px;
+    margin: 0 0 12px;
+  }
+
   .legend-toggle-actions {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    justify-self: end;
+    white-space: nowrap;
+  }
+
+  .legend-toggle-question {
+    min-width: 0;
+    color: #314155;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
   }
 
   .legend-toggle-btn {
     width: auto;
     min-width: 48px;
     padding: 6px 12px;
-    border: 1px solid #c6d6e7;
+    border: 1px solid var(--sn-green-line);
     border-radius: 999px;
-    background: linear-gradient(180deg, #ffffff, #f4f8fd);
-    color: #365172;
+    background: linear-gradient(180deg, var(--sn-green-soft-top), var(--sn-green-soft-bottom));
+    color: var(--sn-green-text);
     font-size: 12.5px;
     font-weight: 700;
     line-height: 1.1;
@@ -617,15 +648,15 @@
     transform: none;
     filter: none;
     box-shadow: none;
-    background: linear-gradient(180deg, #f8fbff, #edf4fc);
-    border-color: #afc6df;
+    background: linear-gradient(180deg, #edf5f7, #dfecef);
+    border-color: #8fadb7;
   }
 
   .legend-toggle-btn.is-active {
-    border-color: #2f7fd3;
-    background: linear-gradient(180deg, #2f8fff, #1477dd);
+    border-color: var(--sn-green-bottom);
+    background: linear-gradient(180deg, var(--sn-green-top), var(--sn-green-bottom));
     color: #ffffff;
-    box-shadow: 0 6px 14px rgba(20, 99, 184, 0.18);
+    box-shadow: 0 6px 14px rgba(41, 94, 112, 0.24);
   }
 
   #technikFieldset {
@@ -634,6 +665,8 @@
   }
 
   .tech-panel {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     max-height: 0;
     opacity: 0;
@@ -643,7 +676,8 @@
     transition: max-height 0.42s ease, opacity 0.28s ease, transform 0.36s ease, margin-top 0.36s ease;
   }
 
-  #technikFieldset.tech-enabled .tech-panel {
+  #technikFieldset.tech-enabled .tech-panel,
+  #statusFieldset.status-enabled .tech-panel {
     max-height: 2400px;
     opacity: 1;
     transform: translateY(0);
@@ -652,11 +686,42 @@
   }
 
   #technikFieldset.tech-enabled,
-  #technikFieldset.tech-enabled .tech-panel {
+  #technikFieldset.tech-enabled .tech-panel,
+  #statusFieldset.status-enabled,
+  #statusFieldset.status-enabled .tech-panel {
     overflow: visible;
   }
 
-  #technikFieldset:not(.tech-enabled) {
+  #technikPanel .section-caption {
+    order: 0;
+  }
+
+  #technikPanel [data-tech-box="gma"] {
+    order: 1;
+  }
+
+  #technikPanel [data-tech-box="netz"] {
+    order: 2;
+  }
+
+  #technikPanel [data-tech-box="batterie"] {
+    order: 3;
+  }
+
+  #technikPanel [data-tech-box="uebertragungsweg"] {
+    order: 4;
+  }
+
+  #techSummary {
+    order: 5;
+  }
+
+  #technikPanel .section-action-row {
+    order: 6;
+  }
+
+  #technikFieldset:not(.tech-enabled),
+  #statusFieldset:not(.status-enabled) {
     padding-bottom: 12px;
   }
 
@@ -768,6 +833,79 @@
     background: #f8fbff;
   }
 
+  .billing-address-panel {
+    display: none;
+    margin: 6px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid #dce7f1;
+    border-radius: 14px;
+    background: #f8fbff;
+  }
+
+  .billing-toggle-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 6px 0 18px;
+  }
+
+  .billing-toggle-btn {
+    width: 18px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 1px 0 0;
+    border: 1px solid #b9c9d8;
+    border-radius: 5px;
+    background: #ffffff;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .billing-toggle-btn::after {
+    content: "";
+    width: 8px;
+    height: 4px;
+    border-left: 2px solid #4b8b74;
+    border-bottom: 2px solid #4b8b74;
+    transform: rotate(-45deg) scale(0.75);
+    opacity: 0;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+
+  .billing-toggle-btn:hover {
+    transform: none;
+    filter: none;
+    box-shadow: none;
+    background: #f8fbff;
+    border-color: #9ab4cb;
+  }
+
+  .billing-toggle-btn.is-active {
+    background: #f1f8f4;
+    border-color: #7ea994;
+    box-shadow: none;
+  }
+
+  .billing-toggle-btn.is-active::after {
+    opacity: 1;
+    transform: rotate(-45deg) scale(1);
+  }
+
+  .billing-toggle-label {
+    color: #314155;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .billing-address-panel .anlage-grid-wrap {
+    margin-top: 0;
+  }
+
   .multi-phone-wrap {
     display: grid;
     gap: 8px;
@@ -790,7 +928,9 @@
   }
 
   .phone-add-btn,
-  .phone-remove-btn {
+  .phone-remove-btn,
+  .alarm-other-add-btn,
+  .alarm-other-remove-btn {
     width: 46px;
     min-width: 46px;
     height: 46px;
@@ -806,12 +946,60 @@
   }
 
   .phone-add-btn:hover,
-  .phone-remove-btn:hover {
+  .phone-remove-btn:hover,
+  .alarm-other-add-btn:hover,
+  .alarm-other-remove-btn:hover {
     background: linear-gradient(180deg, #f5f9ff, #edf5ff);
   }
 
-  .phone-remove-btn {
+  .phone-remove-btn,
+  .alarm-other-remove-btn {
     font-size: 17px;
+  }
+
+  .contact-grid-wrap {
+    display: grid;
+    gap: 8px;
+  }
+
+  .anlage-grid-wrap {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .anlage-grid-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    align-items: start;
+  }
+
+  .anlage-grid-item input,
+  .anlage-grid-item select {
+    margin-top: 0;
+  }
+
+  .customer-contact-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .customer-contact-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .customer-contact-row input {
+    margin-top: 0;
+  }
+
+  .customer-contact-actions {
+    display: grid;
+    grid-auto-flow: column;
+    gap: 8px;
   }
 
   .zeitfenster-panel {
@@ -837,25 +1025,45 @@
 
   .zeitfenster-slot {
     display: grid;
-    grid-template-columns: minmax(92px, 1fr) minmax(106px, 1fr) auto minmax(92px, 1fr) minmax(106px, 1fr) auto;
+    grid-template-columns: minmax(170px, 1.2fr) minmax(150px, 1fr) auto minmax(170px, 1.2fr) minmax(150px, 1fr) auto;
     gap: 8px;
-    align-items: center;
+    align-items: end;
     padding: 9px;
     border: 1px solid #dce8f5;
     border-radius: 13px;
     background: #ffffff;
   }
 
+  .zeitfenster-field {
+    display: grid;
+    gap: 5px;
+  }
+
+  .zeitfenster-field-label {
+    color: #5b6f86;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
   .zeitfenster-slot .slot-sep {
     color: #5b6f86;
     font-size: 13px;
     font-weight: 600;
+    align-self: center;
+  }
+
+  .zeitfenster-slot.uses-preset-days {
+    grid-template-columns: minmax(190px, 1.35fr) auto minmax(150px, 1fr) auto minmax(150px, 1fr) auto;
   }
 
   .zeitfenster-slot .custom-select .custom-select-trigger {
     margin-top: 0;
     width: 100%;
     min-height: 40px;
+  }
+
+  .zeitfenster-field .custom-select {
+    margin-top: 0;
   }
 
   .zeitfenster-add-btn {
@@ -911,6 +1119,7 @@
     font-size: 13.5px;
   }
 
+
   .zeitfeld {
     display: none;
     margin-top: 8px;
@@ -927,6 +1136,11 @@
   input.has-error,
   textarea.has-error,
   select.has-error {
+    border-color: #d92d20;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13);
+  }
+
+  .custom-select > select.has-error + .custom-select-trigger {
     border-color: #d92d20;
     box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13);
   }
@@ -957,6 +1171,23 @@
   .privacy-check.has-error {
     border-color: #d92d20;
     background: #fff5f4;
+  }
+
+  .validation-disabled .field-error {
+    display: none !important;
+  }
+
+  .validation-disabled input.has-error,
+  .validation-disabled textarea.has-error,
+  .validation-disabled select.has-error,
+  .validation-disabled .custom-select > select.has-error + .custom-select-trigger {
+    border-color: #c7d6e6 !important;
+    box-shadow: none !important;
+  }
+
+  .validation-disabled .privacy-check.has-error {
+    border-color: #d1deeb !important;
+    background: #f9fcff !important;
   }
 
   .privacy-check input[type="checkbox"] {
@@ -1392,14 +1623,24 @@
       grid-template-columns: 1fr auto;
     }
 
-    .zeitfenster-slot {
+    .anlage-grid-row,
+    .customer-contact-row {
+      grid-template-columns: 1fr;
+    }
+
+    .customer-contact-actions {
+      grid-auto-flow: column;
       grid-template-columns: 1fr 1fr;
+    }
+
+    .zeitfenster-slot {
+      grid-template-columns: 1fr;
       gap: 6px;
       align-items: stretch;
     }
 
     .zeitfenster-slot .slot-sep {
-      display: none;
+      display: none !important;
     }
 
     .zeitfenster-remove-btn {
@@ -1458,6 +1699,7 @@
 
 let alreadySent = false;
 let customSelectGlobalBound = false;
+const FORM_VALIDATION_ACTIVE = false;
 
 function closeAllCustomSelects(exceptWrap){
   document.querySelectorAll(".custom-select.is-open").forEach(wrap => {
@@ -1627,18 +1869,43 @@ function toggleZeit(selectEl, id) {
 }
 
 const WEEKDAY_OPTIONS = [
-  { value: "mo", label: "Mo" },
-  { value: "di", label: "Di" },
-  { value: "mi", label: "Mi" },
-  { value: "do", label: "Do" },
-  { value: "fr", label: "Fr" },
-  { value: "sa", label: "Sa" },
-  { value: "so", label: "So" }
+  { value: "mo", label: "Montag" },
+  { value: "di", label: "Dienstag" },
+  { value: "mi", label: "Mittwoch" },
+  { value: "do", label: "Donnerstag" },
+  { value: "fr", label: "Freitag" },
+  { value: "sa", label: "Samstag" },
+  { value: "so", label: "Sonntag" }
 ];
 
 function getDayLabel(dayValue){
   const hit = WEEKDAY_OPTIONS.find(item => item.value === dayValue);
   return hit ? hit.label : "";
+}
+
+const STATUS_DAY_RANGE_OPTIONS = [
+  { value: "mo_fr", label: "Montag - Freitag", fromDay: "mo", toDay: "fr" },
+  { value: "mo_sa", label: "Montag - Samstag", fromDay: "mo", toDay: "sa" },
+  { value: "alltaeglich", label: "Alltäglich", fromDay: "mo", toDay: "so" }
+];
+
+function getStatusDayRangeLabel(rangeValue){
+  const hit = STATUS_DAY_RANGE_OPTIONS.find(item => item.value === rangeValue);
+  return hit ? hit.label : "";
+}
+
+function getStatusDayRangeBounds(rangeValue){
+  const hit = STATUS_DAY_RANGE_OPTIONS.find(item => item.value === rangeValue);
+  return hit ? { fromDay: hit.fromDay, toDay: hit.toDay } : { fromDay: "", toDay: "" };
+}
+
+function getLegacyStatusDayRange(fromDay, toDay){
+  const hit = STATUS_DAY_RANGE_OPTIONS.find(item => item.fromDay === fromDay && item.toDay === toDay);
+  return hit ? hit.value : "";
+}
+
+function isStatusPresetValue(value){
+  return STATUS_DAY_RANGE_OPTIONS.some(item => item.value === value);
 }
 
 function syncTelefonnummerCombined(){
@@ -1816,6 +2083,454 @@ function applyEmailValues(combined){
   syncKontaktEmailCombined();
 }
 
+function getSonstigeAlarmInputs(){
+  return Array.from(document.querySelectorAll(".sonstige-alarm-item"));
+}
+
+function getSonstigeAlarmValues(){
+  return getSonstigeAlarmInputs()
+    .map(input => String(input.value || "").trim())
+    .filter(Boolean);
+}
+
+function parseSonstigeAlarmValues(rawData, fallbackCombined){
+  if (Array.isArray(rawData)){
+    return rawData
+      .map(value => String(value || "").trim())
+      .filter(Boolean);
+  }
+
+  const rawString = String(rawData || "").trim();
+  if (rawString){
+    try {
+      const parsed = JSON.parse(rawString);
+      if (Array.isArray(parsed)){
+        return parsed
+          .map(value => String(value || "").trim())
+          .filter(Boolean);
+      }
+    } catch (error){
+      // Fall back to simple text splitting for legacy values.
+    }
+  }
+
+  return splitCombinedValues(fallbackCombined || rawData);
+}
+
+function syncSonstigeAlarmeCombined(){
+  const hidden = document.getElementById("sonstige_alarme");
+  const dataHidden = document.getElementById("sonstige_alarme_data");
+  const values = getSonstigeAlarmValues();
+  if (hidden) hidden.value = values.join(", ");
+  if (dataHidden) dataHidden.value = JSON.stringify(values);
+}
+
+function handleSonstigeAlarmeChange(){
+  syncSonstigeAlarmeCombined();
+  scheduleDraftSave();
+  renderReviewSummary();
+}
+
+function attachSonstigeAlarmFieldListeners(input){
+  if (!input || input.dataset.sonstigeAlarmBound === "1") return;
+  input.dataset.sonstigeAlarmBound = "1";
+  input.addEventListener("input", handleSonstigeAlarmeChange);
+  input.addEventListener("change", handleSonstigeAlarmeChange);
+}
+
+function setSonstigeAlarmeDisabled(disabled){
+  getSonstigeAlarmInputs().forEach(input => {
+    input.disabled = !!disabled;
+  });
+  document.querySelectorAll(".sonstige-alarm-remove-btn").forEach(btn => {
+    btn.disabled = !!disabled;
+  });
+  const addBtn = document.getElementById("sonstigeAlarmAddBtn");
+  if (addBtn) addBtn.disabled = !!disabled;
+}
+
+function addSonstigeAlarmRow(initialValue){
+  const list = document.getElementById("sonstige_alarme_list");
+  if (!list) return;
+
+  const row = document.createElement("div");
+  row.className = "phone-row dynamic-sonstige-alarm-row";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "sonstige-alarm-item";
+  input.placeholder = "z. B. Gasalarm, CO-Alarm, Wassermelder";
+  input.value = initialValue || "";
+  attachSonstigeAlarmFieldListeners(input);
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "alarm-other-remove-btn sonstige-alarm-remove-btn";
+  removeBtn.setAttribute("aria-label", "Alarmzeile entfernen");
+  removeBtn.innerText = "-";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    handleSonstigeAlarmeChange();
+  });
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  list.appendChild(row);
+
+  if (alarmLocked) setSonstigeAlarmeDisabled(true);
+  syncSonstigeAlarmeCombined();
+  if (!initialValue) input.focus();
+}
+
+function applySonstigeAlarmValues(rawData, fallbackCombined){
+  const list = document.getElementById("sonstige_alarme_list");
+  const baseInput = document.getElementById("sonstige_alarme_first");
+  if (!list || !baseInput) return;
+
+  list.querySelectorAll(".dynamic-sonstige-alarm-row").forEach(row => row.remove());
+  const values = parseSonstigeAlarmValues(rawData, fallbackCombined);
+
+  attachSonstigeAlarmFieldListeners(baseInput);
+  baseInput.value = values[0] || "";
+  values.slice(1).forEach(value => addSonstigeAlarmRow(value));
+  syncSonstigeAlarmeCombined();
+}
+
+function bindSonstigeAlarmeFields(){
+  const baseInput = document.getElementById("sonstige_alarme_first");
+  if (!baseInput) return;
+  attachSonstigeAlarmFieldListeners(baseInput);
+  syncSonstigeAlarmeCombined();
+}
+
+function getCustomerContactRows(){
+  return Array.from(document.querySelectorAll(".customer-contact-row"));
+}
+
+function getCustomerContactEntries(){
+  return getCustomerContactRows().map((row, index) => {
+    const nameInput = row.querySelector(".kontakt-name-item");
+    const phoneInput = row.querySelector(".telefonnummer-item");
+    const emailInput = row.querySelector(".kontakt-email-item");
+    return {
+      row,
+      index,
+      nameInput,
+      phoneInput,
+      emailInput,
+      name: String(nameInput?.value || "").trim(),
+      phone: String(phoneInput?.value || "").trim(),
+      email: String(emailInput?.value || "").trim()
+    };
+  });
+}
+
+function getCustomerContactSummaryRows(includePlaceholder){
+  const rows = [];
+  getCustomerContactEntries().forEach(entry => {
+    const parts = [];
+    if (entry.name) parts.push("Kundenname: " + entry.name);
+    if (entry.phone) parts.push("Telefonnummer: " + entry.phone);
+    if (entry.email) parts.push("E-Mail: " + entry.email);
+    if (parts.length || (includePlaceholder && entry.index === 0)){
+      rows.push({
+        label: "Kontakt " + (entry.index + 1),
+        value: parts.length ? parts.join(" | ") : "-"
+      });
+    }
+  });
+  return rows;
+}
+
+function getCustomerContactSavedHtml(){
+  const rows = getCustomerContactSummaryRows(false);
+  if (rows.length === 0){
+    return "<span class=\"saved-label\">Kontakte:</span> <span class=\"saved-value\">-</span>";
+  }
+  return (
+    "<span class=\"saved-label\">Kontakte:</span>" +
+    "<div class=\"saved-contact-lines\">" +
+      rows.map(row =>
+        "<div class=\"saved-value\">" + escapeHtml(row.label + ": " + row.value) + "</div>"
+      ).join("") +
+    "</div>"
+  );
+}
+
+function getContactEmailInputs(){
+  return getCustomerContactEntries()
+    .map(entry => entry.emailInput)
+    .filter(Boolean);
+}
+
+function getContactEmailValues(){
+  return getCustomerContactEntries()
+    .map(entry => entry.email)
+    .filter(Boolean);
+}
+
+function syncCustomerContactCombined(){
+  const namesHidden = document.getElementById("kontakt_name");
+  const phoneHidden = document.getElementById("telefonnummer");
+  const mailHidden = document.getElementById("kontakt_email");
+  const dataHidden = document.getElementById("kontaktzeilen_data");
+  const rows = getCustomerContactEntries();
+  const activeRows = rows.filter(entry => entry.name || entry.phone || entry.email);
+  const draftRows = rows
+    .map(entry => ({ name: entry.name, phone: entry.phone, email: entry.email }))
+    .filter((entry, index) => index === 0 || entry.name || entry.phone || entry.email);
+
+  if (namesHidden){
+    namesHidden.value = activeRows.map(entry => entry.name).filter(Boolean).join(", ");
+  }
+  if (phoneHidden){
+    phoneHidden.value = activeRows.map(entry => entry.phone).filter(Boolean).join(", ");
+  }
+  if (mailHidden){
+    mailHidden.value = activeRows.map(entry => entry.email).filter(Boolean).join(", ");
+  }
+  if (dataHidden){
+    dataHidden.value = JSON.stringify(draftRows);
+  }
+}
+
+function syncTelefonnummerCombined(){
+  syncCustomerContactCombined();
+}
+
+function syncKontaktEmailCombined(){
+  syncCustomerContactCombined();
+}
+
+function refreshCustomerContactErrorState(){
+  const entries = getCustomerContactEntries();
+  const first = entries[0];
+  const invalidMail = entries.find(entry => entry.email && !isValidEmail(entry.email));
+  if (!first){
+    setFieldError("kontaktzeilen_data", "");
+    return;
+  }
+  if (first.name && first.phone && first.email && !invalidMail){
+    setFieldError("kontaktzeilen_data", "");
+  }
+}
+
+function refreshEmailFieldErrorState(){
+  refreshCustomerContactErrorState();
+}
+
+function handleCustomerContactRowsChange(){
+  syncCustomerContactCombined();
+  refreshCustomerContactErrorState();
+  scheduleDraftSave();
+  renderReviewSummary();
+}
+
+function handlePhoneFieldsChange(){
+  handleCustomerContactRowsChange();
+}
+
+function handleEmailFieldsChange(){
+  handleCustomerContactRowsChange();
+}
+
+function bindCustomerContactInput(input){
+  if (!input || input.dataset.contactBound === "1") return;
+  input.dataset.contactBound = "1";
+  input.addEventListener("input", handleCustomerContactRowsChange);
+  input.addEventListener("change", handleCustomerContactRowsChange);
+  input.addEventListener("blur", () => validateCustomerFields(false));
+}
+
+function attachEmailFieldListeners(input){
+  bindCustomerContactInput(input);
+}
+
+function updateCustomerContactRowButtons(){
+  getCustomerContactRows().forEach((row, index) => {
+    const addBtn = row.querySelector(".customer-contact-add");
+    const removeBtn = row.querySelector(".customer-contact-remove");
+    const isFirstRow = index === 0;
+    if (addBtn){
+      addBtn.style.display = isFirstRow ? "" : "none";
+      addBtn.disabled = !!customerLocked || !isFirstRow;
+    }
+    if (!removeBtn) return;
+    const canRemove = index > 0;
+    removeBtn.style.display = canRemove ? "" : "none";
+    removeBtn.disabled = !!customerLocked || !canRemove;
+  });
+}
+
+function createCustomerContactRow(initialData){
+  const data = initialData || {};
+  const row = document.createElement("div");
+  row.className = "customer-contact-row";
+
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "customer-contact-input kontakt-name-item";
+  nameInput.placeholder = "Name des Ansprechpartners";
+  nameInput.value = data.name || "";
+  bindCustomerContactInput(nameInput);
+
+  const phoneInput = document.createElement("input");
+  phoneInput.type = "tel";
+  phoneInput.className = "customer-contact-input telefonnummer-item";
+  phoneInput.placeholder = "Telefonnummer";
+  phoneInput.value = data.phone || "";
+  bindCustomerContactInput(phoneInput);
+
+  const emailInput = document.createElement("input");
+  emailInput.type = "email";
+  emailInput.className = "customer-contact-input kontakt-email-item";
+  emailInput.placeholder = "E-Mail";
+  emailInput.value = data.email || "";
+  bindCustomerContactInput(emailInput);
+
+  const actions = document.createElement("div");
+  actions.className = "customer-contact-actions";
+
+  const addBtn = document.createElement("button");
+  addBtn.type = "button";
+  addBtn.className = "phone-add-btn customer-contact-add";
+  addBtn.setAttribute("aria-label", "Weitere Kontaktzeile hinzufügen");
+  addBtn.innerText = "+";
+  addBtn.addEventListener("click", () => {
+    const rows = getCustomerContactRows();
+    addCustomerContactRow({}, rows[rows.length - 1] || row);
+  });
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "phone-remove-btn customer-contact-remove";
+  removeBtn.setAttribute("aria-label", "Kontaktzeile entfernen");
+  removeBtn.innerText = "-";
+  removeBtn.addEventListener("click", () => {
+    row.remove();
+    updateCustomerContactRowButtons();
+    handleCustomerContactRowsChange();
+  });
+
+  actions.appendChild(addBtn);
+  actions.appendChild(removeBtn);
+
+  row.appendChild(nameInput);
+  row.appendChild(phoneInput);
+  row.appendChild(emailInput);
+  row.appendChild(actions);
+
+  return row;
+}
+
+function addCustomerContactRow(initialData, afterRow){
+  const list = document.getElementById("kontaktzeilen_list");
+  if (!list) return null;
+  const row = createCustomerContactRow(initialData);
+  if (afterRow && afterRow.parentElement === list){
+    afterRow.insertAdjacentElement("afterend", row);
+  } else {
+    list.appendChild(row);
+  }
+  updateCustomerContactRowButtons();
+  setCustomerContactRowsDisabled(customerLocked);
+  handleCustomerContactRowsChange();
+  if (!(initialData && (initialData.name || initialData.phone || initialData.email))){
+    row.querySelector(".kontakt-name-item")?.focus();
+  }
+  return row;
+}
+
+function normalizeCustomerContactRow(item){
+  if (!item || typeof item !== "object"){
+    return { name: "", phone: "", email: "" };
+  }
+  return {
+    name: String(item.name || item.kundenname || item.kontakt_name || "").trim(),
+    phone: String(item.phone || item.telefon || item.telefonnummer || "").trim(),
+    email: String(item.email || item.mail || item.kontakt_email || "").trim()
+  };
+}
+
+function buildLegacyCustomerContactRows(legacyData){
+  const names = splitCombinedValues(legacyData?.names || "");
+  const phones = splitCombinedValues(legacyData?.phones || "");
+  const emails = splitCombinedValues(legacyData?.emails || "");
+  const length = Math.max(1, names.length, phones.length, emails.length);
+  return Array.from({ length }, (_, index) => ({
+    name: names[index] || "",
+    phone: phones[index] || "",
+    email: emails[index] || ""
+  }));
+}
+
+function applyCustomerContactRows(rows){
+  const list = document.getElementById("kontaktzeilen_list");
+  if (!list) return;
+  list.innerHTML = "";
+  const nextRows = Array.isArray(rows) && rows.length ? rows : [{ name: "", phone: "", email: "" }];
+  nextRows.forEach(row => {
+    list.appendChild(createCustomerContactRow(normalizeCustomerContactRow(row)));
+  });
+  updateCustomerContactRowButtons();
+  setCustomerContactRowsDisabled(customerLocked);
+  syncCustomerContactCombined();
+}
+
+function applyCustomerContactDraftData(serialized, legacyData){
+  let rows = [];
+  const raw = String(serialized || "").trim();
+  if (raw){
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)){
+        rows = parsed.map(normalizeCustomerContactRow);
+      }
+    } catch (error){
+      rows = [];
+    }
+  }
+  if (!rows.length){
+    rows = buildLegacyCustomerContactRows(legacyData);
+  }
+  applyCustomerContactRows(rows);
+}
+
+function applyPhoneValues(combined){
+  applyCustomerContactDraftData("", { names: "", phones: combined, emails: "" });
+}
+
+function applyEmailValues(combined){
+  applyCustomerContactDraftData("", { names: "", phones: "", emails: combined });
+}
+
+function setCustomerContactRowsDisabled(disabled){
+  document.querySelectorAll(".customer-contact-input").forEach(input => {
+    input.disabled = !!disabled;
+  });
+  document.querySelectorAll(".customer-contact-add").forEach(btn => {
+    btn.disabled = !!disabled;
+  });
+  updateCustomerContactRowButtons();
+}
+
+function setPhoneFieldsDisabled(disabled){
+  setCustomerContactRowsDisabled(disabled);
+}
+
+function setEmailFieldsDisabled(disabled){
+  setCustomerContactRowsDisabled(disabled);
+}
+
+function hideLegacyCustomerContactFields(){
+  ["telefonnummer_wrap", "kontakt_email_wrap"].forEach(id => {
+    const el = document.getElementById(id);
+    const row = el ? el.closest(".customer-input-row") : null;
+    if (row) row.style.display = "none";
+  });
+  ["saved_telefonnummer", "saved_kontakt_email"].forEach(hideSavedRow);
+}
+
 function applyFriendlyTechTriggerLabels(){
   const selectIds = [
     "netz_ueberwachungsart",
@@ -1833,8 +2548,8 @@ function applyFriendlyTechTriggerLabels(){
     const zeit = Array.from(select.options).find(option => option.value === "zeit");
 
     if (placeholder) placeholder.text = "---- Wann soll alarmiert werden? ----";
-    if (empfang) empfang.text = "Sofort";
-    if (zeit) zeit.text = "Erst nach Zeit (X)";
+    if (empfang) empfang.text = "Sofort (nach Meldungsempfang)";
+    if (zeit) zeit.text = "Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)";
   });
 }
 
@@ -1867,6 +2582,15 @@ function getStehendeAusfalldauerDisplayValue(){
   return getSelectDisplayText("verbindung_stehend_ausfalldauer_select");
 }
 
+function getBedarfIntervallDisplayValue(){
+  const selectedMode = getSelectValue("verbindung_bedarf_intervall");
+  if (!selectedMode) return "";
+  if (selectedMode === "custom"){
+    return String(getInputValue("verbindung_bedarf_intervall_custom") || "").trim();
+  }
+  return getSelectDisplayText("verbindung_bedarf_intervall");
+}
+
 function syncStehendeAusfalldauer(){
   const selectEl = document.getElementById("verbindung_stehend_ausfalldauer_select");
   const customWrap = document.getElementById("verbindung_stehend_ausfalldauer_custom_wrap");
@@ -1879,6 +2603,90 @@ function syncStehendeAusfalldauer(){
   customInput.disabled = verbindungLocked || !isCustom;
   if (!isCustom) customInput.value = "";
   hiddenInput.value = getStehendeAusfalldauerDisplayValue();
+}
+
+function syncBedarfIntervall(){
+  const selectEl = document.getElementById("verbindung_bedarf_intervall");
+  const customWrap = document.getElementById("verbindung_bedarf_intervall_custom_wrap");
+  const customInput = document.getElementById("verbindung_bedarf_intervall_custom");
+  if (!selectEl || !customWrap || !customInput) return;
+
+  const isCustom = selectEl.value === "custom";
+  customWrap.style.display = isCustom ? "block" : "none";
+  customInput.disabled = verbindungLocked || !isCustom;
+  if (!isCustom) customInput.value = "";
+}
+
+function syncStehendRueckmeldungVisibility(){
+  const selectEl = document.getElementById("verbindung_stehend_rueckmeldung");
+  if (!selectEl) return;
+
+  const shouldShow =
+    getVerbindungPreference() === "ja" &&
+    getSelectValue("verbindung_art") === "stehend" &&
+    getSelectValue("verbindung_stehend_alarmierung") === "mail";
+
+  if (!shouldShow){
+    selectEl.selectedIndex = 0;
+  }
+
+  selectEl.disabled = verbindungLocked || !shouldShow;
+  setFieldControlVisibility(selectEl, shouldShow);
+}
+
+function syncBedarfRueckmeldungVisibility(){
+  const selectEl = document.getElementById("verbindung_bedarf_rueckmeldung");
+  if (!selectEl) return;
+
+  const alarmierung = getSelectValue("verbindung_bedarf_alarmierung");
+  const shouldShow =
+    getVerbindungPreference() === "ja" &&
+    getSelectValue("verbindung_art") === "bedarf" &&
+    alarmierung === "mail";
+
+  if (!shouldShow){
+    selectEl.selectedIndex = 0;
+  }
+
+  selectEl.disabled = verbindungLocked || !shouldShow;
+  setFieldControlVisibility(selectEl, shouldShow);
+}
+
+function shouldShowTechRueckmeldung(prefix){
+  const checkbox = document.getElementById(prefix + "_aktiv");
+  const alarmierung = getSelectValue(prefix + "_alarmierung");
+  return getTechPreference() === "ja" &&
+    !!(checkbox && checkbox.checked) &&
+    alarmierung === "mail";
+}
+
+function syncTechRueckmeldungVisibility(prefix){
+  const selectEl = document.getElementById(prefix + "_rueckmeldung");
+  if (!selectEl) return;
+
+  const shouldShow = shouldShowTechRueckmeldung(prefix);
+  if (!shouldShow){
+    selectEl.selectedIndex = 0;
+  }
+
+  selectEl.disabled = techLocked || !shouldShow;
+  setFieldControlVisibility(selectEl, shouldShow);
+}
+
+function syncAllTechRueckmeldungVisibility(){
+  ["gma", "netz", "batterie", "uebertragungsweg"].forEach(syncTechRueckmeldungVisibility);
+}
+
+function bindTechRueckmeldungVisibility(){
+  ["gma", "netz", "batterie", "uebertragungsweg"].forEach(prefix => {
+    const selectEl = document.getElementById(prefix + "_alarmierung");
+    if (!selectEl || selectEl.dataset.rueckmeldungBound === "1") return;
+    selectEl.dataset.rueckmeldungBound = "1";
+    selectEl.addEventListener("change", () => {
+      syncTechRueckmeldungVisibility(prefix);
+      refreshCustomSelects();
+    });
+  });
 }
 
 function applyStehendeAusfalldauerValue(rawValue, rawMode){
@@ -1927,6 +2735,52 @@ function bindStehendeAusfalldauerFields(){
   syncStehendeAusfalldauer();
 }
 
+function bindBedarfIntervallFields(){
+  const selectEl = document.getElementById("verbindung_bedarf_intervall");
+  const customInput = document.getElementById("verbindung_bedarf_intervall_custom");
+
+  if (selectEl && selectEl.dataset.bedarfIntervallBound !== "1"){
+    selectEl.dataset.bedarfIntervallBound = "1";
+    selectEl.addEventListener("change", () => syncBedarfIntervall());
+  }
+
+  if (customInput && customInput.dataset.bedarfIntervallBound !== "1"){
+    customInput.dataset.bedarfIntervallBound = "1";
+    customInput.addEventListener("input", () => syncBedarfIntervall());
+    customInput.addEventListener("change", () => syncBedarfIntervall());
+  }
+
+  syncBedarfIntervall();
+}
+
+function bindBedarfRueckmeldungVisibility(){
+  const alarmierungEl = document.getElementById("verbindung_bedarf_alarmierung");
+
+  if (alarmierungEl && alarmierungEl.dataset.bedarfRueckmeldungBound !== "1"){
+    alarmierungEl.dataset.bedarfRueckmeldungBound = "1";
+    alarmierungEl.addEventListener("change", () => {
+      syncBedarfRueckmeldungVisibility();
+      refreshCustomSelects();
+    });
+  }
+
+  syncBedarfRueckmeldungVisibility();
+}
+
+function bindStehendRueckmeldungVisibility(){
+  const alarmierungEl = document.getElementById("verbindung_stehend_alarmierung");
+
+  if (alarmierungEl && alarmierungEl.dataset.stehendRueckmeldungBound !== "1"){
+    alarmierungEl.dataset.stehendRueckmeldungBound = "1";
+    alarmierungEl.addEventListener("change", () => {
+      syncStehendRueckmeldungVisibility();
+      refreshCustomSelects();
+    });
+  }
+
+  syncStehendRueckmeldungVisibility();
+}
+
 function createZeitfensterDaySelect(className, selectedValue){
   const select = document.createElement("select");
   select.className = className;
@@ -1944,6 +2798,35 @@ function createZeitfensterDaySelect(className, selectedValue){
     if (item.value === selectedValue) opt.selected = true;
     select.appendChild(opt);
   });
+  return select;
+}
+
+function createStatusDayRangeSelect(className, selectedValue){
+  const select = document.createElement("select");
+  select.className = className;
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.selected = !selectedValue;
+  placeholder.innerText = "Tag";
+  select.appendChild(placeholder);
+
+  WEEKDAY_OPTIONS.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.value;
+    opt.innerText = item.label;
+    if (item.value === selectedValue) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  STATUS_DAY_RANGE_OPTIONS.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item.value;
+    opt.innerText = item.label;
+    if (item.value === selectedValue) opt.selected = true;
+    select.appendChild(opt);
+  });
+
   return select;
 }
 
@@ -1992,6 +2875,48 @@ function getStatusZeitfensterConfig(kind){
   return configMap[kind] || null;
 }
 
+function createZeitfensterField(labelText, fieldEl){
+  const wrap = document.createElement("div");
+  wrap.className = "zeitfenster-field";
+
+  const label = document.createElement("span");
+  label.className = "zeitfenster-field-label";
+  label.innerText = labelText;
+
+  wrap.appendChild(label);
+  wrap.appendChild(fieldEl);
+  return wrap;
+}
+
+function hasStatusZeitfensterRows(kind){
+  const config = getStatusZeitfensterConfig(kind);
+  if (!config) return false;
+  return !!document.querySelector("#" + config.listId + " .zeitfenster-slot");
+}
+
+function ensureStatusZeitfensterDefaultRow(kind){
+  if (hasStatusZeitfensterRows(kind)) return;
+  addStatusZeitfensterRow(kind, null, true);
+}
+
+function syncStatusZeitfensterRowLayout(row){
+  if (!row) return;
+  const dayRangeEl = row.querySelector(".ztf-day-range");
+  const toDayWrap = row.querySelector(".ztf-to-day-wrap");
+  const toDayEl = row.querySelector(".ztf-to-day");
+  const fromSep = row.querySelector(".slot-sep-from");
+  const daySep = row.querySelector(".slot-sep-day");
+  const timeSep = row.querySelector(".slot-sep-time");
+  if (!dayRangeEl || !toDayWrap || !toDayEl || !fromSep || !daySep || !timeSep) return;
+
+  const usesPreset = isStatusPresetValue(dayRangeEl.value || "");
+  row.classList.toggle("uses-preset-days", usesPreset);
+  toDayWrap.style.display = usesPreset ? "none" : "";
+  fromSep.style.display = usesPreset ? "" : "none";
+  daySep.style.display = usesPreset ? "none" : "";
+  timeSep.style.display = usesPreset ? "" : "none";
+}
+
 function addStatusZeitfensterRow(kind, prefill, skipSideEffects){
   const config = getStatusZeitfensterConfig(kind);
   if (!config) return;
@@ -2003,15 +2928,22 @@ function addStatusZeitfensterRow(kind, prefill, skipSideEffects){
   const row = document.createElement("div");
   row.className = "zeitfenster-slot";
 
-  const fromDay = createZeitfensterDaySelect("ztf-from-day", data.fromDay || "");
+  const dayRange = createStatusDayRangeSelect("ztf-day-range", data.dayRange || data.fromDay || getLegacyStatusDayRange(data.fromDay || "", data.toDay || ""));
   const fromTime = createZeitfensterTimeSelect("ztf-from-time", data.fromTime || "");
-
-  const sep = document.createElement("span");
-  sep.className = "slot-sep";
-  sep.innerText = "bis";
-
   const toDay = createZeitfensterDaySelect("ztf-to-day", data.toDay || "");
   const toTime = createZeitfensterTimeSelect("ztf-to-time", data.toTime || "");
+
+  const fromSep = document.createElement("span");
+  fromSep.className = "slot-sep slot-sep-from";
+  fromSep.innerText = "von";
+
+  const daySep = document.createElement("span");
+  daySep.className = "slot-sep slot-sep-day";
+  daySep.innerText = "bis";
+
+  const timeSep = document.createElement("span");
+  timeSep.className = "slot-sep slot-sep-time";
+  timeSep.innerText = "bis";
 
   const removeBtn = document.createElement("button");
   removeBtn.type = "button";
@@ -2026,22 +2958,28 @@ function addStatusZeitfensterRow(kind, prefill, skipSideEffects){
     updateStepProgress();
   });
 
-  [fromDay, fromTime, toDay, toTime].forEach(field => {
+  [dayRange, fromTime, toDay, toTime].forEach(field => {
     field.addEventListener("change", () => {
+      syncStatusZeitfensterRowLayout(row);
       syncStatusZeitfensterSummary(kind);
       scheduleDraftSave();
       renderReviewSummary();
     });
   });
 
-  row.appendChild(fromDay);
-  row.appendChild(fromTime);
-  row.appendChild(sep);
-  row.appendChild(toDay);
-  row.appendChild(toTime);
+  row.appendChild(createZeitfensterField("Tage", dayRange));
+  row.appendChild(fromSep);
+  row.appendChild(createZeitfensterField("Beginn/unscharf", fromTime));
+  row.appendChild(daySep);
+  const toDayWrap = createZeitfensterField("Endtag", toDay);
+  toDayWrap.classList.add("ztf-to-day-wrap");
+  row.appendChild(toDayWrap);
+  row.appendChild(timeSep);
+  row.appendChild(createZeitfensterField("Ende/scharf", toTime));
   row.appendChild(removeBtn);
   list.appendChild(row);
 
+  syncStatusZeitfensterRowLayout(row);
   initCustomSelects();
   refreshCustomSelects();
   syncStatusZeitfensterSummary(kind);
@@ -2074,6 +3012,7 @@ function applyStatusZeitfensterData(kind, raw){
 }
 
 function validateStatusZeitfenster(kind, showAlert){
+  if (!FORM_VALIDATION_ACTIVE) return true;
   const config = getStatusZeitfensterConfig(kind);
   if (!config) return false;
 
@@ -2087,14 +3026,17 @@ function validateStatusZeitfenster(kind, showAlert){
   let hasPartial = false;
 
   rows.forEach(row => {
-    const fromDay = row.querySelector(".ztf-from-day")?.value || "";
-    const fromTime = row.querySelector(".ztf-from-time")?.value || "";
+    const dayRange = row.querySelector(".ztf-day-range")?.value || "";
     const toDay = row.querySelector(".ztf-to-day")?.value || "";
+    const fromTime = row.querySelector(".ztf-from-time")?.value || "";
     const toTime = row.querySelector(".ztf-to-time")?.value || "";
+    const usesPreset = isStatusPresetValue(dayRange);
 
-    const filledCount = [fromDay, fromTime, toDay, toTime].filter(Boolean).length;
+    const filledCount = usesPreset
+      ? [dayRange, fromTime, toTime].filter(Boolean).length
+      : [dayRange, toDay, fromTime, toTime].filter(Boolean).length;
     if (filledCount === 0) return;
-    if (filledCount === 4){
+    if ((usesPreset && filledCount === 3) || (!usesPreset && filledCount === 4)){
       hasComplete = true;
       return;
     }
@@ -2171,6 +3113,9 @@ function toggleVerbindungArt(selectEl) {
   if (!isBedarf) resetFields(bedarf);
 
   syncStehendeAusfalldauer();
+  syncStehendRueckmeldungVisibility();
+  syncBedarfIntervall();
+  syncBedarfRueckmeldungVisibility();
   refreshCustomSelects();
 }
 
@@ -2187,33 +3132,43 @@ function syncStatusZeitfensterSummary(kind){
   const rawRows = [];
   const parts = [];
   rows.forEach(row => {
-    const fromDayEl = row.querySelector(".ztf-from-day");
-    const fromTimeEl = row.querySelector(".ztf-from-time");
+    const dayRangeEl = row.querySelector(".ztf-day-range");
     const toDayEl = row.querySelector(".ztf-to-day");
+    const fromTimeEl = row.querySelector(".ztf-from-time");
     const toTimeEl = row.querySelector(".ztf-to-time");
     const removeBtn = row.querySelector(".zeitfenster-remove-btn");
-    if (!fromDayEl || !fromTimeEl || !toDayEl || !toTimeEl) return;
+    if (!dayRangeEl || !fromTimeEl || !toTimeEl) return;
+
+    syncStatusZeitfensterRowLayout(row);
 
     const rowDisabled = statusLocked || !panelActive;
-    fromDayEl.disabled = rowDisabled;
+    const usesPreset = isStatusPresetValue(dayRangeEl.value || "");
+    dayRangeEl.disabled = rowDisabled;
     fromTimeEl.disabled = rowDisabled;
-    toDayEl.disabled = rowDisabled;
     toTimeEl.disabled = rowDisabled;
+    if (toDayEl) toDayEl.disabled = rowDisabled || usesPreset;
     if (removeBtn) removeBtn.disabled = rowDisabled;
 
+    const bounds = usesPreset
+      ? getStatusDayRangeBounds(dayRangeEl.value || "")
+      : { fromDay: dayRangeEl.value || "", toDay: toDayEl?.value || "" };
+
     const entry = {
-      fromDay: fromDayEl.value || "",
+      dayRange: usesPreset ? (dayRangeEl.value || "") : "",
+      fromDay: bounds.fromDay,
       fromTime: fromTimeEl.value || "",
-      toDay: toDayEl.value || "",
+      toDay: bounds.toDay,
       toTime: toTimeEl.value || ""
     };
-    rawRows.push(entry);
+    const hasAnyValue = !!(entry.dayRange || entry.fromDay || entry.fromTime || entry.toDay || entry.toTime);
+    if (hasAnyValue){
+      rawRows.push(entry);
+    }
 
-    if (entry.fromDay && entry.fromTime && entry.toDay && entry.toTime){
-      parts.push(
-        getDayLabel(entry.fromDay) + " " + entry.fromTime +
-        " bis " + getDayLabel(entry.toDay) + " " + entry.toTime + " Uhr"
-      );
+    if (usesPreset && entry.dayRange && entry.fromTime && entry.toTime){
+      parts.push(getStatusDayRangeLabel(entry.dayRange) + " " + entry.fromTime + " bis " + entry.toTime + " Uhr");
+    } else if (!usesPreset && entry.fromDay && entry.fromTime && entry.toDay && entry.toTime){
+      parts.push(getDayLabel(entry.fromDay) + " " + entry.fromTime + " bis " + getDayLabel(entry.toDay) + " " + entry.toTime + " Uhr");
     }
   });
 
@@ -2241,6 +3196,23 @@ function syncUnscharfZeitfensterSummary(){
   syncStatusZeitfensterSummary("unscharf");
 }
 
+function toggleStatusKontrollzeit(){
+  const statusValue = getSelectValue("status_regel");
+  const kontrollzeitSelect = document.getElementById("status_kontrollzeit");
+  const kontrollzeitZeitWrap = document.getElementById("status_kontrollzeit_uhrzeit_wrap");
+  const kontrollzeitZeitInput = document.getElementById("status_kontrollzeit_uhrzeit");
+  if (!kontrollzeitSelect || !kontrollzeitZeitWrap || !kontrollzeitZeitInput) return;
+
+  const shouldShow = statusValue === "kontrollzeit_scharf";
+  const validValues = ["objekt_jederzeit", "dauerscharf"];
+  if (shouldShow && !validValues.includes(kontrollzeitSelect.value)){
+    kontrollzeitSelect.value = "objekt_jederzeit";
+  }
+  kontrollzeitSelect.disabled = statusLocked || !shouldShow;
+  kontrollzeitZeitWrap.style.display = shouldShow ? "block" : "none";
+  kontrollzeitZeitInput.disabled = statusLocked || !shouldShow;
+}
+
 function toggleStatusRegel(selectEl) {
   const scharfZeitfensterWrap = document.getElementById("status_scharf_zeitfenster_wrap");
   const unscharfZeitfensterWrap = document.getElementById("status_unscharf_zeitfenster_wrap");
@@ -2250,11 +3222,15 @@ function toggleStatusRegel(selectEl) {
 
   const isScharfZeitfenster = selectEl.value === "scharf_zeitfenster";
   const isUnscharfZeitfenster = selectEl.value === "unscharf_zeitfenster";
-  const isKontrollzeit = selectEl.value === "scharf_nie_kontrollzeit";
+  const isKontrollzeit = selectEl.value === "kontrollzeit_scharf";
+  if (isUnscharfZeitfenster){
+    ensureStatusZeitfensterDefaultRow("unscharf");
+  }
   scharfZeitfensterWrap.style.display = isScharfZeitfenster ? "block" : "none";
   unscharfZeitfensterWrap.style.display = isUnscharfZeitfenster ? "block" : "none";
   kontrollzeitWrap.style.display = isKontrollzeit ? "block" : "none";
   kontrollzeitInput.disabled = statusLocked || !isKontrollzeit;
+  toggleStatusKontrollzeit();
   refreshCustomSelects();
   syncAllStatusZeitfensterSummaries();
 }
@@ -2265,6 +3241,7 @@ function setTechnikSectionVisibility(checkboxId, optionsId) {
   if (!checkbox || !options) return;
 
   const isVisible = checkbox.checked;
+  const prefix = optionsId.replace(/_options$/, "");
   options.style.display = isVisible ? "block" : "none";
 
   const fields = Array.from(options.querySelectorAll("input, select, textarea"));
@@ -2290,6 +3267,7 @@ function setTechnikSectionVisibility(checkboxId, optionsId) {
     Array.from(options.querySelectorAll(".sub-tech-options")).forEach(el => {
       el.style.display = "none";
     });
+    syncTechRueckmeldungVisibility(prefix);
     refreshCustomSelects();
     return;
   }
@@ -2301,10 +3279,11 @@ function setTechnikSectionVisibility(checkboxId, optionsId) {
     gma_options: ["gma_ueberwachungsart", "gmazeit"]
   };
   const mapEntry = zeitMap[optionsId];
-  if (!mapEntry) return;
-
-  const selectEl = document.getElementById(mapEntry[0]);
-  if (selectEl) toggleZeit(selectEl, mapEntry[1]);
+  if (mapEntry){
+    const selectEl = document.getElementById(mapEntry[0]);
+    if (selectEl) toggleZeit(selectEl, mapEntry[1]);
+  }
+  syncTechRueckmeldungVisibility(prefix);
   refreshCustomSelects();
 }
 
@@ -2317,9 +3296,48 @@ function syncTechnikSectionVisibility() {
 }
 
 function setVerbindungSectionVisibility() {
+  const fieldset = document.getElementById("verbindungFieldset");
+  const caption = fieldset ? fieldset.querySelector(".section-caption") : null;
+  const box = fieldset ? fieldset.querySelector(".technik-box") : null;
+  const actionRow = fieldset ? fieldset.querySelector(".section-action-row") : null;
   const options = document.getElementById("verbindung_options");
   const verbindungArt = document.getElementById("verbindung_art");
-  if (!options || !verbindungArt) return;
+  const steh = document.getElementById("verbindung_stehend");
+  const bedarf = document.getElementById("verbindung_bedarf");
+  const btn = document.getElementById("saveVerbindungBtn");
+  const summary = document.getElementById("verbindungSummary");
+  if (!fieldset || !options || !verbindungArt) return;
+
+  const verbindungEnabled = getVerbindungPreference() === "ja";
+
+  updateVerbindungPreferenceButtons();
+  fieldset.classList.toggle("verbindung-enabled", verbindungEnabled);
+  if (caption) caption.style.display = verbindungEnabled ? "" : "none";
+  if (box){
+    box.style.display = verbindungEnabled ? "block" : "none";
+    box.setAttribute("aria-hidden", verbindungEnabled ? "false" : "true");
+  }
+  if (summary){
+    const hasSummaryContent = String(summary.innerHTML || "").trim() !== "";
+    summary.style.display = verbindungEnabled && hasSummaryContent ? "block" : "none";
+  }
+  if (actionRow){
+    actionRow.style.display = verbindungEnabled ? "" : "none";
+    actionRow.setAttribute("aria-hidden", verbindungEnabled ? "false" : "true");
+  }
+  if (btn){
+    setSectionSaveButtonState(btn, verbindungLocked && verbindungEnabled, !verbindungEnabled);
+  }
+
+  if (!verbindungEnabled){
+    Array.from(options.querySelectorAll("input, select, textarea")).forEach(el => {
+      el.disabled = true;
+    });
+    if (steh) steh.style.display = "none";
+    if (bedarf) bedarf.style.display = "none";
+    refreshCustomSelects();
+    return;
+  }
 
   options.style.display = "block";
 
@@ -2336,9 +3354,32 @@ function syncVerbindungSectionVisibility() {
 }
 
 function setStatusSectionVisibility() {
+  const fieldset = document.getElementById("statusFieldset");
+  const panel = document.getElementById("statusPanel");
   const options = document.getElementById("statusOptions");
   const statusSelect = document.getElementById("status_regel");
-  if (!options || !statusSelect) return;
+  const btn = document.getElementById("saveStatusBtn");
+  const statusEnabled = getStatusPreference() === "ja";
+  if (!fieldset || !panel || !options || !statusSelect) return;
+
+  updateStepNavigation();
+  fieldset.hidden = false;
+  fieldset.style.display = "block";
+  fieldset.classList.toggle("status-enabled", statusEnabled);
+  panel.setAttribute("aria-hidden", statusEnabled ? "false" : "true");
+  updateStatusPreferenceButtons();
+  if (btn){
+    setSectionSaveButtonState(btn, statusLocked && statusEnabled, !statusEnabled);
+  }
+
+  if (!statusEnabled){
+    Array.from(fieldset.querySelectorAll("#statusPanel input, #statusPanel select, #statusPanel textarea"))
+      .forEach(el => {
+        el.disabled = true;
+      });
+    refreshCustomSelects();
+    return;
+  }
 
   options.style.display = "block";
 
@@ -2379,8 +3420,7 @@ function syncAlarmDependencies() {
     if (toggle) toggle.disabled = techLocked || !techEnabled;
   });
   if (btn){
-    btn.disabled = !techEnabled;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, techLocked && techEnabled, !techEnabled);
   }
   if (!techEnabled){
     Array.from(techFieldset.querySelectorAll("#technikPanel input, #technikPanel select, #technikPanel textarea"))
@@ -2395,26 +3435,28 @@ function syncAlarmDependencies() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const firstPhone = document.getElementById("telefonnummer_first");
-  const firstEmail = document.getElementById("kontakt_email_first");
-  if (firstPhone){
-    firstPhone.addEventListener("input", handlePhoneFieldsChange);
-    firstPhone.addEventListener("change", handlePhoneFieldsChange);
-  }
-  if (firstEmail){
-    attachEmailFieldListeners(firstEmail);
-  }
-
+  document.documentElement.classList.toggle("validation-disabled", !FORM_VALIDATION_ACTIVE);
+  clearAllValidationUi();
+  applyCustomerContactRows([{ name: "", phone: "", email: "" }]);
+  hideLegacyCustomerContactFields();
   applyScharfZeitfensterData("[]");
   applyUnscharfZeitfensterData("[]");
   bindStehendeAusfalldauerFields();
+  bindBedarfIntervallFields();
+  bindStehendRueckmeldungVisibility();
+  bindBedarfRueckmeldungVisibility();
+  bindTechRueckmeldungVisibility();
   applyFriendlyTechTriggerLabels();
+  bindRechnungsadresseFields();
+  bindSonstigeAlarmeFields();
   initCustomSelects();
   loadDraftLocally();
+  syncRechnungsadresseSectionVisibility();
   syncTelefonnummerCombined();
   syncKontaktEmailCombined();
   syncAlarmDependencies();
   syncTechnikSectionVisibility();
+  syncAllTechRueckmeldungVisibility();
   syncVerbindungSectionVisibility();
   syncStatusSectionVisibility();
   syncAllStatusZeitfensterSummaries();
@@ -2423,7 +3465,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupLiveValidation();
   bindAutoDraftSave();
   renderReviewSummary();
-  updateStepProgress("customerFieldset");
+  updateStepProgress("anlageFieldset");
   updateSendButtonAvailability();
 
 });
@@ -2453,6 +3495,125 @@ function getInputValue(id) {
   return input ? input.value : "";
 }
 
+function getCustomerAddressData(){
+  return {
+    strasse: String(getInputValue("strasse") || "").trim(),
+    postleitzahl: String(getInputValue("postleitzahl") || "").trim(),
+    ort: String(getInputValue("ort") || "").trim(),
+    rechnungsadresse: String(syncRechnungsadresseCombined() || "").trim()
+  };
+}
+
+function formatAddressValue(strasse, postleitzahl, ort){
+  const streetPart = String(strasse || "").trim();
+  const postalPart = String(postleitzahl || "").trim();
+  const cityPart = String(ort || "").trim();
+  const locationPart = [postalPart, cityPart].filter(Boolean).join(" ");
+  if (streetPart && locationPart) return streetPart + ", " + locationPart;
+  return streetPart || locationPart;
+}
+
+function applyAddressValueToFields(raw, strasseEl, postleitzahlEl, ortEl){
+  const value = String(raw || "").trim();
+  if (!value || !strasseEl || !postleitzahlEl || !ortEl) return;
+  if (
+    String(strasseEl.value || "").trim() ||
+    String(postleitzahlEl.value || "").trim() ||
+    String(ortEl.value || "").trim()
+  ){
+    return;
+  }
+  const match = value.match(/^(.*?)(?:,\s*|\s+)(\d{5})\s+(.+)$/);
+  if (match){
+    strasseEl.value = match[1].trim();
+    postleitzahlEl.value = match[2].trim();
+    ortEl.value = match[3].trim();
+  } else {
+    strasseEl.value = value;
+  }
+}
+
+function getRechnungsadressePreference(){
+  const input = document.getElementById("rechnungsadresse_aktiv");
+  return input ? input.value : "nein";
+}
+
+function isRechnungsadresseActive(){
+  return getRechnungsadressePreference() === "ja";
+}
+
+function updateRechnungsadresseToggleButton(){
+  const btn = document.getElementById("rechnungsadresseToggleBtn");
+  if (!btn) return;
+  const active = isRechnungsadresseActive();
+  btn.classList.toggle("is-active", active);
+  btn.setAttribute("aria-pressed", active ? "true" : "false");
+  btn.setAttribute("title", active ? "Rechnungsadresse ausgewählt" : "Rechnungsadresse auswählen");
+}
+
+function buildRechnungsadresseValue(){
+  if (!isRechnungsadresseActive()) return "";
+  return formatAddressValue(
+    getInputValue("rechnungsadresse_strasse"),
+    getInputValue("rechnungsadresse_postleitzahl"),
+    getInputValue("rechnungsadresse_ort")
+  );
+}
+
+function syncRechnungsadresseCombined(){
+  const hiddenInput = document.getElementById("rechnungsadresse");
+  const value = buildRechnungsadresseValue();
+  if (hiddenInput) hiddenInput.value = value;
+  return value;
+}
+
+function syncRechnungsadresseSectionVisibility(showControls){
+  const controlsVisible = showControls !== false;
+  const toggleRow = document.getElementById("rechnungsadresse_toggle_row");
+  const wrap = document.getElementById("rechnungsadresse_wrap");
+  const fields = [
+    document.getElementById("rechnungsadresse_strasse"),
+    document.getElementById("rechnungsadresse_postleitzahl"),
+    document.getElementById("rechnungsadresse_ort")
+  ];
+  const shouldShowFields = controlsVisible && isRechnungsadresseActive();
+
+  if (toggleRow) toggleRow.style.display = controlsVisible ? "" : "none";
+  if (wrap){
+    wrap.style.display = shouldShowFields ? "block" : "none";
+    wrap.setAttribute("aria-hidden", shouldShowFields ? "false" : "true");
+  }
+  fields.forEach(field => {
+    if (!field) return;
+    field.disabled = anlageLocked || !shouldShowFields;
+  });
+  updateRechnungsadresseToggleButton();
+  syncRechnungsadresseCombined();
+}
+
+function setRechnungsadressePreference(value){
+  const input = document.getElementById("rechnungsadresse_aktiv");
+  if (!input || anlageLocked) return;
+  input.value = value === "ja" ? "ja" : "nein";
+  syncRechnungsadresseSectionVisibility();
+  scheduleDraftSave();
+  renderReviewSummary();
+}
+
+function toggleRechnungsadresseSelection(){
+  setRechnungsadressePreference(isRechnungsadresseActive() ? "nein" : "ja");
+}
+
+function bindRechnungsadresseFields(){
+  ["rechnungsadresse_strasse", "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"].forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
+    const handler = () => syncRechnungsadresseCombined();
+    field.addEventListener("input", handler);
+    field.addEventListener("change", handler);
+  });
+}
+
 function isElementVisible(el) {
   if (!el) return false;
   let current = el;
@@ -2468,6 +3629,9 @@ function isElementVisible(el) {
 
 function getFieldDisplayText(el) {
   if (!el) return "";
+  if (el.id === "verbindung_bedarf_intervall") {
+    return getBedarfIntervallDisplayValue();
+  }
   if (el.tagName === "SELECT") {
     const option = el.options[el.selectedIndex];
     if (!option || option.disabled || option.value === "") return "";
@@ -2521,13 +3685,14 @@ function clearInlineSavedRows(fieldset) {
 }
 
 
+let anlageLocked = false;
 let customerLocked = false;
 let alarmLocked = false;
 let techLocked = false;
 let verbindungLocked = false;
 let statusLocked = false;
 let draftTimer = null;
-let currentStepSection = "customerFieldset";
+let currentStepSection = "anlageFieldset";
 let sectionHighlightTimeout = null;
 let latestReviewSnapshot = "";
 let latestCaseId = "";
@@ -2536,6 +3701,16 @@ const DRAFT_STORAGE_KEY = "sn_aufschaltformular_draft_v1";
 
 function getTechPreference(){
   const input = document.getElementById("technik_erforderlich");
+  return input && input.value === "nein" ? "nein" : "ja";
+}
+
+function getVerbindungPreference(){
+  const input = document.getElementById("verbindung_erforderlich");
+  return input && input.value === "nein" ? "nein" : "ja";
+}
+
+function getStatusPreference(){
+  const input = document.getElementById("status_erforderlich");
   return input && input.value === "nein" ? "nein" : "ja";
 }
 
@@ -2555,13 +3730,66 @@ function updateTechPreferenceButtons(){
   }
 }
 
+function updateVerbindungPreferenceButtons(){
+  const preference = getVerbindungPreference();
+  const yesBtn = document.getElementById("verbindungToggleYes");
+  const noBtn = document.getElementById("verbindungToggleNo");
+  if (yesBtn){
+    const active = preference === "ja";
+    yesBtn.classList.toggle("is-active", active);
+    yesBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+  if (noBtn){
+    const active = preference === "nein";
+    noBtn.classList.toggle("is-active", active);
+    noBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+}
+
+function updateStatusPreferenceButtons(){
+  const preference = getStatusPreference();
+  const yesBtn = document.getElementById("statusToggleYes");
+  const noBtn = document.getElementById("statusToggleNo");
+  if (yesBtn){
+    const active = preference === "ja";
+    yesBtn.classList.toggle("is-active", active);
+    yesBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+  if (noBtn){
+    const active = preference === "nein";
+    noBtn.classList.toggle("is-active", active);
+    noBtn.setAttribute("aria-pressed", active ? "true" : "false");
+  }
+}
+
 function setTechPreference(value){
   const input = document.getElementById("technik_erforderlich");
   if (!input) return;
   input.value = value === "nein" ? "nein" : "ja";
   syncAlarmDependencies();
   renderReviewSummary();
-  updateStepProgress(value === "nein" ? "statusFieldset" : "technikFieldset");
+  updateStepProgress(value === "nein" ? (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset") : "technikFieldset");
+  saveDraftLocally(false);
+}
+
+function setVerbindungPreference(value){
+  const input = document.getElementById("verbindung_erforderlich");
+  if (!input) return;
+  input.value = value === "nein" ? "nein" : "ja";
+  syncVerbindungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress(value === "nein" ? (getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset")) : "verbindungFieldset");
+  saveDraftLocally(false);
+}
+
+function setStatusPreference(value){
+  const input = document.getElementById("status_erforderlich");
+  if (!input) return;
+  input.value = value === "nein" ? "nein" : "ja";
+  syncStatusSectionVisibility();
+  syncAllStatusZeitfensterSummaries();
+  renderReviewSummary();
+  updateStepProgress(value === "nein" ? "privacyFieldset" : "statusFieldset");
   saveDraftLocally(false);
 }
 
@@ -2597,10 +3825,19 @@ function setFieldError(fieldId, message){
   if (!input) return false;
   const errorId = fieldId + "_error";
   const wrap = input.type === "hidden" ? document.getElementById(fieldId + "_wrap") : null;
-  const target = wrap || input;
   const inputsToMark = wrap
     ? Array.from(wrap.querySelectorAll("input, textarea, select")).filter(el => el.type !== "hidden")
     : [input];
+  if (!FORM_VALIDATION_ACTIVE){
+    const existingErrorEl = document.getElementById(errorId);
+    if (existingErrorEl){
+      existingErrorEl.innerText = "";
+      existingErrorEl.style.display = "none";
+    }
+    inputsToMark.forEach(el => el.classList.remove("has-error"));
+    return true;
+  }
+  const target = wrap || input;
   let errorEl = document.getElementById(errorId);
   if (!errorEl){
     errorEl = document.createElement("div");
@@ -2627,6 +3864,13 @@ function setConsentError(message){
   const errorEl = document.getElementById("datenschutz_error");
   if (!wrap || !errorEl) return false;
 
+  if (!FORM_VALIDATION_ACTIVE){
+    errorEl.innerText = "";
+    errorEl.style.display = "none";
+    wrap.classList.remove("has-error");
+    return true;
+  }
+
   if (message){
     errorEl.innerText = message;
     errorEl.style.display = "block";
@@ -2640,26 +3884,60 @@ function setConsentError(message){
   return true;
 }
 
+function clearAllValidationUi(){
+  document.querySelectorAll(".field-error").forEach(errorEl => {
+    errorEl.innerText = "";
+    errorEl.style.display = "none";
+  });
+  document.querySelectorAll(".has-error").forEach(el => {
+    el.classList.remove("has-error");
+  });
+}
+
 function validateCustomerFields(showAlert){
-  const adresseEl = document.getElementById("kunde");
+  if (!FORM_VALIDATION_ACTIVE){
+    clearAllValidationUi();
+    return true;
+  }
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
   const mailHiddenEl = document.getElementById("kontakt_email");
   const emailInputs = getContactEmailInputs();
   const firstEmailEl = emailInputs[0] || document.getElementById("kontakt_email_first");
-  if (!adresseEl || !mailHiddenEl || !firstEmailEl) return true;
+  if (!strasseEl || !postleitzahlEl || !ortEl || !mailHiddenEl || !firstEmailEl) return true;
 
-  const adresse = (adresseEl.value || "").trim();
+  const strasse = (strasseEl.value || "").trim();
+  const postleitzahl = (postleitzahlEl.value || "").trim();
+  const ort = (ortEl.value || "").trim();
   syncKontaktEmailCombined();
   const mail = (mailHiddenEl.value || "").trim();
   const invalidMail = getContactEmailValues().find(value => !isValidEmail(value));
   let valid = true;
   let firstInvalid = null;
 
-  if (!adresse){
+  if (!strasse){
     valid = false;
-    firstInvalid = firstInvalid || adresseEl;
-    setFieldError("kunde", "Bitte geben Sie die Adresse ein.");
+    firstInvalid = firstInvalid || strasseEl;
+    setFieldError("strasse", "Bitte geben Sie die Stra\u00DFe ein.");
   } else {
-    setFieldError("kunde", "");
+    setFieldError("strasse", "");
+  }
+
+  if (!postleitzahl){
+    valid = false;
+    firstInvalid = firstInvalid || postleitzahlEl;
+    setFieldError("postleitzahl", "Bitte geben Sie die Postleitzahl ein.");
+  } else {
+    setFieldError("postleitzahl", "");
+  }
+
+  if (!ort){
+    valid = false;
+    firstInvalid = firstInvalid || ortEl;
+    setFieldError("ort", "Bitte geben Sie den Ort ein.");
+  } else {
+    setFieldError("ort", "");
   }
 
   if (!mail){
@@ -2682,7 +3960,117 @@ function validateCustomerFields(showAlert){
   return valid;
 }
 
+function validateCustomerFields(showAlert){
+  if (!FORM_VALIDATION_ACTIVE){
+    clearAllValidationUi();
+    return true;
+  }
+  const kontaktDataEl = document.getElementById("kontaktzeilen_data");
+  const contactEntries = getCustomerContactEntries();
+  const firstContact = contactEntries[0];
+  if (!kontaktDataEl || !firstContact) return true;
+  syncCustomerContactCombined();
+  const invalidMailEntry = contactEntries.find(entry => entry.email && !isValidEmail(entry.email));
+  let valid = true;
+  let firstInvalid = null;
+
+  if (!firstContact.name || !firstContact.phone || !firstContact.email){
+    valid = false;
+    firstInvalid = firstInvalid || (
+      !firstContact.name ? firstContact.nameInput :
+      !firstContact.phone ? firstContact.phoneInput :
+      firstContact.emailInput
+    );
+    setFieldError("kontaktzeilen_data", "Bitte füllen Sie in der ersten Kontaktzeile Kundenname, Telefonnummer und E-Mail aus.");
+  } else if (invalidMailEntry){
+    valid = false;
+    firstInvalid = firstInvalid || invalidMailEntry.emailInput;
+    setFieldError("kontaktzeilen_data", "Bitte geben Sie in den Kontaktzeilen nur gültige E-Mail-Adressen ein.");
+  } else {
+    setFieldError("kontaktzeilen_data", "");
+  }
+
+  if (!valid && showAlert){
+    alert("Bitte prüfen Sie die markierten Felder in den Kundendaten.");
+    if (firstInvalid) firstInvalid.focus();
+  }
+
+  return valid;
+}
+
+function validateAnlageFields(showAlert){
+  if (!FORM_VALIDATION_ACTIVE){
+    clearAllValidationUi();
+    return true;
+  }
+  const anlagetypEl = document.getElementById("anlagetyp");
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  if (!anlagetypEl || !standortEl || !strasseEl || !postleitzahlEl || !ortEl) return true;
+
+  const anlagetyp = getSelectValue("anlagetyp");
+  const standort = (standortEl.value || "").trim();
+  const strasse = (strasseEl.value || "").trim();
+  const postleitzahl = (postleitzahlEl.value || "").trim();
+  const ort = (ortEl.value || "").trim();
+  let valid = true;
+  let firstInvalid = null;
+
+  if (!anlagetyp){
+    valid = false;
+    firstInvalid = firstInvalid || anlagetypEl;
+    setFieldError("anlagetyp", "Bitte wählen Sie den Anlagetyp aus.");
+  } else {
+    setFieldError("anlagetyp", "");
+  }
+
+  if (!standort){
+    valid = false;
+    firstInvalid = firstInvalid || standortEl;
+    setFieldError("standort", "Bitte geben Sie den Objektnamen ein.");
+  } else {
+    setFieldError("standort", "");
+  }
+
+  if (!strasse){
+    valid = false;
+    firstInvalid = firstInvalid || strasseEl;
+    setFieldError("strasse", "Bitte geben Sie die Straße ein.");
+  } else {
+    setFieldError("strasse", "");
+  }
+
+  if (!postleitzahl){
+    valid = false;
+    firstInvalid = firstInvalid || postleitzahlEl;
+    setFieldError("postleitzahl", "Bitte geben Sie die Postleitzahl ein.");
+  } else {
+    setFieldError("postleitzahl", "");
+  }
+
+  if (!ort){
+    valid = false;
+    firstInvalid = firstInvalid || ortEl;
+    setFieldError("ort", "Bitte geben Sie den Ort ein.");
+  } else {
+    setFieldError("ort", "");
+  }
+
+  if (!valid && showAlert){
+    alert("Bitte prüfen Sie die markierten Felder in den Anlagedaten.");
+    if (firstInvalid) firstInvalid.focus();
+  }
+
+  return valid;
+}
+
 function validateConsent(showAlert){
+  if (!FORM_VALIDATION_ACTIVE){
+    setConsentError("");
+    return true;
+  }
   const checkbox = document.getElementById("datenschutz_einwilligung");
   if (!checkbox) return true;
   if (checkbox.checked){
@@ -2706,12 +4094,16 @@ function updateSendButtonAvailability(){
 
 function updateStepNavigation() {
   const stepButtons = Array.from(document.querySelectorAll(".step-item"));
+  const showVerbindungStep = getVerbindungPreference() === "ja";
   const showTechStep = getTechPreference() === "ja";
+  const showStatusStep = getStatusPreference() === "ja";
   let visibleIndex = 0;
 
   stepButtons.forEach((btn) => {
+    const isVerbindungStep = btn.dataset.step === "step-verbindung";
     const isTechStep = btn.dataset.step === "step-tech";
-    const isVisible = !isTechStep || showTechStep;
+    const isStatusStep = btn.dataset.step === "step-status";
+    const isVisible = (!isVerbindungStep || showVerbindungStep) && (!isTechStep || showTechStep) && (!isStatusStep || showStatusStep);
     btn.hidden = !isVisible;
     btn.setAttribute("aria-hidden", isVisible ? "false" : "true");
     const indexEl = btn.querySelector(".step-index");
@@ -2775,28 +4167,41 @@ function updateStepProgress(activeSectionId){
   if (activeSectionId){
     currentStepSection = activeSectionId === "reviewFieldset" ? "privacyFieldset" : activeSectionId;
   }
+  if (getVerbindungPreference() === "nein" && currentStepSection === "verbindungFieldset"){
+    currentStepSection = getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset");
+  }
   if (getTechPreference() === "nein" && currentStepSection === "technikFieldset"){
-    currentStepSection = "statusFieldset";
+    currentStepSection = getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset";
+  }
+  if (getStatusPreference() === "nein" && currentStepSection === "statusFieldset"){
+    currentStepSection = "privacyFieldset";
   }
 
   updateStepNavigation();
 
   const consentChecked = !!document.getElementById("datenschutz_einwilligung")?.checked;
   const relevantSteps = [
+    "step-anlage",
     "step-customer",
     "step-alarm",
     "step-verbindung",
     "step-tech",
     "step-status",
     "step-review"
-  ].filter(step => step !== "step-tech" || getTechPreference() === "ja");
+  ].filter(step => {
+    if (step === "step-verbindung") return getVerbindungPreference() === "ja";
+    if (step === "step-tech") return getTechPreference() === "ja";
+    if (step === "step-status") return getStatusPreference() === "ja";
+    return true;
+  });
 
   const completedMap = {
+    "step-anlage": anlageLocked,
     "step-customer": customerLocked,
     "step-alarm": alarmLocked,
     "step-tech": getTechPreference() === "nein" || techLocked,
-    "step-verbindung": verbindungLocked,
-    "step-status": statusLocked,
+    "step-verbindung": getVerbindungPreference() === "nein" || verbindungLocked,
+    "step-status": getStatusPreference() === "nein" || statusLocked,
     "step-review": consentChecked
   };
   const totalSteps = relevantSteps.length;
@@ -2879,17 +4284,56 @@ function applyDraftData(data){
     el.value = data[id];
   });
 
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const legacyAdresse = String(data.kunde || "").trim();
+  applyAddressValueToFields(legacyAdresse, strasseEl, postleitzahlEl, ortEl);
+
+  const rechnungsadresseAktivInput = document.getElementById("rechnungsadresse_aktiv");
+  const rechnungsadresseStrasseEl = document.getElementById("rechnungsadresse_strasse");
+  const rechnungsadressePostleitzahlEl = document.getElementById("rechnungsadresse_postleitzahl");
+  const rechnungsadresseOrtEl = document.getElementById("rechnungsadresse_ort");
+  const hasBillingDraftData = !!(
+    String(data.rechnungsadresse || "").trim() ||
+    String(data.rechnungsadresse_strasse || "").trim() ||
+    String(data.rechnungsadresse_postleitzahl || "").trim() ||
+    String(data.rechnungsadresse_ort || "").trim()
+  );
+  if (
+    rechnungsadresseAktivInput &&
+    !Object.prototype.hasOwnProperty.call(data, "rechnungsadresse_aktiv") &&
+    hasBillingDraftData
+  ){
+    rechnungsadresseAktivInput.value = "ja";
+  }
+  applyAddressValueToFields(
+    data.rechnungsadresse || "",
+    rechnungsadresseStrasseEl,
+    rechnungsadressePostleitzahlEl,
+    rechnungsadresseOrtEl
+  );
+  syncRechnungsadresseSectionVisibility();
+  applySonstigeAlarmValues(data.sonstige_alarme_data, data.sonstige_alarme || "");
+
   const statusSelect = document.getElementById("status_regel");
   if (statusSelect && !statusSelect.value){
     let legacyStatusValue = "";
-    if (data.status_regel){
+    let legacyKontrollzeitValue = "";
+    if (data.status_regel === "kontrollzeit_scharf"){
+      legacyStatusValue = "kontrollzeit_scharf";
+      legacyKontrollzeitValue = String(data.status_kontrollzeit || "").trim();
+    } else if (data.status_regel === "objekt_jederzeit" || data.status_regel === "dauerscharf"){
+      legacyStatusValue = "kontrollzeit_scharf";
+      legacyKontrollzeitValue = data.status_regel;
+    } else if (data.status_regel === "unscharf_zeitfenster"){
       legacyStatusValue = data.status_regel;
-    } else if (data.status_scharf_regel === "zeitfenster"){
-      legacyStatusValue = "scharf_zeitfenster";
+    } else if (data.status_regel === "scharf_immer" || data.status_regel === "scharf_nie_kontrollzeit"){
+      legacyStatusValue = "scharf_immer";
     } else if (data.status_unscharf_regel === "zeitfenster"){
       legacyStatusValue = "unscharf_zeitfenster";
     } else if (data.status_scharf_regel === "kontrollzeit"){
-      legacyStatusValue = "scharf_nie_kontrollzeit";
+      legacyStatusValue = "kontrollzeit_scharf";
     } else if (
       data.status_scharf_regel === "gemaess_unscharf" ||
       data.status_unscharf_regel === "nie"
@@ -2900,12 +4344,58 @@ function applyDraftData(data){
     if (legacyStatusValue){
       statusSelect.value = legacyStatusValue;
       statusSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      const kontrollzeitInput = document.getElementById("status_kontrollzeit");
+      if (
+        kontrollzeitInput &&
+        (legacyKontrollzeitValue === "objekt_jederzeit" || legacyKontrollzeitValue === "dauerscharf")
+      ){
+        kontrollzeitInput.value = legacyKontrollzeitValue;
+        kontrollzeitInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
     }
   }
 
+  const statusPreferenceInput = document.getElementById("status_erforderlich");
+  const hasStatusPreference = Object.prototype.hasOwnProperty.call(data, "status_erforderlich");
+  const hasStatusDraftData = !!(
+    (statusSelect && statusSelect.value) ||
+    data.status_scharf_zeitfenster ||
+    data.status_unscharf_zeitfenster ||
+    data.status_scharf_zeitfenster_data ||
+    data.status_unscharf_zeitfenster_data ||
+    data.status_kontrollzeit ||
+    data.status_kontrollzeit_uhrzeit ||
+    data.status_scharf_kontrollzeit
+  );
+  if (statusPreferenceInput && !hasStatusPreference && hasStatusDraftData){
+    statusPreferenceInput.value = "ja";
+  }
+
   const kontrollzeitInput = document.getElementById("status_kontrollzeit");
-  if (kontrollzeitInput && !kontrollzeitInput.value && data.status_scharf_kontrollzeit){
-    kontrollzeitInput.value = data.status_scharf_kontrollzeit;
+  if (
+    kontrollzeitInput &&
+    !kontrollzeitInput.value &&
+    (statusSelect?.value === "kontrollzeit_scharf")
+  ){
+    kontrollzeitInput.value = "objekt_jederzeit";
+    kontrollzeitInput.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  const kontrollzeitZeitInput = document.getElementById("status_kontrollzeit_uhrzeit");
+  if (
+    kontrollzeitZeitInput &&
+    !kontrollzeitZeitInput.value &&
+    (statusSelect?.value === "kontrollzeit_scharf")
+  ){
+    const legacyKontrollzeitZeit = String(data.status_kontrollzeit_uhrzeit || "").trim();
+    const legacyScharfKontrollzeit = String(data.status_scharf_kontrollzeit || "").trim();
+    const fallbackZeit = legacyScharfKontrollzeit &&
+      legacyScharfKontrollzeit !== "ja" &&
+      legacyScharfKontrollzeit !== "nein" &&
+      legacyScharfKontrollzeit !== "objekt_jederzeit" &&
+      legacyScharfKontrollzeit !== "dauerscharf"
+        ? legacyScharfKontrollzeit
+        : "";
+    kontrollzeitZeitInput.value = legacyKontrollzeitZeit || fallbackZeit;
   }
 
   const techSelects = [
@@ -2919,8 +4409,11 @@ function applyDraftData(data){
     if (selectEl) toggleZeit(selectEl, entry[1]);
   });
 
-  applyPhoneValues(data.telefonnummer || data.telefonnummer_first || "");
-  applyEmailValues(data.kontakt_email || data.kontakt_email_first || "");
+  applyCustomerContactDraftData(data.kontaktzeilen_data, {
+    names: data.kontakt_name || "",
+    phones: data.telefonnummer || data.telefonnummer_first || "",
+    emails: data.kontakt_email || data.kontakt_email_first || ""
+  });
   applyStehendeAusfalldauerValue(
     data.verbindung_stehend_ausfalldauer || "",
     data.verbindung_stehend_ausfalldauer_select || ""
@@ -3001,19 +4494,30 @@ function bindAutoDraftSave(){
 }
 
 function setupLiveValidation(){
-  const adresseEl = document.getElementById("kunde");
-  const firstEmailEl = document.getElementById("kontakt_email_first");
+  if (!FORM_VALIDATION_ACTIVE){
+    clearAllValidationUi();
+    return;
+  }
+  const anlagetypEl = document.getElementById("anlagetyp");
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
   const consentEl = document.getElementById("datenschutz_einwilligung");
 
-  if (adresseEl){
-    adresseEl.addEventListener("blur", () => validateCustomerFields(false));
-    adresseEl.addEventListener("input", () => {
-      if ((adresseEl.value || "").trim()) setFieldError("kunde", "");
+  [standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
+    if (!el) return;
+    el.addEventListener("blur", () => validateAnlageFields(false));
+    el.addEventListener("input", () => {
+      if ((el.value || "").trim()) setFieldError(el.id, "");
     });
-  }
+  });
 
-  if (firstEmailEl){
-    attachEmailFieldListeners(firstEmailEl);
+  if (anlagetypEl){
+    anlagetypEl.addEventListener("change", () => {
+      if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
+      validateAnlageFields(false);
+    });
   }
 
   if (consentEl){
@@ -3030,19 +4534,21 @@ function getTechDetails(prefix){
   const parts = [];
   const artValue = getSelectValue(prefix + "_ueberwachungsart");
   const artText = getSelectDisplayText(prefix + "_ueberwachungsart");
+  const alarmValue = getSelectValue(prefix + "_alarmierung");
   const zeit = getInputValue(prefix + "_zeit");
   const alarm = getSelectDisplayText(prefix + "_alarmierung");
   const rueck = getSelectDisplayText(prefix + "_rueckmeldung");
 
-  if (artText) parts.push("Überwachung: " + artText);
+  if (artText) parts.push("Wann soll alarmiert werden: " + artText);
   if (artValue === "zeit" && (zeit || "").trim()) parts.push("Zeit (X): " + (zeit || "").trim());
   if (alarm) parts.push("Benachrichtigung: " + alarm);
-  if (rueck) parts.push("Rückmeldung: " + rueck);
+  if (alarmValue === "mail" && rueck) parts.push("Information per E-Mail bei Klarmeldung: " + rueck);
 
   return parts.length ? parts.join(" | ") : "-";
 }
 
 function getVerbindungDetails(){
+  if (getVerbindungPreference() === "nein") return "Nein";
   const art = getSelectValue("verbindung_art");
   if (!art) return "-";
 
@@ -3050,28 +4556,40 @@ function getVerbindungDetails(){
     const parts = [];
     parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
     parts.push("Max. Ausfalldauer: " + valueOrDash(getStehendeAusfalldauerDisplayValue()));
+    const stehAlarmierung = getSelectValue("verbindung_stehend_alarmierung");
     parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_stehend_alarmierung")));
-    parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
+    if (stehAlarmierung === "mail"){
+      parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
+    }
     return parts.join(" | ");
   }
 
   const parts = [];
   parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
-  parts.push("Intervall: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_intervall")));
-  parts.push("Alarmierung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
+  parts.push("Routineintervall: " + valueOrDash(getBedarfIntervallDisplayValue()));
+  parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
+  const bedarfAlarmierung = getSelectValue("verbindung_bedarf_alarmierung");
   parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
-  parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
+  if (bedarfAlarmierung === "mail"){
+    parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
+  }
   return parts.join(" | ");
 }
 
 function getStatusDetails(){
+  if (getStatusPreference() === "nein") return "Nein";
   const statusRegel = getSelectDisplayText("status_regel");
   const scharfZeitfenster = (getInputValue("status_scharf_zeitfenster") || "").trim();
   const unscharfZeitfenster = (getInputValue("status_unscharf_zeitfenster") || "").trim();
-  const kontrollzeit = (getInputValue("status_kontrollzeit") || "").trim();
   const statusRegelValue = getSelectValue("status_regel");
+  const kontrollzeit = statusRegelValue === "kontrollzeit_scharf"
+    ? (getSelectDisplayText("status_kontrollzeit") || (getInputValue("status_kontrollzeit") || "").trim())
+    : "";
+  const kontrollzeitUhrzeit = statusRegelValue === "kontrollzeit_scharf"
+    ? (getInputValue("status_kontrollzeit_uhrzeit") || "").trim()
+    : "";
 
-  if (!statusRegel && !scharfZeitfenster && !unscharfZeitfenster && !kontrollzeit){
+  if (!statusRegel && !scharfZeitfenster && !unscharfZeitfenster && !kontrollzeit && !kontrollzeitUhrzeit){
     return "-";
   }
 
@@ -3083,8 +4601,11 @@ function getStatusDetails(){
   if (statusRegelValue === "unscharf_zeitfenster" && unscharfZeitfenster){
     parts.push("Unscharf in Zeitfenstern: " + unscharfZeitfenster);
   }
-  if (statusRegelValue === "scharf_nie_kontrollzeit" && kontrollzeit){
-    parts.push("Tägliche Kontrollzeit: " + kontrollzeit);
+  if (statusRegelValue === "kontrollzeit_scharf" && kontrollzeit){
+    parts.push("Auswahl: " + kontrollzeit);
+    if (kontrollzeitUhrzeit){
+      parts.push("Kontrollzeit: " + kontrollzeitUhrzeit);
+    }
   }
   return parts.join(" | ");
 }
@@ -3106,19 +4627,30 @@ function getEmailBlockStyle(text){
   return hasMeaningfulEmailValue(text) ? "" : "display:none;";
 }
 
-function getEmailKundendatenText(){
+function getEmailAnlagedatenText(){
   const lines = [];
-  const fields = [
-    ["Objekt", getInputValue("standort")],
-    ["Adresse", getInputValue("kunde")],
-    ["Telefonnummer", getInputValue("telefonnummer")],
-    ["E-Mail", getInputValue("kontakt_email")]
+  const anlageFields = [
+    ["Anlagetyp", getSelectDisplayText("anlagetyp")],
+    ["Objektname", getInputValue("standort")],
+    ["Stra\u00DFe", getInputValue("strasse")],
+    ["Postleitzahl", getInputValue("postleitzahl")],
+    ["Ort", getInputValue("ort")],
+    ["Rechnungsadresse", getInputValue("rechnungsadresse")]
   ];
 
-  fields.forEach(([label, value]) => {
+  anlageFields.forEach(([label, value]) => {
     if (hasMeaningfulEmailValue(value)) {
       lines.push(label + ": " + String(value).trim());
     }
+  });
+
+  return lines.join("\n");
+}
+
+function getEmailKundendatenText(){
+  const lines = [];
+  getCustomerContactSummaryRows(false).forEach(row => {
+    lines.push(row.label + ": " + row.value);
   });
 
   return lines.join("\n");
@@ -3158,10 +4690,10 @@ function getEmailTechnikText(){
   if (getTechPreference() === "nein") return "";
   const blocks = [];
   const configs = [
-    ["\u00DCbertragungsweg-St\u00F6rung", "uebertragungsweg"],
+    ["Störung der Gefahrenmeldeanlage", "gma"],
     ["Netzstörung (Stromausfall/Stromstörung)", "netz"],
     ["Batteriestörung", "batterie"],
-    ["Störung Gefahrenmeldeanlage", "gma"]
+    ["St\u00F6rung-\u00DCbertragunsweg", "uebertragungsweg"]
   ];
 
   configs.forEach(([title, prefix]) => {
@@ -3180,8 +4712,37 @@ function getEmailStatusText(){
 }
 
 function getEmailDatenschutzText(){
-  return document.getElementById("datenschutz_einwilligung")?.checked ? "Einwilligung: Ja" : "";
+  return document.getElementById("datenschutz_einwilligung")?.checked ? "Einwilligung zur Datenverarbeitung: Ja" : "";
 }
+
+function buildEmailTemplateParams(){
+  const anlagedatenText = getEmailAnlagedatenText();
+  const kundendatenText = getEmailKundendatenText();
+  const alarmText = getEmailAlarmText();
+  const verbindungText = getEmailVerbindungText();
+  const technikText = getEmailTechnikText();
+  const statusText = getEmailStatusText();
+  const datenschutzText = getEmailDatenschutzText();
+
+  return {
+    datum: new Date().toLocaleString("de-DE"),
+    anlagedaten_text: anlagedatenText,
+    anlagedaten_display: getEmailBlockStyle(anlagedatenText),
+    kundendaten_text: kundendatenText,
+    kundendaten_display: getEmailBlockStyle(kundendatenText),
+    alarm_text: alarmText,
+    alarm_display: getEmailBlockStyle(alarmText),
+    verbindung_text: verbindungText,
+    verbindung_display: getEmailBlockStyle(verbindungText),
+    technik_text: technikText,
+    technik_display: getEmailBlockStyle(technikText),
+    status_text: statusText,
+    status_display: getEmailBlockStyle(statusText),
+    datenschutz_text: datenschutzText,
+    datenschutz_display: getEmailBlockStyle(datenschutzText)
+  };
+}
+
 function buildReviewSections(){
   const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
     .filter(cb => cb.checked)
@@ -3198,10 +4759,10 @@ function buildReviewSections(){
     techRows.push({ label: "Batteriestörung", value: getTechDetails("batterie") });
   }
   if (getTechPreference() === "ja" && document.getElementById("uebertragungsweg_aktiv")?.checked){
-    techRows.push({ label: "\u00DCbertragungsweg-St\u00F6rung", value: getTechDetails("uebertragungsweg") });
+    techRows.push({ label: "St\u00F6rung-\u00DCbertragunsweg", value: getTechDetails("uebertragungsweg") });
   }
   if (getTechPreference() === "ja" && document.getElementById("gma_aktiv")?.checked){
-    techRows.push({ label: "Störung Gefahrenmeldeanlage", value: getTechDetails("gma") });
+    techRows.push({ label: "Störung der Gefahrenmeldeanlage", value: getTechDetails("gma") });
   }
   if (techRows.length === 0){
     techRows.push({
@@ -3210,16 +4771,106 @@ function buildReviewSections(){
     });
   }
 
+  const customerRows = [
+    { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
+    { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
+    { label: "Postleitzahl", value: valueOrDash(getInputValue("postleitzahl")) },
+    { label: "Ort", value: valueOrDash(getInputValue("ort")) }
+  ];
+  if (hasMeaningfulEmailValue(getInputValue("rechnungsadresse"))){
+    customerRows.push({ label: "Rechnungsadresse", value: getInputValue("rechnungsadresse").trim() });
+  }
+  customerRows.push(
+    { label: "Telefonnummer", value: valueOrDash(getInputValue("telefonnummer")) },
+    { label: "E-Mail", value: valueOrDash(getInputValue("kontakt_email")) }
+  );
+
   return [
     {
       title: "Kundendaten",
       target: "customerFieldset",
+      rows: customerRows
+    },
+    {
+      title: "Zu überwachende Kriterien",
+      target: "alarmFieldset",
       rows: [
-        { label: "Objekt", value: valueOrDash(getInputValue("standort")) },
-        { label: "Adresse", value: valueOrDash(getInputValue("kunde")) },
-        { label: "Telefonnummer", value: valueOrDash(getInputValue("telefonnummer")) },
-        { label: "E-Mail", value: valueOrDash(getInputValue("kontakt_email")) }
+        { label: "Ausgewählte Alarmarten", value: alarmValues.length ? alarmValues.join(", ") : "-" },
+        { label: "Sonstige Alarme", value: valueOrDash(getInputValue("sonstige_alarme")) }
       ]
+    },
+    {
+      title: "Verbindungsüberwachungen",
+      target: "verbindungFieldset",
+      rows: [
+        { label: "Konfiguration", value: getVerbindungDetails() }
+      ]
+    },
+    {
+      title: "Technische Störungen",
+      target: "technikFieldset",
+      rows: techRows
+    },
+    {
+      title: "Statusregel",
+      target: "statusFieldset",
+      rows: [
+        { label: "Konfiguration", value: getStatusDetails() }
+      ]
+    }
+  ];
+}
+
+function buildReviewSections(){
+  const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  const techRows = [];
+  if (getTechPreference() === "nein"){
+    techRows.push({ label: "Technische St\u00F6rungen", value: "Nein" });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("netz_aktiv")?.checked){
+    techRows.push({ label: "Netzstörung (Stromausfall/Stromstörung)", value: getTechDetails("netz") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("batterie_aktiv")?.checked){
+    techRows.push({ label: "Batteriestörung", value: getTechDetails("batterie") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("uebertragungsweg_aktiv")?.checked){
+    techRows.push({ label: "Störung-Übertragunsweg", value: getTechDetails("uebertragungsweg") });
+  }
+  if (getTechPreference() === "ja" && document.getElementById("gma_aktiv")?.checked){
+    techRows.push({ label: "Störung der Gefahrenmeldeanlage", value: getTechDetails("gma") });
+  }
+  if (techRows.length === 0){
+    techRows.push({
+      label: "Technische Störungen",
+      value: "Nicht ausgefüllt"
+    });
+  }
+
+  const anlageRows = [
+    { label: "Anlagetyp", value: valueOrDash(getSelectDisplayText("anlagetyp")) },
+    { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
+    { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
+    { label: "Postleitzahl", value: valueOrDash(getInputValue("postleitzahl")) },
+    { label: "Ort", value: valueOrDash(getInputValue("ort")) }
+  ];
+  if (hasMeaningfulEmailValue(getInputValue("rechnungsadresse"))){
+    anlageRows.push({ label: "Rechnungsadresse", value: getInputValue("rechnungsadresse").trim() });
+  }
+  const customerRows = getCustomerContactSummaryRows(true);
+
+  return [
+    {
+      title: "Anlagedaten",
+      target: "anlageFieldset",
+      rows: anlageRows
+    },
+    {
+      title: "Kundendaten",
+      target: "customerFieldset",
+      rows: customerRows
     },
     {
       title: "Zu überwachende Kriterien",
@@ -3359,6 +5010,12 @@ function hideSavedRow(rowId){
   row.style.display = "none";
 }
 
+function setSectionSaveButtonState(btn, isLocked, isDisabled){
+  if (!btn) return;
+  btn.disabled = !!isDisabled;
+  btn.innerText = isLocked ? "Entsperren" : "Speichern";
+}
+
 function resetSectionFieldValues(container){
   if (!container) return;
 
@@ -3382,9 +5039,183 @@ function resetSectionFieldValues(container){
   });
 }
 
+function unlockCustomerSection(){
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const telefonWrapEl = document.getElementById("telefonnummer_wrap");
+  const mailWrapEl = document.getElementById("kontakt_email_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (standortEl){
+    standortEl.disabled = false;
+    standortEl.style.display = "";
+  }
+  [strasseEl, postleitzahlEl, ortEl, rechnungsadresseEl].forEach(el => {
+    if (!el) return;
+    el.disabled = false;
+    el.style.display = "";
+  });
+  if (telefonWrapEl) telefonWrapEl.style.display = "";
+  if (mailWrapEl) mailWrapEl.style.display = "";
+
+  setPhoneFieldsDisabled(false);
+  setEmailFieldsDisabled(false);
+  syncTelefonnummerCombined();
+  syncKontaktEmailCombined();
+
+  ["saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse", "saved_telefonnummer", "saved_kontakt_email"].forEach(hideSavedRow);
+  setSectionSaveButtonState(btn, false, false);
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function unlockCustomerSection(){
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (standortEl){
+    standortEl.disabled = false;
+    standortEl.style.display = "";
+  }
+  [strasseEl, postleitzahlEl, ortEl, rechnungsadresseEl].forEach(el => {
+    if (!el) return;
+    el.disabled = false;
+    el.style.display = "";
+  });
+  if (kontaktWrapEl) kontaktWrapEl.style.display = "";
+
+  setCustomerContactRowsDisabled(false);
+  syncCustomerContactCombined();
+  hideLegacyCustomerContactFields();
+
+  ["saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse", "saved_kontakte"].forEach(hideSavedRow);
+  setSectionSaveButtonState(btn, false, false);
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function unlockAlarmSection(){
+  const checkboxes = Array.from(document.querySelectorAll(".alarm-kategorie"));
+  const sonstigeWrapEl = document.getElementById("sonstige_alarme_wrap");
+  const btn = document.getElementById("saveAlarmBtn");
+
+  alarmLocked = false;
+  checkboxes.forEach(cb => {
+    cb.disabled = false;
+  });
+  if (sonstigeWrapEl) sonstigeWrapEl.style.display = "";
+  setSonstigeAlarmeDisabled(false);
+  hideSavedRow("saved_sonstige_alarme");
+  setSectionSaveButtonState(btn, false, false);
+
+  syncAlarmDependencies();
+  renderReviewSummary();
+  updateStepProgress("alarmFieldset");
+  saveDraftLocally(false);
+}
+
+function unlockVerbindungSection(){
+  const fieldset = document.getElementById("verbindungFieldset");
+  const summary = document.getElementById("verbindungSummary");
+  const btn = document.getElementById("saveVerbindungBtn");
+  if (!fieldset) return;
+
+  verbindungLocked = false;
+  fieldset.classList.remove("verbindung-frozen");
+  fieldset.querySelectorAll(".verbindung-filled").forEach(el => el.classList.remove("verbindung-filled"));
+  fieldset.querySelectorAll(".verbindung-filled-label").forEach(el => el.classList.remove("verbindung-filled-label"));
+  fieldset.querySelectorAll(".verbindung-filled-box").forEach(el => el.classList.remove("verbindung-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  setSectionSaveButtonState(btn, false, false);
+  syncVerbindungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("verbindungFieldset");
+  saveDraftLocally(false);
+}
+
+function unlockTechSection(){
+  const fieldset = document.getElementById("technikFieldset");
+  const panel = document.getElementById("technikPanel");
+  const summary = document.getElementById("techSummary");
+  const btn = document.getElementById("saveTechBtn");
+  if (!fieldset || !panel) return;
+
+  techLocked = false;
+  fieldset.classList.remove("tech-frozen");
+  fieldset.querySelectorAll(".tech-filled").forEach(el => el.classList.remove("tech-filled"));
+  fieldset.querySelectorAll(".tech-filled-label").forEach(el => el.classList.remove("tech-filled-label"));
+  fieldset.querySelectorAll(".tech-filled-box").forEach(el => el.classList.remove("tech-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  setSectionSaveButtonState(btn, false, false);
+  syncAlarmDependencies();
+  syncTechnikSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("technikFieldset");
+  saveDraftLocally(false);
+}
+
+function unlockStatusSection(){
+  const fieldset = document.getElementById("statusFieldset");
+  const summary = document.getElementById("statusSummary");
+  const btn = document.getElementById("saveStatusBtn");
+  if (!fieldset) return;
+
+  statusLocked = false;
+  fieldset.classList.remove("status-frozen");
+  fieldset.querySelectorAll(".status-filled").forEach(el => el.classList.remove("status-filled"));
+  fieldset.querySelectorAll(".status-filled-label").forEach(el => el.classList.remove("status-filled-label"));
+  fieldset.querySelectorAll(".status-filled-box").forEach(el => el.classList.remove("status-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  setSectionSaveButtonState(btn, false, false);
+  syncStatusSectionVisibility();
+  syncAllStatusZeitfensterSummaries();
+  renderReviewSummary();
+  updateStepProgress("statusFieldset");
+  saveDraftLocally(false);
+}
+
 function resetCustomerSection(){
   const standortEl = document.getElementById("standort");
-  const kundeEl = document.getElementById("kunde");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
   const telefonWrapEl = document.getElementById("telefonnummer_wrap");
   const mailWrapEl = document.getElementById("kontakt_email_wrap");
   const btn = document.getElementById("saveCustomerBtn");
@@ -3396,11 +5227,12 @@ function resetCustomerSection(){
     standortEl.disabled = false;
     standortEl.style.display = "";
   }
-  if (kundeEl){
-    kundeEl.value = "";
-    kundeEl.disabled = false;
-    kundeEl.style.display = "";
-  }
+  [strasseEl, postleitzahlEl, ortEl, rechnungsadresseEl].forEach(el => {
+    if (!el) return;
+    el.value = "";
+    el.disabled = false;
+    el.style.display = "";
+  });
   if (telefonWrapEl) telefonWrapEl.style.display = "";
   if (mailWrapEl) mailWrapEl.style.display = "";
 
@@ -3411,13 +5243,59 @@ function resetCustomerSection(){
   syncTelefonnummerCombined();
   syncKontaktEmailCombined();
 
-  ["saved_standort", "saved_kunde", "saved_telefonnummer", "saved_kontakt_email"].forEach(hideSavedRow);
-  setFieldError("kunde", "");
+  ["saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse", "saved_telefonnummer", "saved_kontakt_email"].forEach(hideSavedRow);
+  setFieldError("strasse", "");
+  setFieldError("postleitzahl", "");
+  setFieldError("ort", "");
   setFieldError("kontakt_email", "");
 
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, false, false);
+  }
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function resetCustomerSection(){
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (standortEl){
+    standortEl.value = "";
+    standortEl.disabled = false;
+    standortEl.style.display = "";
+  }
+  [strasseEl, postleitzahlEl, ortEl, rechnungsadresseEl].forEach(el => {
+    if (!el) return;
+    el.value = "";
+    el.disabled = false;
+    el.style.display = "";
+  });
+  if (kontaktWrapEl) kontaktWrapEl.style.display = "";
+
+  applyCustomerContactRows([{ name: "", phone: "", email: "" }]);
+  setCustomerContactRowsDisabled(false);
+  syncCustomerContactCombined();
+  hideLegacyCustomerContactFields();
+
+  ["saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse", "saved_kontakte"].forEach(hideSavedRow);
+  setFieldError("strasse", "");
+  setFieldError("postleitzahl", "");
+  setFieldError("ort", "");
+  setFieldError("kontaktzeilen_data", "");
+
+  if (btn){
+    setSectionSaveButtonState(btn, false, false);
   }
 
   renderReviewSummary();
@@ -3428,24 +5306,21 @@ function resetCustomerSection(){
 
 function resetAlarmSection(){
   const checkboxes = Array.from(document.querySelectorAll(".alarm-kategorie"));
-  const sonstigeEl = document.getElementById("sonstige_alarme");
+  const sonstigeWrapEl = document.getElementById("sonstige_alarme_wrap");
   const btn = document.getElementById("saveAlarmBtn");
 
   checkboxes.forEach(cb => {
     cb.checked = false;
     cb.disabled = false;
   });
-  if (sonstigeEl){
-    sonstigeEl.value = "";
-    sonstigeEl.disabled = false;
-    sonstigeEl.style.display = "";
-  }
+  if (sonstigeWrapEl) sonstigeWrapEl.style.display = "";
+  applySonstigeAlarmValues([], "");
+  setSonstigeAlarmeDisabled(false);
   hideSavedRow("saved_sonstige_alarme");
 
   alarmLocked = false;
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, false, false);
   }
 
   syncAlarmDependencies();
@@ -3477,8 +5352,7 @@ function resetVerbindungSection(){
   applyStehendeAusfalldauerValue("", "");
 
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, false, false);
   }
 
   syncVerbindungSectionVisibility();
@@ -3511,8 +5385,7 @@ function resetTechSection(){
   if (preferenceInput) preferenceInput.value = "ja";
 
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, false, false);
   }
 
   syncAlarmDependencies();
@@ -3527,7 +5400,9 @@ function resetStatusSection(){
   const summary = document.getElementById("statusSummary");
   const btn = document.getElementById("saveStatusBtn");
   const statusSelect = document.getElementById("status_regel");
+  const preferenceInput = document.getElementById("status_erforderlich");
   const kontrollzeitInput = document.getElementById("status_kontrollzeit");
+  const kontrollzeitZeitInput = document.getElementById("status_kontrollzeit_uhrzeit");
   if (!fieldset || !statusSelect) return;
 
   statusLocked = false;
@@ -3544,13 +5419,14 @@ function resetStatusSection(){
 
   statusSelect.selectedIndex = 0;
   statusSelect.dispatchEvent(new Event("change", { bubbles: true }));
-  if (kontrollzeitInput) kontrollzeitInput.value = "";
+  if (preferenceInput) preferenceInput.value = "ja";
+  if (kontrollzeitInput) kontrollzeitInput.value = "objekt_jederzeit";
+  if (kontrollzeitZeitInput) kontrollzeitZeitInput.value = "";
   applyScharfZeitfensterData("[]");
   applyUnscharfZeitfensterData("[]");
 
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, false, false);
   }
 
   syncStatusSectionVisibility();
@@ -3562,49 +5438,63 @@ function resetStatusSection(){
 
 function saveCustomerData(){
   const objektEl = document.getElementById("standort");
-  const adresseEl = document.getElementById("kunde");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
   const telefonHiddenEl = document.getElementById("telefonnummer");
   const telefonWrapEl = document.getElementById("telefonnummer_wrap");
   const mailHiddenEl = document.getElementById("kontakt_email");
   const mailWrapEl = document.getElementById("kontakt_email_wrap");
   const btn = document.getElementById("saveCustomerBtn");
   const savedRows = [
-    { input: objektEl, savedId: "saved_standort", label: "Objekt" },
-    { input: adresseEl, savedId: "saved_kunde", label: "Adresse" },
+    { input: objektEl, savedId: "saved_standort", label: "Objektname" },
+    { input: strasseEl, savedId: "saved_strasse", label: "Stra\u00DFe" },
+    { input: postleitzahlEl, savedId: "saved_postleitzahl", label: "Postleitzahl" },
+    { input: ortEl, savedId: "saved_ort", label: "Ort" },
+    { input: rechnungsadresseEl, savedId: "saved_rechnungsadresse", label: "Rechnungsadresse", hideWhenEmpty: true },
     { input: telefonWrapEl, savedId: "saved_telefonnummer", label: "Telefonnummer" },
     { input: mailWrapEl, savedId: "saved_kontakt_email", label: "E-Mail" }
   ];
 
   if (customerLocked){
-    showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
+    unlockCustomerSection();
     return;
   }
 
   syncTelefonnummerCombined();
   syncKontaktEmailCombined();
   const objekt = (objektEl.value || "").trim();
-  const adresse = (adresseEl.value || "").trim();
+  const addressData = getCustomerAddressData();
   const telefon = (telefonHiddenEl?.value || "").trim();
   const mail = (mailHiddenEl?.value || "").trim();
 
-  if (!validateCustomerFields(true)){
+  if (FORM_VALIDATION_ACTIVE && !validateCustomerFields(true)){
     return;
   }
 
   const valuesById = {
     saved_standort: objekt || "-",
-    saved_kunde: adresse,
+    saved_strasse: addressData.strasse,
+    saved_postleitzahl: addressData.postleitzahl,
+    saved_ort: addressData.ort,
+    saved_rechnungsadresse: addressData.rechnungsadresse,
     saved_telefonnummer: telefon || "-",
     saved_kontakt_email: mail
   };
 
   savedRows.forEach(item => {
     const savedEl = document.getElementById(item.savedId);
+    const valueText = valuesById[item.savedId];
     if (savedEl){
-      savedEl.innerHTML =
-        "<span class=\"saved-label\">" + item.label + ":</span> " +
-        "<span class=\"saved-value\">" + escapeHtml(valuesById[item.savedId]) + "</span>";
-      savedEl.style.display = "block";
+      if (item.hideWhenEmpty && !String(valueText || "").trim()){
+        hideSavedRow(item.savedId);
+      } else {
+        savedEl.innerHTML =
+          "<span class=\"saved-label\">" + item.label + ":</span> " +
+          "<span class=\"saved-value\">" + escapeHtml(valueText) + "</span>";
+        savedEl.style.display = "block";
+      }
     }
     if (item.input){
       if ("disabled" in item.input) item.input.disabled = true;
@@ -3616,8 +5506,323 @@ function saveCustomerData(){
 
   customerLocked = true;
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, true, false);
+  }
+  showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+}
+
+function saveCustomerData(){
+  const objektEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+  const savedRows = [
+    { input: objektEl, savedId: "saved_standort", label: "Objektname" },
+    { input: strasseEl, savedId: "saved_strasse", label: "Stra\u00DFe" },
+    { input: postleitzahlEl, savedId: "saved_postleitzahl", label: "Postleitzahl" },
+    { input: ortEl, savedId: "saved_ort", label: "Ort" },
+    { input: rechnungsadresseEl, savedId: "saved_rechnungsadresse", label: "Rechnungsadresse", hideWhenEmpty: true },
+    { input: kontaktWrapEl, savedId: "saved_kontakte", html: true }
+  ];
+
+  if (customerLocked){
+    unlockCustomerSection();
+    return;
+  }
+
+  syncCustomerContactCombined();
+  const objekt = (objektEl.value || "").trim();
+  const addressData = getCustomerAddressData();
+
+  if (FORM_VALIDATION_ACTIVE && !validateCustomerFields(true)){
+    return;
+  }
+
+  const valuesById = {
+    saved_standort: objekt || "-",
+    saved_strasse: addressData.strasse,
+    saved_postleitzahl: addressData.postleitzahl,
+    saved_ort: addressData.ort,
+    saved_rechnungsadresse: addressData.rechnungsadresse,
+    saved_kontakte: getCustomerContactSavedHtml()
+  };
+
+  savedRows.forEach(item => {
+    const savedEl = document.getElementById(item.savedId);
+    const valueText = valuesById[item.savedId];
+    if (savedEl){
+      if (item.hideWhenEmpty && !String(valueText || "").trim()){
+        hideSavedRow(item.savedId);
+      } else if (item.html){
+        savedEl.innerHTML = valueText;
+        savedEl.style.display = "block";
+      } else {
+        savedEl.innerHTML =
+          "<span class=\"saved-label\">" + item.label + ":</span> " +
+          "<span class=\"saved-value\">" + escapeHtml(valueText) + "</span>";
+        savedEl.style.display = "block";
+      }
+    }
+    if (item.input){
+      if ("disabled" in item.input) item.input.disabled = true;
+      item.input.style.display = "none";
+    }
+  });
+  setCustomerContactRowsDisabled(true);
+  hideLegacyCustomerContactFields();
+
+  customerLocked = true;
+  if (btn){
+    setSectionSaveButtonState(btn, true, false);
+  }
+  showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+}
+
+function getFieldControlElement(field){
+  if (!field) return null;
+  if (field.parentElement && field.parentElement.classList && field.parentElement.classList.contains("custom-select")){
+    return field.parentElement;
+  }
+  return field;
+}
+
+function setFieldControlVisibility(field, visible){
+  if (!field) return;
+  const control = getFieldControlElement(field);
+  if (control) control.style.display = visible ? "" : "none";
+}
+
+function unlockAnlageSection(){
+  const anlagetypEl = document.getElementById("anlagetyp");
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const btn = document.getElementById("saveAnlageBtn");
+  const rechnungsadresseFields = [
+    document.getElementById("rechnungsadresse_strasse"),
+    document.getElementById("rechnungsadresse_postleitzahl"),
+    document.getElementById("rechnungsadresse_ort")
+  ];
+
+  anlageLocked = false;
+
+  [anlagetypEl, standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
+    if (!el) return;
+    if ("disabled" in el) el.disabled = false;
+    setFieldControlVisibility(el, true);
+  });
+  rechnungsadresseFields.forEach(field => {
+    if (!field) return;
+    field.disabled = false;
+  });
+  syncRechnungsadresseSectionVisibility();
+
+  ["saved_anlagetyp", "saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
+  setSectionSaveButtonState(btn, false, false);
+
+  renderReviewSummary();
+  updateStepProgress("anlageFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function unlockCustomerSection(){
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (kontaktWrapEl) kontaktWrapEl.style.display = "";
+  setCustomerContactRowsDisabled(false);
+  syncCustomerContactCombined();
+  hideLegacyCustomerContactFields();
+
+  ["saved_kontakte"].forEach(hideSavedRow);
+  setSectionSaveButtonState(btn, false, false);
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function resetAnlageSection(){
+  const anlagetypEl = document.getElementById("anlagetyp");
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const rechnungsadresseAktivInput = document.getElementById("rechnungsadresse_aktiv");
+  const rechnungsadresseFields = [
+    document.getElementById("rechnungsadresse_strasse"),
+    document.getElementById("rechnungsadresse_postleitzahl"),
+    document.getElementById("rechnungsadresse_ort")
+  ];
+  const btn = document.getElementById("saveAnlageBtn");
+
+  anlageLocked = false;
+
+  if (anlagetypEl){
+    anlagetypEl.value = "Ajax";
+    anlagetypEl.disabled = false;
+    setFieldControlVisibility(anlagetypEl, true);
+  }
+  [standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
+    if (!el) return;
+    el.value = "";
+    el.disabled = false;
+    setFieldControlVisibility(el, true);
+  });
+  rechnungsadresseFields.forEach(field => {
+    if (!field) return;
+    field.value = "";
+    field.disabled = false;
+  });
+  if (rechnungsadresseAktivInput) rechnungsadresseAktivInput.value = "nein";
+  if (rechnungsadresseEl) rechnungsadresseEl.value = "";
+  syncRechnungsadresseSectionVisibility();
+
+  ["saved_anlagetyp", "saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
+  setFieldError("anlagetyp", "");
+  setFieldError("standort", "");
+  setFieldError("strasse", "");
+  setFieldError("postleitzahl", "");
+  setFieldError("ort", "");
+
+  if (btn){
+    setSectionSaveButtonState(btn, false, false);
+  }
+
+  renderReviewSummary();
+  updateStepProgress("anlageFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function resetCustomerSection(){
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  customerLocked = false;
+
+  if (kontaktWrapEl) kontaktWrapEl.style.display = "";
+
+  applyCustomerContactRows([{ name: "", phone: "", email: "" }]);
+  setCustomerContactRowsDisabled(false);
+  syncCustomerContactCombined();
+  hideLegacyCustomerContactFields();
+
+  ["saved_kontakte"].forEach(hideSavedRow);
+  setFieldError("kontaktzeilen_data", "");
+
+  if (btn){
+    setSectionSaveButtonState(btn, false, false);
+  }
+
+  renderReviewSummary();
+  updateStepProgress("customerFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function saveAnlageData(){
+  const anlagetypEl = document.getElementById("anlagetyp");
+  const standortEl = document.getElementById("standort");
+  const strasseEl = document.getElementById("strasse");
+  const postleitzahlEl = document.getElementById("postleitzahl");
+  const ortEl = document.getElementById("ort");
+  const rechnungsadresseEl = document.getElementById("rechnungsadresse");
+  const rechnungsadresseToggleRowEl = document.getElementById("rechnungsadresse_toggle_row");
+  const btn = document.getElementById("saveAnlageBtn");
+  syncRechnungsadresseCombined();
+  const savedRows = [
+    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getSelectDisplayText("anlagetyp") || "-" },
+    { input: standortEl, savedId: "saved_standort", label: "Objektname", value: (standortEl?.value || "").trim() || "-" },
+    { input: strasseEl, savedId: "saved_strasse", label: "Straße", value: (strasseEl?.value || "").trim() || "-" },
+    { input: postleitzahlEl, savedId: "saved_postleitzahl", label: "Postleitzahl", value: (postleitzahlEl?.value || "").trim() || "-" },
+    { input: ortEl, savedId: "saved_ort", label: "Ort", value: (ortEl?.value || "").trim() || "-" },
+    { input: rechnungsadresseToggleRowEl, savedId: "saved_rechnungsadresse", label: "Rechnungsadresse", value: (rechnungsadresseEl?.value || "").trim(), hideWhenEmpty: true }
+  ];
+
+  if (anlageLocked){
+    unlockAnlageSection();
+    return;
+  }
+
+  if (FORM_VALIDATION_ACTIVE && !validateAnlageFields(true)){
+    return;
+  }
+
+  savedRows.forEach(item => {
+    const savedEl = document.getElementById(item.savedId);
+    if (savedEl){
+      if (item.hideWhenEmpty && !String(item.value || "").trim()){
+        hideSavedRow(item.savedId);
+      } else {
+        savedEl.innerHTML =
+          "<span class=\"saved-label\">" + item.label + ":</span> " +
+          "<span class=\"saved-value\">" + escapeHtml(item.value) + "</span>";
+        savedEl.style.display = "block";
+      }
+    }
+    if (item.input){
+      if ("disabled" in item.input) item.input.disabled = true;
+      setFieldControlVisibility(item.input, false);
+    }
+  });
+
+  anlageLocked = true;
+  syncRechnungsadresseSectionVisibility(false);
+  if (btn){
+    setSectionSaveButtonState(btn, true, false);
+  }
+  showSectionSaveFeedback("Anlagedaten", "saveAnlageBtn");
+  renderReviewSummary();
+  updateStepProgress("anlageFieldset");
+  saveDraftLocally(false);
+  refreshCustomSelects();
+}
+
+function saveCustomerData(){
+  const kontaktWrapEl = document.getElementById("kontaktzeilen_data_wrap");
+  const btn = document.getElementById("saveCustomerBtn");
+
+  if (customerLocked){
+    unlockCustomerSection();
+    return;
+  }
+
+  syncCustomerContactCombined();
+
+  if (FORM_VALIDATION_ACTIVE && !validateCustomerFields(true)){
+    return;
+  }
+
+  const savedEl = document.getElementById("saved_kontakte");
+  if (savedEl){
+    savedEl.innerHTML = getCustomerContactSavedHtml();
+    savedEl.style.display = "block";
+  }
+  if (kontaktWrapEl){
+    kontaktWrapEl.style.display = "none";
+  }
+  setCustomerContactRowsDisabled(true);
+  hideLegacyCustomerContactFields();
+
+  customerLocked = true;
+  if (btn){
+    setSectionSaveButtonState(btn, true, false);
   }
   showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
   renderReviewSummary();
@@ -3628,27 +5833,27 @@ function saveCustomerData(){
 function saveAlarmCriteria(){
   const checkboxes = Array.from(document.querySelectorAll(".alarm-kategorie"));
   const sonstigeEl = document.getElementById("sonstige_alarme");
+  const sonstigeWrapEl = document.getElementById("sonstige_alarme_wrap");
   const savedSonstigeEl = document.getElementById("saved_sonstige_alarme");
   const btn = document.getElementById("saveAlarmBtn");
 
   if (alarmLocked){
-    showSectionSaveFeedback("Zu überwachende Kriterien", "saveAlarmBtn");
+    unlockAlarmSection();
     return;
   }
 
+  syncSonstigeAlarmeCombined();
   const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
   const sonstige = (sonstigeEl.value || "").trim();
 
-  if (selected.length === 0 && !sonstige){
+  if (FORM_VALIDATION_ACTIVE && selected.length === 0 && !sonstige){
     alert("Bitte wählen Sie mindestens eine Alarmart oder tragen Sie etwas unter Sonstige Alarme ein.");
     return;
   }
 
   checkboxes.forEach(cb => cb.disabled = true);
-  if (sonstigeEl){
-    sonstigeEl.disabled = true;
-    sonstigeEl.style.display = "none";
-  }
+  setSonstigeAlarmeDisabled(true);
+  if (sonstigeWrapEl) sonstigeWrapEl.style.display = "none";
   if (savedSonstigeEl){
     savedSonstigeEl.innerHTML =
       "<span class=\"saved-label\">Sonstige Alarme:</span> " +
@@ -3658,8 +5863,7 @@ function saveAlarmCriteria(){
 
   alarmLocked = true;
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, true, false);
   }
   syncAlarmDependencies();
   showSectionSaveFeedback("Zu überwachende Kriterien", "saveAlarmBtn");
@@ -3689,27 +5893,37 @@ function saveTechCriteria(){
   };
 
   const fieldLabels = {
-    uebertragungsweg_ueberwachungsart: "\u00DCberwachungsart",
+    uebertragungsweg_ueberwachungsart: "Wann soll alarmiert werden",
     uebertragungsweg_zeit: "Zeit (X)",
     uebertragungsweg_alarmierung: "Art der Benachrichtigung",
-    uebertragungsweg_rueckmeldung: "R\u00FCckmeldung bei Entwarnung",
-    netz_ueberwachungsart: "Überwachungsart",
+    uebertragungsweg_rueckmeldung: "W\u00FCnschen Sie eine Information per E-Mail wenn die St\u00F6rung als klar gemeldet wurde?",
+    netz_ueberwachungsart: "Wann soll alarmiert werden",
     netz_zeit: "Zeit (X)",
     netz_alarmierung: "Art der Benachrichtigung",
-    netz_rueckmeldung: "Rückmeldung bei Entwarnung",
-    batterie_ueberwachungsart: "Überwachungsart",
+    netz_rueckmeldung: "W\u00FCnschen Sie eine Information per E-Mail wenn die St\u00F6rung als klar gemeldet wurde?",
+    batterie_ueberwachungsart: "Wann soll alarmiert werden",
     batterie_zeit: "Zeit (X)",
     batterie_alarmierung: "Art der Benachrichtigung",
-    batterie_rueckmeldung: "Rückmeldung bei Entwarnung",
-    gma_ueberwachungsart: "Überwachungsart",
+    batterie_rueckmeldung: "W\u00FCnschen Sie eine Information per E-Mail wenn die St\u00F6rung als klar gemeldet wurde?",
+    gma_ueberwachungsart: "Wann soll alarmiert werden",
     gma_zeit: "Zeit (X)",
     gma_alarmierung: "Art der Benachrichtigung",
-    gma_rueckmeldung: "Rückmeldung bei Entwarnung"
+    gma_rueckmeldung: "W\u00FCnschen Sie eine Information per E-Mail wenn die St\u00F6rung als klar gemeldet wurde?"
   };
 
   if (techLocked){
-    showSectionSaveFeedback("Technische Störungen", "saveTechBtn");
+    unlockTechSection();
     return;
+  }
+
+  if (FORM_VALIDATION_ACTIVE){
+    const rueckmeldungPflichtFelder = ["gma", "netz", "batterie", "uebertragungsweg"];
+  for (const prefix of rueckmeldungPflichtFelder){
+    if (shouldShowTechRueckmeldung(prefix) && !getSelectValue(prefix + "_rueckmeldung")){
+      alert("Bitte w\u00E4hlen Sie aus, ob Sie per E-Mail informiert werden m\u00F6chten, wenn die St\u00F6rung als klar gemeldet wurde.");
+      return;
+    }
+    }
   }
 
   clearLegacyClasses();
@@ -3737,8 +5951,7 @@ function saveTechCriteria(){
 
   techLocked = true;
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, true, false);
   }
   showSectionSaveFeedback("Technische Störungen", "saveTechBtn");
   renderReviewSummary();
@@ -3768,30 +5981,32 @@ function saveVerbindungCriteria(){
   };
 
   const fieldLabels = {
-    verbindung_art: "Verbindungsart",
+    verbindung_art: "Überwachungsart",
     verbindung_stehend_ausfalldauer_select: "Maximale Ausfalldauer",
     verbindung_stehend_ausfalldauer_custom: "Benutzerdefinierte Ausfalldauer",
     verbindung_stehend_alarmierung: "Art der Benachrichtigung",
-    verbindung_stehend_rueckmeldung: "Rückmeldung nach Neustart per E-Mail",
+    verbindung_stehend_rueckmeldung: "Wünschen Sie eine Information per E-Mail wenn die Störung behoben ist?",
     verbindung_bedarf_intervall: "Überwachungsintervall",
-    verbindung_bedarf_alarm_wann: "Alarmierung",
+    verbindung_bedarf_alarm_wann: "Wann soll alarmiert werden",
     verbindung_bedarf_alarmierung: "Art der Benachrichtigung",
-    verbindung_bedarf_rueckmeldung: "Rückmeldung nach Neustart per E-Mail"
+    verbindung_bedarf_rueckmeldung: "Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?"
   };
+  fieldLabels.verbindung_bedarf_intervall_custom = "Benutzerdefiniertes Überwachungsintervall";
 
   if (verbindungLocked){
-    showSectionSaveFeedback("Verbindungsüberwachungen", "saveVerbindungBtn");
+    unlockVerbindungSection();
     return;
   }
 
   const art = getSelectValue("verbindung_art");
 
-  if (!art){
-    alert("Bitte wählen Sie eine Verbindungsart.");
+  if (FORM_VALIDATION_ACTIVE){
+    if (!art){
+    alert("Bitte wählen Sie eine Überwachungsart.");
     return;
   }
 
-  if (art === "stehend"){
+    if (art === "stehend"){
     const ausfall = getStehendeAusfalldauerDisplayValue();
     const ausfallMin = parseDurationToMinutes(ausfall);
     if (!ausfall || !Number.isFinite(ausfallMin) || ausfallMin < 15){
@@ -3802,15 +6017,19 @@ function saveVerbindungCriteria(){
       alert("Bitte wählen Sie die Art der Benachrichtigung für die stehende Verbindung.");
       return;
     }
-    if (!getSelectValue("verbindung_stehend_rueckmeldung")){
-      alert("Bitte wählen Sie, ob eine Rückmeldung nach Neustart per E-Mail erfolgen soll.");
+    if (getSelectValue("verbindung_stehend_alarmierung") === "mail" && !getSelectValue("verbindung_stehend_rueckmeldung")){
+      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn die Störung behoben ist.");
       return;
     }
   }
 
-  if (art === "bedarf"){
+    if (art === "bedarf"){
     if (!getSelectValue("verbindung_bedarf_intervall")){
       alert("Bitte wählen Sie das Überwachungsintervall für die Bedarfsverbindung.");
+      return;
+    }
+    if (getSelectValue("verbindung_bedarf_intervall") === "custom" && !String(getInputValue("verbindung_bedarf_intervall_custom") || "").trim()){
+      alert("Bitte geben Sie das benutzerdefinierte Überwachungsintervall an.");
       return;
     }
     const alarmWann = getSelectValue("verbindung_bedarf_alarm_wann");
@@ -3822,10 +6041,13 @@ function saveVerbindungCriteria(){
       alert("Bitte wählen Sie die Art der Benachrichtigung für die Bedarfsverbindung.");
       return;
     }
-    if (!getSelectValue("verbindung_bedarf_rueckmeldung")){
-      alert("Bitte wählen Sie, ob eine Rückmeldung nach Neustart per E-Mail erfolgen soll.");
+    const requiresBedarfRueckmeldung = getSelectValue("verbindung_bedarf_alarmierung") === "mail";
+    if (requiresBedarfRueckmeldung && !getSelectValue("verbindung_bedarf_rueckmeldung")){
+      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn nach dem Ausfall eine Testmeldung empfangen wurde.");
       return;
     }
+  }
+
   }
 
   clearLegacyClasses();
@@ -3855,8 +6077,7 @@ function saveVerbindungCriteria(){
 
   verbindungLocked = true;
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, true, false);
   }
   showSectionSaveFeedback("Verbindungsüberwachungen", "saveVerbindungBtn");
   renderReviewSummary();
@@ -3889,37 +6110,43 @@ function saveStatusCriteria(){
     status_regel: "Statusregel",
     status_scharf_zeitfenster: "Scharf in Zeitfenstern",
     status_unscharf_zeitfenster: "Unscharf in Zeitfenstern",
-    status_kontrollzeit: "Tägliche Kontrollzeit"
+    status_kontrollzeit: "Auswahl",
+    status_kontrollzeit_uhrzeit: "Kontrollzeit"
   };
 
   if (statusLocked){
-    showSectionSaveFeedback("Statusregel", "saveStatusBtn");
+    unlockStatusSection();
     return;
   }
 
   const statusValue = getSelectValue("status_regel");
 
-  if (!statusValue){
+  if (FORM_VALIDATION_ACTIVE && !statusValue){
     alert("Bitte wählen Sie eine Statusregel.");
     return;
   }
 
   const statusKontrollzeit = (document.getElementById("status_kontrollzeit")?.value || "").trim();
+  const statusKontrollzeitUhrzeit = (document.getElementById("status_kontrollzeit_uhrzeit")?.value || "").trim();
 
   if (statusValue === "scharf_zeitfenster"){
-    if (!validateScharfZeitfenster(true)){
+    if (FORM_VALIDATION_ACTIVE && !validateScharfZeitfenster(true)){
       return;
     }
     syncScharfZeitfensterSummary();
   }
   if (statusValue === "unscharf_zeitfenster"){
-    if (!validateUnscharfZeitfenster(true)){
+    if (FORM_VALIDATION_ACTIVE && !validateUnscharfZeitfenster(true)){
       return;
     }
     syncUnscharfZeitfensterSummary();
   }
-  if (statusValue === "scharf_nie_kontrollzeit" && !statusKontrollzeit){
-    alert("Bitte geben Sie die tägliche Kontrollzeit an.");
+  if (FORM_VALIDATION_ACTIVE && statusValue === "kontrollzeit_scharf" && !statusKontrollzeit){
+    alert('Bitte wählen Sie unter "Nur tägliche Kontrollzeit für Scharf" eine Option aus.');
+    return;
+  }
+  if (FORM_VALIDATION_ACTIVE && statusValue === "kontrollzeit_scharf" && !statusKontrollzeitUhrzeit){
+    alert("Bitte geben Sie die Kontrollzeit ein.");
     return;
   }
 
@@ -3956,8 +6183,7 @@ function saveStatusCriteria(){
   statusLocked = true;
   syncAllStatusZeitfensterSummaries();
   if (btn){
-    btn.disabled = false;
-    btn.innerText = "Speichern";
+    setSectionSaveButtonState(btn, true, false);
   }
   showSectionSaveFeedback("Statusregel", "saveStatusBtn");
   renderReviewSummary();
@@ -3983,85 +6209,7 @@ function formularSenden(e) {
 
   const caseId = generateCaseId();
   latestCaseId = caseId;
-
-  const kundendatenText = getEmailKundendatenText();
-  const alarmText = getEmailAlarmText();
-  const verbindungText = getEmailVerbindungText();
-  const technikText = getEmailTechnikText();
-  const statusText = getEmailStatusText();
-  const datenschutzText = getEmailDatenschutzText();
-  const statusRegelValue = getSelectValue("status_regel");
-  const statusRegelText = getSelectDisplayText("status_regel");
-  const statusScharfZeitfenster = statusRegelValue === "scharf_zeitfenster"
-    ? getInputValue("status_scharf_zeitfenster")
-    : "";
-  const statusUnscharfZeitfenster = statusRegelValue === "unscharf_zeitfenster"
-    ? getInputValue("status_unscharf_zeitfenster")
-    : "";
-  const statusKontrollzeit = statusRegelValue === "scharf_nie_kontrollzeit"
-    ? getInputValue("status_kontrollzeit")
-    : "";
-
-  const params = {
-    vorgangsnummer: caseId,
-    kunde: document.getElementById("kunde").value,
-    standort: document.getElementById("standort").value,
-    telefonnummer: document.getElementById("telefonnummer").value,
-    kontakt_email: document.getElementById("kontakt_email").value,
-    alarm_kategorien: getCheckboxList(".alarm-kategorie"),
-    sonstige_alarme: document.getElementById("sonstige_alarme").value,
-    netz_aktiv: document.getElementById("netz_aktiv").checked ? "Ja" : "Nein",
-    netz_ueberwachungsart: getSelectDisplayText("netz_ueberwachungsart"),
-    netz_zeit: document.getElementById("netz_zeit").value,
-    netz_alarmierung: getSelectDisplayText("netz_alarmierung"),
-    netz_rueckmeldung: getSelectDisplayText("netz_rueckmeldung"),
-    batterie_aktiv: document.getElementById("batterie_aktiv").checked ? "Ja" : "Nein",
-    batterie_ueberwachungsart: getSelectDisplayText("batterie_ueberwachungsart"),
-    batterie_zeit: document.getElementById("batterie_zeit").value,
-    batterie_alarmierung: getSelectDisplayText("batterie_alarmierung"),
-    batterie_rueckmeldung: getSelectDisplayText("batterie_rueckmeldung"),
-    uebertragungsweg_aktiv: document.getElementById("uebertragungsweg_aktiv").checked ? "Ja" : "Nein",
-    uebertragungsweg_ueberwachungsart: getSelectDisplayText("uebertragungsweg_ueberwachungsart"),
-    uebertragungsweg_zeit: document.getElementById("uebertragungsweg_zeit").value,
-    uebertragungsweg_alarmierung: getSelectDisplayText("uebertragungsweg_alarmierung"),
-    uebertragungsweg_rueckmeldung: getSelectDisplayText("uebertragungsweg_rueckmeldung"),
-    gma_aktiv: document.getElementById("gma_aktiv").checked ? "Ja" : "Nein",
-    gma_ueberwachungsart: getSelectDisplayText("gma_ueberwachungsart"),
-    gma_zeit: document.getElementById("gma_zeit").value,
-    gma_alarmierung: getSelectDisplayText("gma_alarmierung"),
-    gma_rueckmeldung: getSelectDisplayText("gma_rueckmeldung"),
-    verbindung_art: getSelectDisplayText("verbindung_art"),
-    verbindung_stehend_ausfalldauer: getStehendeAusfalldauerDisplayValue(),
-    verbindung_stehend_alarmierung: getSelectDisplayText("verbindung_stehend_alarmierung"),
-    verbindung_stehend_rueckmeldung: getSelectDisplayText("verbindung_stehend_rueckmeldung"),
-    verbindung_bedarf_intervall: getSelectDisplayText("verbindung_bedarf_intervall"),
-    verbindung_bedarf_alarm_wann: getSelectDisplayText("verbindung_bedarf_alarm_wann"),
-    verbindung_bedarf_alarmierung: getSelectDisplayText("verbindung_bedarf_alarmierung"),
-    verbindung_bedarf_rueckmeldung: getSelectDisplayText("verbindung_bedarf_rueckmeldung"),
-    status_regel: statusRegelText,
-    status_scharf_zeitfenster: statusScharfZeitfenster,
-    status_unscharf_zeitfenster: statusUnscharfZeitfenster,
-    status_kontrollzeit: statusKontrollzeit,
-    status_unscharf_regel: statusRegelValue === "unscharf_zeitfenster" ? statusRegelText : "",
-    status_scharf_regel: ["scharf_immer", "scharf_nie_kontrollzeit", "scharf_zeitfenster"].includes(statusRegelValue)
-      ? statusRegelText
-      : "",
-    status_scharf_kontrollzeit: statusKontrollzeit,
-    datenschutz_einwilligung: document.getElementById("datenschutz_einwilligung")?.checked ? "Ja" : "Nein",
-    kundendaten_text: kundendatenText,
-    kundendaten_display: getEmailBlockStyle(kundendatenText),
-    alarm_text: alarmText,
-    alarm_display: getEmailBlockStyle(alarmText),
-    verbindung_text: verbindungText,
-    verbindung_display: getEmailBlockStyle(verbindungText),
-    technik_text: technikText,
-    technik_display: getEmailBlockStyle(technikText),
-    status_text: statusText,
-    status_display: getEmailBlockStyle(statusText),
-    datenschutz_text: datenschutzText,
-    datenschutz_display: getEmailBlockStyle(datenschutzText),
-    datum: new Date().toLocaleString("de-DE")
-  };
+  const params = buildEmailTemplateParams();
 
   emailjs.send(
     "service_vnlczqu",
@@ -4102,44 +6250,98 @@ function formularSenden(e) {
 
 <div class="stepper-head">
   <span>Schrittf&uuml;hrung</span>
-  <span id="stepProgressText">0/6 Bereiche gespeichert</span>
+  <span id="stepProgressText">0/7 Bereiche gespeichert</span>
 </div>
 <nav class="stepper" aria-label="Formularschritte">
   <div class="stepper-list">
-    <button type="button" class="step-item active" data-step="step-customer" data-target="customerFieldset">
-      <span class="step-index">1</span><span class="step-name">Kunde</span>
+    <button type="button" class="step-item active" data-step="step-anlage" data-target="anlageFieldset">
+      <span class="step-index">1</span><span class="step-name">Anlagedaten</span>
+    </button>
+    <button type="button" class="step-item" data-step="step-customer" data-target="customerFieldset">
+      <span class="step-index">2</span><span class="step-name">Kundendaten</span>
     </button>
     <button type="button" class="step-item" data-step="step-alarm" data-target="alarmFieldset">
-      <span class="step-index">2</span><span class="step-name">Alarm</span>
+      <span class="step-index">3</span><span class="step-name">Alarm</span>
     </button>
     <button type="button" class="step-item" data-step="step-verbindung" data-target="verbindungFieldset">
-      <span class="step-index">3</span><span class="step-name">Verbindung</span>
+      <span class="step-index">4</span><span class="step-name">Verbindung</span>
     </button>
     <button type="button" class="step-item" data-step="step-tech" data-target="technikFieldset">
-      <span class="step-index">4</span><span class="step-name">St&ouml;rungen</span>
+      <span class="step-index">5</span><span class="step-name">St&ouml;rungen</span>
     </button>
     <button type="button" class="step-item" data-step="step-status" data-target="statusFieldset">
-      <span class="step-index">4</span><span class="step-name">Status</span>
+      <span class="step-index">6</span><span class="step-name">Status</span>
     </button>
     <button type="button" class="step-item" data-step="step-review" data-target="privacyFieldset">
-      <span class="step-index">5</span><span class="step-name">Datenschutz</span>
+      <span class="step-index">7</span><span class="step-name">Datenschutz</span>
     </button>
   </div>
 </nav>
 
 <form id="aufschaltformular" onsubmit="formularSenden(event)">
 
-<fieldset id="customerFieldset" data-step-section>
-  <legend>Kundendaten</legend>
-  <p class="section-caption">Bitte tragen Sie hier die Basisdaten für Objekt und Kontakt ein.</p>
+<fieldset id="anlageFieldset" data-step-section>
+  <legend>Anlagedaten</legend>
+  <p class="section-caption">Bitte tragen Sie hier die Basisdaten Ihrer Anlage ein.</p>
   <div class="customer-input-row">
-    <input type="text" id="standort" placeholder="Objekt">
+    <select id="anlagetyp">
+      <option value="">---- Anlagetyp ausw&auml;hlen ----</option>
+      <option value="Ajax" selected>Ajax</option>
+      <option value="Jablotron">Jablotron</option>
+    </select>
+    <div class="customer-saved-row" id="saved_anlagetyp"></div>
+  </div>
+  <div class="customer-input-row">
+    <input type="text" id="standort" placeholder="Objektname">
     <div class="customer-saved-row" id="saved_standort"></div>
   </div>
-  <div class="customer-input-row">
-    <input type="text" id="kunde" placeholder="Adresse">
-    <div class="customer-saved-row" id="saved_kunde"></div>
+  <div class="anlage-grid-wrap">
+    <div class="anlage-grid-row">
+      <div class="anlage-grid-item">
+        <input type="text" id="strasse" placeholder="Stra&szlig;e" autocomplete="street-address">
+        <div class="customer-saved-row" id="saved_strasse"></div>
+      </div>
+      <div class="anlage-grid-item">
+        <input type="text" id="postleitzahl" placeholder="Postleitzahl" inputmode="numeric" autocomplete="postal-code">
+        <div class="customer-saved-row" id="saved_postleitzahl"></div>
+      </div>
+      <div class="anlage-grid-item">
+        <input type="text" id="ort" placeholder="Ort" autocomplete="address-level2">
+        <div class="customer-saved-row" id="saved_ort"></div>
+      </div>
+    </div>
   </div>
+  <div id="rechnungsadresse_toggle_row" class="billing-toggle-row">
+    <button type="button" id="rechnungsadresseToggleBtn" class="billing-toggle-btn" aria-pressed="false" aria-label="Abweichende Rechnungsadresse auswählen" onclick="toggleRechnungsadresseSelection()"></button>
+    <span class="billing-toggle-label">Rechnungsadresse (Wenn sie von der normalen Adresse abweicht)</span>
+    <input type="hidden" id="rechnungsadresse_aktiv" value="nein">
+  </div>
+  <div id="rechnungsadresse_wrap" class="billing-address-panel" aria-hidden="true">
+    <div class="anlage-grid-wrap">
+      <div class="anlage-grid-row">
+        <div class="anlage-grid-item">
+          <input type="text" id="rechnungsadresse_strasse" placeholder="Stra&szlig;e" autocomplete="street-address">
+        </div>
+        <div class="anlage-grid-item">
+          <input type="text" id="rechnungsadresse_postleitzahl" placeholder="Postleitzahl" inputmode="numeric" autocomplete="postal-code">
+        </div>
+        <div class="anlage-grid-item">
+          <input type="text" id="rechnungsadresse_ort" placeholder="Ort" autocomplete="address-level2">
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="rechnungsadresse" value="">
+  <div class="customer-saved-row" id="saved_rechnungsadresse"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveAnlageBtn" onclick="saveAnlageData()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetAnlageBtn" onclick="resetAnlageSection()">Zur&uuml;cksetzen</button>
+  </div>
+</fieldset>
+
+<fieldset id="customerFieldset" data-step-section>
+  <legend>Kundendaten</legend>
+  <p class="section-caption">Bitte tragen Sie hier ihre entsprechenden Ansprechpartner ein, die im Alarm/Ereignisfall zuständig sind.</p>
   <div class="customer-input-row">
     <div id="telefonnummer_wrap" class="multi-phone-wrap">
       <div id="telefonnummer_list" class="phone-list">
@@ -4164,6 +6366,14 @@ function formularSenden(e) {
     </div>
     <div class="customer-saved-row" id="saved_kontakt_email"></div>
   </div>
+  <div class="customer-input-row">
+    <div id="kontaktzeilen_data_wrap" class="contact-grid-wrap">
+      <div id="kontaktzeilen_list" class="customer-contact-list"></div>
+      <input type="hidden" id="kontakt_name" value="">
+      <input type="hidden" id="kontaktzeilen_data" value="[]">
+    </div>
+    <div class="customer-saved-row" id="saved_kontakte"></div>
+  </div>
   <div class="section-action-row">
     <button type="button" class="secondary-btn" id="saveCustomerBtn" onclick="saveCustomerData()">Speichern</button>
     <button type="button" class="secondary-btn section-reset-btn" id="resetCustomerBtn" onclick="resetCustomerSection()">Zurücksetzen</button>
@@ -4172,7 +6382,7 @@ function formularSenden(e) {
 
 <fieldset id="alarmFieldset" data-step-section>
   <legend>Zu überwachende Kriterien</legend>
-  <p class="section-caption">Wählen Sie die Alarmarten, die an die Leitstelle gemeldet werden sollen.</p>
+  <p class="section-caption">Wählen Sie die Alarmarten, die Sicherheit Nord überwachen soll.</p>
   <label><input type="checkbox" class="alarm-kategorie" value="Medizinischer Notruf"> Medizinischer Notruf</label>
   <label><input type="checkbox" class="alarm-kategorie" value="Feuer"> Feuer</label>
   <label><input type="checkbox" class="alarm-kategorie" value="&Uuml;berfall"> &Uuml;berfall</label>
@@ -4180,8 +6390,17 @@ function formularSenden(e) {
   <label><input type="checkbox" class="alarm-kategorie" value="Sabotage"> Sabotage</label>
 
   <div class="customer-input-row">
-    <label for="sonstige_alarme">Sonstige Alarme:</label>
-    <input type="text" id="sonstige_alarme" placeholder="z. B. Gasalarm, CO-Melder, Wassermelder">
+    <label for="sonstige_alarme_first">Sonstige Alarme:</label>
+    <div id="sonstige_alarme_wrap" class="multi-phone-wrap">
+      <div id="sonstige_alarme_list" class="phone-list">
+        <div class="phone-row">
+          <input type="text" id="sonstige_alarme_first" class="sonstige-alarm-item" placeholder="z. B. Gasalarm, CO-Alarm, Wassermelder">
+          <button type="button" id="sonstigeAlarmAddBtn" class="alarm-other-add-btn" onclick="addSonstigeAlarmRow()" aria-label="Weiteren Alarm hinzufügen">+</button>
+        </div>
+      </div>
+      <input type="hidden" id="sonstige_alarme" value="">
+      <input type="hidden" id="sonstige_alarme_data" value="[]">
+    </div>
     <div class="customer-saved-row" id="saved_sonstige_alarme"></div>
   </div>
   <div class="section-action-row">
@@ -4192,13 +6411,21 @@ function formularSenden(e) {
 
 <fieldset id="verbindungFieldset" data-step-section>
   <legend>Verbindungs&uuml;berwachungen</legend>
-  <p class="section-caption">Legen Sie fest, wie Verbindungsabbrüche erkannt und gemeldet werden.</p>
-  <div class="technik-box">
+  <div class="legend-toggle-row">
+    <span class="legend-toggle-question">Sollen Verbindungsabbrüche Ihrer Anlage überwacht werden?</span>
+    <span class="legend-toggle-actions" role="group" aria-label="Verbindungsüberwachung anzeigen">
+      <button type="button" id="verbindungToggleYes" class="legend-toggle-btn" aria-pressed="false" onclick="setVerbindungPreference('ja')">Ja</button>
+      <button type="button" id="verbindungToggleNo" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setVerbindungPreference('nein')">Nein</button>
+    </span>
+  </div>
+  <input type="hidden" id="verbindung_erforderlich" value="nein">
+  <p class="section-caption">Legen Sie fest, wie Verbindungsabbrüche erkannt und überwacht werden sollen.</p>
+  <div class="technik-box" data-tech-box="netz">
     <div id="verbindung_options" class="tech-options">
       <select id="verbindung_art" onchange="toggleVerbindungArt(this)">
         <option value="" selected>---- Überwachungsart auswählen ----</option>
-        <option value="stehend" data-label-html="Stehende Verbindung <span class='select-note-inline'>(dauerhaft)</span>">Stehende Verbindung (dauerhaft)</option>
-        <option value="bedarf" data-label-html="Bedarfsverbindung <span class='select-note-inline'>(wird max. 2x pro Tag geprüft)</span>">Bedarfsverbindung (wird max. 2x pro Tag geprüft)</option>
+        <option value="stehend" data-label-html="Stehende Verbindung <span class='select-note-inline'>(dauerhaft/permanent)</span>">Stehende Verbindung (dauerhaft/permanent)</option>
+        <option value="bedarf" data-label-html="Bedarfsverbindung <span class='select-note-inline'>(Verbindung wird im Intervallmodus überwacht)</span>">Bedarfsverbindung (Verbindung wird im Intervallmodus überwacht)</option>
       </select>
 
       <div id="verbindung_stehend" class="sub-tech-options">
@@ -4230,13 +6457,13 @@ function formularSenden(e) {
 
         <select id="verbindung_stehend_alarmierung">
           <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-          <option value="telefon_24">Telefon</option>
-          <option value="mail">E-Mail</option>
-          <option value="telefon_mail">Telefon &amp; E-Mail</option>
+          <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+          <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+          <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
         </select>
 
         <select id="verbindung_stehend_rueckmeldung">
-          <option value="" selected>---- Rückmeldung nach Neustart per E-Mail auswählen ----</option>
+          <option value="" selected>---- Wünschen Sie eine Information per E-Mail wenn die Störung behoben ist? ----</option>
           <option value="ja">Ja</option>
           <option value="nein">Nein</option>
         </select>
@@ -4246,25 +6473,29 @@ function formularSenden(e) {
 
         <select id="verbindung_bedarf_intervall">
           <option value="" selected>---- Überwachungsintervall auswählen ----</option>
-          <option value="12h">Ein mal am Tag (alle 12 Stunden)</option>
-          <option value="6h">Zwei mal am Tag (alle 6 Stunden)</option>
+          <option value="12h">Überwachung einmal am Tag (Alle 24 Stunden - Routineintervall: 12 Stunden)</option>
+          <option value="6h">Überwachung zweimal am Tag (Alle 12 Stunden - Routineintervall: 6 Stunden)</option>
+          <option value="custom">Benutzerdefiniert</option>
         </select>
+        <div id="verbindung_bedarf_intervall_custom_wrap" class="zeitfeld">
+          <input type="text" id="verbindung_bedarf_intervall_custom" placeholder="Maximale Überwachung: Viermal pro Tag (Alle 6 Stunden - Routineintervall: 3 Stunden)">
+        </div>
 
         <select id="verbindung_bedarf_alarm_wann">
-          <option value="" selected>---- Wann soll alarmiert werden? ----</option>
-          <option value="sofort">Jederzeit</option>
-          <option value="zeit">Nur von 8:00 - 20:00 Uhr</option>
+          <option value="" selected>---- Wenn die Testmeldung ausbleibt, wann soll alarmiert werden? ----</option>
+          <option value="sofort">Jederzeit/Sofort</option>
+          <option value="zeit">Nur in der Zeit von 8:00 - 20:00 Uhr</option>
         </select>
 
         <select id="verbindung_bedarf_alarmierung">
           <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-          <option value="telefon_24">Telefon</option>
-          <option value="mail">E-Mail</option>
-          <option value="telefon_mail">Telefon &amp; E-Mail</option>
+          <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+          <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+          <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
         </select>
 
         <select id="verbindung_bedarf_rueckmeldung">
-          <option value="" selected>---- Rückmeldung nach Neustart per E-Mail auswählen ----</option>
+          <option value="" selected>---- Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde? ----</option>
           <option value="ja">Ja</option>
           <option value="nein">Nein</option>
         </select>
@@ -4281,16 +6512,19 @@ function formularSenden(e) {
 <fieldset id="technikFieldset" data-step-section>
   <legend class="legend-with-toggle">
     <span>Technische St&ouml;rungen</span>
-    <span class="legend-toggle-actions" role="group" aria-label="Technische Störungen anzeigen">
-      <button type="button" id="techToggleYes" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setTechPreference('ja')">Ja</button>
-      <button type="button" id="techToggleNo" class="legend-toggle-btn" aria-pressed="false" onclick="setTechPreference('nein')">Nein</button>
-    </span>
   </legend>
-  <input type="hidden" id="technik_erforderlich" value="ja">
+  <div class="legend-toggle-row">
+    <span class="legend-toggle-question">Sollen technische St&ouml;rungen Ihrer Anlage &uuml;berwacht werden?</span>
+    <span class="legend-toggle-actions" role="group" aria-label="Technische Störungen anzeigen">
+      <button type="button" id="techToggleYes" class="legend-toggle-btn" aria-pressed="false" onclick="setTechPreference('ja')">Ja</button>
+      <button type="button" id="techToggleNo" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setTechPreference('nein')">Nein</button>
+    </span>
+  </div>
+  <input type="hidden" id="technik_erforderlich" value="nein">
   <div id="technikPanel" class="tech-panel" aria-hidden="true">
-  <p class="section-caption">Wählen Sie hier die technischen Störungen aus, die überwacht werden sollen.</p>
+  <p class="section-caption">Wählen Sie anschließend aus, welche technischen Störungen überwacht werden sollen.</p>
   <!-- NETZ -->
-  <div class="technik-box">
+  <div class="technik-box" data-tech-box="netz">
     <label class="tech-check-label">
       <span class="tech-check-main">
         <input type="checkbox" id="netz_aktiv" onchange="setTechnikSectionVisibility('netz_aktiv','netz_options')">
@@ -4302,32 +6536,31 @@ function formularSenden(e) {
 
     <select id="netz_ueberwachungsart" onchange="toggleZeit(this,'netzzeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
-      <option value="empfang">Sofort</option>
-      <option value="zeit">Erst nach Zeit (X)</option>
+      <option value="empfang">Sofort (nach Meldungsempfang)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
     </select>
 
     <div id="netzzeit" class="zeitfeld">
-      <input type="text" id="netz_zeit" placeholder="(z.B. 30 Minuten)">
+      <input type="text" id="netz_zeit" placeholder="( z.B. 30 Minuten )">
     </div>
 
     <select id="netz_alarmierung">
       <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-      <option value="telefon_24">Telefon</option>
-      <option value="mail">E-Mail</option>
-      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+      <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+      <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+      <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
     </select>
 
     <select id="netz_rueckmeldung">
-      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
-      <option value="klar_sms">SMS</option>
-      <option value="klar_mail">E-Mail</option>
-      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+      <option value="" selected>---- W&uuml;nschen Sie eine Information per E-Mail wenn die St&ouml;rung als klar gemeldet wurde? ----</option>
+      <option value="ja">Ja</option>
+      <option value="nein">Nein</option>
     </select>
     </div>
   </div>
 
   <!-- BATTERIE -->
-  <div class="technik-box">
+  <div class="technik-box" data-tech-box="batterie">
     <label class="tech-check-label">
       <span class="tech-check-main">
         <input type="checkbox" id="batterie_aktiv" onchange="setTechnikSectionVisibility('batterie_aktiv','batterie_options')">
@@ -4339,36 +6572,35 @@ function formularSenden(e) {
 
     <select id="batterie_ueberwachungsart" onchange="toggleZeit(this,'batteriezeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
-      <option value="empfang">Sofort</option>
-      <option value="zeit">Erst nach Zeit (X)</option>
+      <option value="empfang">Sofort (nach Meldungsempfang)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
     </select>
 
     <div id="batteriezeit" class="zeitfeld">
-      <input type="text" id="batterie_zeit" placeholder="(z.B. 30 Minuten)">
+      <input type="text" id="batterie_zeit" placeholder="( z.B. 30 Minuten )">
     </div>
 
     <select id="batterie_alarmierung">
       <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-      <option value="telefon_24">Telefon</option>
-      <option value="mail">E-Mail</option>
-      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+      <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+      <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+      <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
     </select>
 
     <select id="batterie_rueckmeldung">
-      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
-      <option value="klar_sms">SMS</option>
-      <option value="klar_mail">E-Mail</option>
-      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+      <option value="" selected>---- W&uuml;nschen Sie eine Information per E-Mail wenn die St&ouml;rung als klar gemeldet wurde? ----</option>
+      <option value="ja">Ja</option>
+      <option value="nein">Nein</option>
     </select>
     </div>
   </div>
 
   <!-- UEBERTRAGUNGSWEG -->
-  <div class="technik-box">
+  <div class="technik-box" data-tech-box="uebertragungsweg">
     <label class="tech-check-label">
       <span class="tech-check-main">
         <input type="checkbox" id="uebertragungsweg_aktiv" onchange="setTechnikSectionVisibility('uebertragungsweg_aktiv','uebertragungsweg_options')">
-        <span>&Uuml;bertragungsweg-St&ouml;rung</span>
+        <span>St&ouml;rung-&Uuml;bertragunsweg</span>
       </span>
       <span class="tech-check-note">(Internet/Mobilfunk ausgefallen)</span>
     </label>
@@ -4376,63 +6608,59 @@ function formularSenden(e) {
 
     <select id="uebertragungsweg_ueberwachungsart" onchange="toggleZeit(this,'uebertragungswegzeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
-      <option value="empfang">Sofort</option>
-      <option value="zeit">Erst nach Zeit (X)</option>
+      <option value="empfang">Sofort (nach Meldungsempfang)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
     </select>
 
     <div id="uebertragungswegzeit" class="zeitfeld">
-      <input type="text" id="uebertragungsweg_zeit" placeholder="(z.B. 30 Minuten)">
+      <input type="text" id="uebertragungsweg_zeit" placeholder="( z.B. 30 Minuten )">
     </div>
 
     <select id="uebertragungsweg_alarmierung">
       <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-      <option value="telefon_24">Telefon</option>
-      <option value="mail">E-Mail</option>
-      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+      <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
     </select>
 
     <select id="uebertragungsweg_rueckmeldung">
-      <option value="" selected>---- R&uuml;ckmeldung bei Entwarnung ausw&auml;hlen ----</option>
-      <option value="klar_sms">SMS</option>
-      <option value="klar_mail">E-Mail</option>
-      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+      <option value="" selected>---- W&uuml;nschen Sie eine Information per E-Mail wenn die St&ouml;rung als klar gemeldet wurde? ----</option>
+      <option value="ja">Ja</option>
+      <option value="nein">Nein</option>
     </select>
     </div>
   </div>
 
   <!-- GMA -->
-  <div class="technik-box">
+  <div class="technik-box" data-tech-box="gma">
     <label class="tech-check-label">
       <span class="tech-check-main">
         <input type="checkbox" id="gma_aktiv" onchange="setTechnikSectionVisibility('gma_aktiv','gma_options')">
         <span>St&ouml;rung der Gefahrenmeldeanlage</span>
       </span>
-      <span class="tech-check-note">(technischer Fehler in der Alarmanlage)</span>
+      <span class="tech-check-note">(Technischer Fehler in der Alarmanlage)</span>
     </label>
     <div id="gma_options" class="tech-options">
 
     <select id="gma_ueberwachungsart" onchange="toggleZeit(this,'gmazeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
-      <option value="empfang">Sofort</option>
-      <option value="zeit">Erst nach Zeit (X)</option>
+      <option value="empfang">Sofort (nach Meldungsempfang)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
     </select>
 
     <div id="gmazeit" class="zeitfeld">
-      <input type="text" id="gma_zeit" placeholder="(z.B. 30 Minuten)">
+      <input type="text" id="gma_zeit" placeholder="( z.B. 30 Minuten )">
     </div>
 
     <select id="gma_alarmierung">
       <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
-      <option value="telefon_24">Telefon</option>
-      <option value="mail">E-Mail</option>
-      <option value="telefon_mail">Telefon &amp; E-Mail</option>
+      <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+      <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+      <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
     </select>
 
     <select id="gma_rueckmeldung">
-      <option value="" selected>---- Rückmeldung bei Entwarnung auswählen ----</option>
-      <option value="klar_sms">SMS</option>
-      <option value="klar_mail">E-Mail</option>
-      <option value="klar_keine">Keine R&uuml;ckmeldung</option>
+      <option value="" selected>---- W&uuml;nschen Sie eine Information per E-Mail wenn die St&ouml;rung als klar gemeldet wurde? ----</option>
+      <option value="ja">Ja</option>
+      <option value="nein">Nein</option>
     </select>
     </div>
   </div>
@@ -4446,16 +6674,26 @@ function formularSenden(e) {
 </fieldset>
 
 <fieldset id="statusFieldset" data-step-section>
-  <legend>Scharf- und Unscharfschaltung der Anlage</legend>
+  <legend class="legend-with-toggle">
+    <span>Scharf- und Unscharfschaltung der Anlage</span>
+  </legend>
+  <div class="legend-toggle-row">
+    <span class="legend-toggle-question">Soll die Scharf- und Unscharfschaltung Ihrer Anlage überwacht werden?</span>
+    <span class="legend-toggle-actions" role="group" aria-label="Statusregel anzeigen">
+      <button type="button" id="statusToggleYes" class="legend-toggle-btn" aria-pressed="false" onclick="setStatusPreference('ja')">Ja</button>
+      <button type="button" id="statusToggleNo" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setStatusPreference('nein')">Nein</button>
+    </span>
+  </div>
+  <input type="hidden" id="status_erforderlich" value="nein">
+  <div id="statusPanel" class="tech-panel" aria-hidden="true">
   <p class="section-caption">Legen Sie hier fest, wann die Anlage scharf- oder unscharf geschaltet sein darf.</p>
 
   <div id="statusOptions" class="status-options">
     <select id="status_regel" onchange="toggleStatusRegel(this)">
       <option value="" selected>---- Statusregel auswählen ----</option>
-      <option value="scharf_immer" data-label-html="Die Anlage ist <strong>dauerhaft scharf</strong> geschaltet.">Die Anlage ist dauerhaft scharf geschaltet.</option>
-      <option value="scharf_nie_kontrollzeit">Nur tägliche Statuskontrolle zur Kontrollzeit</option>
-      <option value="scharf_zeitfenster" data-label-html="Die Anlage wird nur zu bestimmten Zeiten <strong>scharf</strong> geschaltet.">Die Anlage wird nur zu bestimmten Zeiten scharf geschaltet.</option>
-      <option value="unscharf_zeitfenster" data-label-html="Die Anlage wird nur zu bestimmten Zeiten <strong>unscharf</strong> geschaltet.">Die Anlage wird nur zu bestimmten Zeiten unscharf geschaltet.</option>
+      <option value="scharf_immer">Scharf/Unscharf Überwachung nur temporär bei Bedarf</option>
+      <option value="kontrollzeit_scharf">Nur tägliche Kontrollzeit für Scharf</option>
+      <option value="unscharf_zeitfenster" data-label-html="Die Anlage wird nur zu bestimmten Zeiten unscharf geschaltet.">Die Anlage wird nur zu bestimmten Zeiten unscharf geschaltet.</option>
     </select>
 
     <div id="status_scharf_zeitfenster_wrap" class="zeitfenster-panel">
@@ -4479,7 +6717,13 @@ function formularSenden(e) {
     </div>
 
     <div id="status_kontrollzeit_wrap" class="status-extra">
-      <input type="text" id="status_kontrollzeit" placeholder="Tägliche Kontrollzeit (z. B. 22:00)">
+      <select id="status_kontrollzeit" onchange="toggleStatusKontrollzeit()">
+        <option value="objekt_jederzeit" selected>Objekt kann jederzeit betreten werden</option>
+        <option value="dauerscharf">Jedes Betreten muss bei Sicherheit Nord angemeldet werden (dauerscharf)</option>
+      </select>
+      <div id="status_kontrollzeit_uhrzeit_wrap" class="zeitfeld">
+        <input type="text" id="status_kontrollzeit_uhrzeit" placeholder="Kontrollzeit (z. B. 22:00)">
+      </div>
     </div>
   </div>
 
@@ -4487,6 +6731,7 @@ function formularSenden(e) {
   <div class="section-action-row">
     <button type="button" class="secondary-btn" id="saveStatusBtn" onclick="saveStatusCriteria()">Speichern</button>
     <button type="button" class="secondary-btn section-reset-btn" id="resetStatusBtn" onclick="resetStatusSection()">Zurücksetzen</button>
+  </div>
   </div>
 </fieldset>
 
