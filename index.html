@@ -131,6 +131,53 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     padding: 12px;
+    --step-list-gap: 6px;
+    --step-item-padding-x: 8px;
+    --step-item-gap: 4px;
+    --step-item-font-size: 11.1px;
+    --step-item-min-height: 42px;
+    --step-index-size: 18px;
+    --step-index-font-size: 11px;
+  }
+
+  .stepper[data-visible-count="4"] {
+    --step-list-gap: 10px;
+    --step-item-padding-x: 18px;
+    --step-item-gap: 10px;
+    --step-item-font-size: 14.6px;
+    --step-item-min-height: 52px;
+    --step-index-size: 24px;
+    --step-index-font-size: 12px;
+  }
+
+  .stepper[data-visible-count="5"] {
+    --step-list-gap: 8px;
+    --step-item-padding-x: 13px;
+    --step-item-gap: 7px;
+    --step-item-font-size: 12.9px;
+    --step-item-min-height: 47px;
+    --step-index-size: 21px;
+    --step-index-font-size: 11.5px;
+  }
+
+  .stepper[data-visible-count="6"] {
+    --step-list-gap: 7px;
+    --step-item-padding-x: 10px;
+    --step-item-gap: 5px;
+    --step-item-font-size: 11.8px;
+    --step-item-min-height: 44px;
+    --step-index-size: 19px;
+    --step-index-font-size: 11px;
+  }
+
+  .stepper[data-visible-count="7"] {
+    --step-list-gap: 6px;
+    --step-item-padding-x: 8px;
+    --step-item-gap: 4px;
+    --step-item-font-size: 11.1px;
+    --step-item-min-height: 42px;
+    --step-index-size: 18px;
+    --step-index-font-size: 11px;
   }
 
   .stepper-head {
@@ -147,7 +194,7 @@
   .stepper-list {
     display: flex;
     flex-wrap: nowrap;
-    gap: 8px;
+    gap: var(--step-list-gap);
   }
 
   .step-item {
@@ -156,7 +203,7 @@
     min-width: 0;
     border: 1px solid #cbd9e7;
     border-radius: 13px;
-    padding: 8px 6px;
+    padding: 8px var(--step-item-padding-x);
     background: #f5f9ff;
     color: #365172;
     cursor: pointer;
@@ -165,10 +212,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 12px;
-    line-height: 1.2;
+    gap: var(--step-item-gap);
+    font-size: var(--step-item-font-size);
+    line-height: 1.15;
     font-weight: 620;
+    min-height: var(--step-item-min-height);
   }
 
   .step-item:hover {
@@ -194,13 +242,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: var(--step-index-size);
+    height: var(--step-index-size);
     border-radius: 999px;
     border: 1px solid #9bb7d8;
     background: #ffffff;
-    font-size: 11px;
+    font-size: var(--step-index-font-size);
     font-weight: 700;
+    flex: 0 0 auto;
   }
 
   .step-item.complete .step-index {
@@ -216,7 +265,12 @@
   }
 
   .step-name {
+    flex: 1 1 auto;
+    min-width: 0;
     white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+    text-align: center;
   }
 
   form {
@@ -973,6 +1027,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     align-items: start;
+  }
+
+  .billing-grid-row {
+    grid-template-columns: minmax(110px, 0.72fr) minmax(0, 1.28fr) minmax(110px, 0.78fr) minmax(120px, 0.9fr);
   }
 
   .anlage-grid-item input,
@@ -1960,7 +2018,7 @@ function addPhoneRow(initialValue){
   removeBtn.type = "button";
   removeBtn.className = "phone-remove-btn";
   removeBtn.setAttribute("aria-label", "Telefonnummer entfernen");
-  removeBtn.innerText = "−";
+  removeBtn.innerText = "-";
   removeBtn.addEventListener("click", () => {
     row.remove();
     handlePhoneFieldsChange();
@@ -2549,7 +2607,7 @@ function applyFriendlyTechTriggerLabels(){
 
     if (placeholder) placeholder.text = "---- Wann soll alarmiert werden? ----";
     if (empfang) empfang.text = "Sofort (nach Meldungsempfang)";
-    if (zeit) zeit.text = "Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)";
+    if (zeit) zeit.text = "Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin nicht als klar gemeldet wurde)";
   });
 }
 
@@ -2623,8 +2681,7 @@ function syncStehendRueckmeldungVisibility(){
 
   const shouldShow =
     getVerbindungPreference() === "ja" &&
-    getSelectValue("verbindung_art") === "stehend" &&
-    getSelectValue("verbindung_stehend_alarmierung") === "mail";
+    getSelectValue("verbindung_art") === "stehend";
 
   if (!shouldShow){
     selectEl.selectedIndex = 0;
@@ -2787,6 +2844,7 @@ function createZeitfensterDaySelect(className, selectedValue){
 
   const placeholder = document.createElement("option");
   placeholder.value = "";
+  placeholder.disabled = true;
   placeholder.selected = !selectedValue;
   placeholder.innerText = "Tag";
   select.appendChild(placeholder);
@@ -2807,11 +2865,12 @@ function createStatusDayRangeSelect(className, selectedValue){
 
   const placeholder = document.createElement("option");
   placeholder.value = "";
+  placeholder.disabled = true;
   placeholder.selected = !selectedValue;
   placeholder.innerText = "Tag";
   select.appendChild(placeholder);
 
-  WEEKDAY_OPTIONS.forEach(item => {
+  STATUS_DAY_RANGE_OPTIONS.forEach(item => {
     const opt = document.createElement("option");
     opt.value = item.value;
     opt.innerText = item.label;
@@ -2819,7 +2878,7 @@ function createStatusDayRangeSelect(className, selectedValue){
     select.appendChild(opt);
   });
 
-  STATUS_DAY_RANGE_OPTIONS.forEach(item => {
+  WEEKDAY_OPTIONS.forEach(item => {
     const opt = document.createElement("option");
     opt.value = item.value;
     opt.innerText = item.label;
@@ -2928,7 +2987,8 @@ function addStatusZeitfensterRow(kind, prefill, skipSideEffects){
   const row = document.createElement("div");
   row.className = "zeitfenster-slot";
 
-  const dayRange = createStatusDayRangeSelect("ztf-day-range", data.dayRange || data.fromDay || getLegacyStatusDayRange(data.fromDay || "", data.toDay || ""));
+  const initialDayRange = data.dayRange || data.fromDay || getLegacyStatusDayRange(data.fromDay || "", data.toDay || "") || "mo_fr";
+  const dayRange = createStatusDayRangeSelect("ztf-day-range", initialDayRange);
   const fromTime = createZeitfensterTimeSelect("ztf-from-time", data.fromTime || "");
   const toDay = createZeitfensterDaySelect("ztf-to-day", data.toDay || "");
   const toTime = createZeitfensterTimeSelect("ztf-to-time", data.toTime || "");
@@ -3081,7 +3141,8 @@ function validateUnscharfZeitfenster(showAlert){
 function toggleVerbindungArt(selectEl) {
   const steh = document.getElementById("verbindung_stehend");
   const bedarf = document.getElementById("verbindung_bedarf");
-  if (!selectEl || !steh || !bedarf) return;
+  const cloud = document.getElementById("verbindung_cloud");
+  if (!selectEl || !steh || !bedarf || !cloud) return;
 
   const resetFields = (container) => {
     Array.from(container.querySelectorAll("input, select, textarea")).forEach(el => {
@@ -3098,9 +3159,11 @@ function toggleVerbindungArt(selectEl) {
 
   const isSteh = selectEl.value === "stehend";
   const isBedarf = selectEl.value === "bedarf";
+  const isCloud = selectEl.value === "cloud";
 
   steh.style.display = isSteh ? "block" : "none";
   bedarf.style.display = isBedarf ? "block" : "none";
+  cloud.style.display = isCloud ? "block" : "none";
 
   Array.from(steh.querySelectorAll("input, select, textarea")).forEach(el => {
     el.disabled = verbindungLocked || !isSteh;
@@ -3108,9 +3171,13 @@ function toggleVerbindungArt(selectEl) {
   Array.from(bedarf.querySelectorAll("input, select, textarea")).forEach(el => {
     el.disabled = verbindungLocked || !isBedarf;
   });
+  Array.from(cloud.querySelectorAll("input, select, textarea")).forEach(el => {
+    el.disabled = verbindungLocked || !isCloud;
+  });
 
   if (!isSteh) resetFields(steh);
   if (!isBedarf) resetFields(bedarf);
+  if (!isCloud) resetFields(cloud);
 
   syncStehendeAusfalldauer();
   syncStehendRueckmeldungVisibility();
@@ -3304,9 +3371,10 @@ function setVerbindungSectionVisibility() {
   const verbindungArt = document.getElementById("verbindung_art");
   const steh = document.getElementById("verbindung_stehend");
   const bedarf = document.getElementById("verbindung_bedarf");
+  const cloud = document.getElementById("verbindung_cloud");
   const btn = document.getElementById("saveVerbindungBtn");
   const summary = document.getElementById("verbindungSummary");
-  if (!fieldset || !options || !verbindungArt) return;
+  if (!fieldset || !options || !verbindungArt || !steh || !bedarf || !cloud) return;
 
   const verbindungEnabled = getVerbindungPreference() === "ja";
 
@@ -3335,6 +3403,7 @@ function setVerbindungSectionVisibility() {
     });
     if (steh) steh.style.display = "none";
     if (bedarf) bedarf.style.display = "none";
+    if (cloud) cloud.style.display = "none";
     refreshCustomSelects();
     return;
   }
@@ -3345,6 +3414,9 @@ function setVerbindungSectionVisibility() {
   fields.forEach(el => {
     el.disabled = verbindungLocked;
   });
+  if (!getSelectValue("verbindung_art")){
+    verbindungArt.value = "cloud";
+  }
   toggleVerbindungArt(verbindungArt);
   refreshCustomSelects();
 }
@@ -3385,6 +3457,9 @@ function setStatusSectionVisibility() {
 
   const baseFields = Array.from(options.querySelectorAll("select"))
     .filter(el => el.id === "status_regel");
+  if (!statusSelect.value){
+    statusSelect.value = "scharf_immer";
+  }
   baseFields.forEach(el => {
     el.disabled = statusLocked;
   });
@@ -3504,19 +3579,21 @@ function getCustomerAddressData(){
   };
 }
 
-function formatAddressValue(strasse, postleitzahl, ort){
+function formatAddressValue(strasse, postleitzahl, ort, prefix){
+  const prefixPart = String(prefix || "").trim();
   const streetPart = String(strasse || "").trim();
   const postalPart = String(postleitzahl || "").trim();
   const cityPart = String(ort || "").trim();
   const locationPart = [postalPart, cityPart].filter(Boolean).join(" ");
-  if (streetPart && locationPart) return streetPart + ", " + locationPart;
-  return streetPart || locationPart;
+  const addressPart = streetPart && locationPart ? streetPart + ", " + locationPart : streetPart || locationPart;
+  return [prefixPart, addressPart].filter(Boolean).join(", ");
 }
 
-function applyAddressValueToFields(raw, strasseEl, postleitzahlEl, ortEl){
+function applyAddressValueToFields(raw, strasseEl, postleitzahlEl, ortEl, nameEl){
   const value = String(raw || "").trim();
   if (!value || !strasseEl || !postleitzahlEl || !ortEl) return;
   if (
+    String(nameEl?.value || "").trim() ||
     String(strasseEl.value || "").trim() ||
     String(postleitzahlEl.value || "").trim() ||
     String(ortEl.value || "").trim()
@@ -3525,7 +3602,18 @@ function applyAddressValueToFields(raw, strasseEl, postleitzahlEl, ortEl){
   }
   const match = value.match(/^(.*?)(?:,\s*|\s+)(\d{5})\s+(.+)$/);
   if (match){
-    strasseEl.value = match[1].trim();
+    const leadingPart = match[1].trim();
+    if (nameEl){
+      const streetParts = leadingPart.split(/\s*,\s*/).filter(Boolean);
+      if (streetParts.length > 1){
+        nameEl.value = streetParts.shift() || "";
+        strasseEl.value = streetParts.join(", ");
+      } else {
+        strasseEl.value = leadingPart;
+      }
+    } else {
+      strasseEl.value = leadingPart;
+    }
     postleitzahlEl.value = match[2].trim();
     ortEl.value = match[3].trim();
   } else {
@@ -3556,7 +3644,8 @@ function buildRechnungsadresseValue(){
   return formatAddressValue(
     getInputValue("rechnungsadresse_strasse"),
     getInputValue("rechnungsadresse_postleitzahl"),
-    getInputValue("rechnungsadresse_ort")
+    getInputValue("rechnungsadresse_ort"),
+    getInputValue("rechnungsadresse_name")
   );
 }
 
@@ -3572,6 +3661,7 @@ function syncRechnungsadresseSectionVisibility(showControls){
   const toggleRow = document.getElementById("rechnungsadresse_toggle_row");
   const wrap = document.getElementById("rechnungsadresse_wrap");
   const fields = [
+    document.getElementById("rechnungsadresse_name"),
     document.getElementById("rechnungsadresse_strasse"),
     document.getElementById("rechnungsadresse_postleitzahl"),
     document.getElementById("rechnungsadresse_ort")
@@ -3605,7 +3695,7 @@ function toggleRechnungsadresseSelection(){
 }
 
 function bindRechnungsadresseFields(){
-  ["rechnungsadresse_strasse", "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"].forEach(id => {
+  ["rechnungsadresse_name", "rechnungsadresse_strasse", "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"].forEach(id => {
     const field = document.getElementById(id);
     if (!field) return;
     const handler = () => syncRechnungsadresseCombined();
@@ -3785,7 +3875,12 @@ function setVerbindungPreference(value){
 function setStatusPreference(value){
   const input = document.getElementById("status_erforderlich");
   if (!input) return;
+  const previousValue = getStatusPreference();
   input.value = value === "nein" ? "nein" : "ja";
+  const statusSelect = document.getElementById("status_regel");
+  if (value !== "nein" && statusSelect && (!statusSelect.value || previousValue === "nein")){
+    statusSelect.value = "scharf_immer";
+  }
   syncStatusSectionVisibility();
   syncAllStatusZeitfensterSummaries();
   renderReviewSummary();
@@ -4094,6 +4189,7 @@ function updateSendButtonAvailability(){
 
 function updateStepNavigation() {
   const stepButtons = Array.from(document.querySelectorAll(".step-item"));
+  const stepper = document.querySelector(".stepper");
   const showVerbindungStep = getVerbindungPreference() === "ja";
   const showTechStep = getTechPreference() === "ja";
   const showStatusStep = getStatusPreference() === "ja";
@@ -4112,6 +4208,10 @@ function updateStepNavigation() {
       indexEl.innerText = String(visibleIndex);
     }
   });
+
+  if (stepper) {
+    stepper.dataset.visibleCount = String(visibleIndex);
+  }
 }
 
 function flashSectionHighlight(section) {
@@ -4291,11 +4391,13 @@ function applyDraftData(data){
   applyAddressValueToFields(legacyAdresse, strasseEl, postleitzahlEl, ortEl);
 
   const rechnungsadresseAktivInput = document.getElementById("rechnungsadresse_aktiv");
+  const rechnungsadresseNameEl = document.getElementById("rechnungsadresse_name");
   const rechnungsadresseStrasseEl = document.getElementById("rechnungsadresse_strasse");
   const rechnungsadressePostleitzahlEl = document.getElementById("rechnungsadresse_postleitzahl");
   const rechnungsadresseOrtEl = document.getElementById("rechnungsadresse_ort");
   const hasBillingDraftData = !!(
     String(data.rechnungsadresse || "").trim() ||
+    String(data.rechnungsadresse_name || "").trim() ||
     String(data.rechnungsadresse_strasse || "").trim() ||
     String(data.rechnungsadresse_postleitzahl || "").trim() ||
     String(data.rechnungsadresse_ort || "").trim()
@@ -4311,7 +4413,8 @@ function applyDraftData(data){
     data.rechnungsadresse || "",
     rechnungsadresseStrasseEl,
     rechnungsadressePostleitzahlEl,
-    rechnungsadresseOrtEl
+    rechnungsadresseOrtEl,
+    rechnungsadresseNameEl
   );
   syncRechnungsadresseSectionVisibility();
   applySonstigeAlarmValues(data.sonstige_alarme_data, data.sonstige_alarme || "");
@@ -4428,11 +4531,7 @@ function applyDraftData(data){
 function saveDraftLocally(showMessage){
   if (skipAutoDraftSave) return;
   try {
-    const payload = {
-      savedAt: new Date().toISOString(),
-      data: collectDraftData()
-    };
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
     if (showMessage) return;
   } catch (error){
     console.error(error);
@@ -4452,11 +4551,7 @@ function clearDraftLocally(){
 
 function loadDraftLocally(){
   try {
-    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.data) return;
-    applyDraftData(parsed.data);
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
   } catch (error){
     console.error(error);
   }
@@ -4556,23 +4651,28 @@ function getVerbindungDetails(){
     const parts = [];
     parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
     parts.push("Max. Ausfalldauer: " + valueOrDash(getStehendeAusfalldauerDisplayValue()));
-    const stehAlarmierung = getSelectValue("verbindung_stehend_alarmierung");
     parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_stehend_alarmierung")));
-    if (stehAlarmierung === "mail"){
       parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
+    return parts.join(" | ");
+  }
+
+  if (art === "bedarf"){
+    const parts = [];
+    parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+    parts.push("Routineintervall: " + valueOrDash(getBedarfIntervallDisplayValue()));
+    parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
+    const bedarfAlarmierung = getSelectValue("verbindung_bedarf_alarmierung");
+    parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
+    if (bedarfAlarmierung === "mail"){
+      parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
     }
     return parts.join(" | ");
   }
 
   const parts = [];
   parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
-  parts.push("Routineintervall: " + valueOrDash(getBedarfIntervallDisplayValue()));
-  parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
-  const bedarfAlarmierung = getSelectValue("verbindung_bedarf_alarmierung");
-  parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
-  if (bedarfAlarmierung === "mail"){
-    parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
-  }
+  parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_cloud_alarm_wann")));
+  parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_cloud_alarmierung")));
   return parts.join(" | ");
 }
 
@@ -4632,6 +4732,7 @@ function getEmailAnlagedatenText(){
   const anlageFields = [
     ["Anlagetyp", getSelectDisplayText("anlagetyp")],
     ["Objektname", getInputValue("standort")],
+    ["HUB-ID / Ger\u00E4te-ID", getInputValue("hub_geraete_id")],
     ["Stra\u00DFe", getInputValue("strasse")],
     ["Postleitzahl", getInputValue("postleitzahl")],
     ["Ort", getInputValue("ort")],
@@ -4773,6 +4874,7 @@ function buildReviewSections(){
 
   const customerRows = [
     { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
+    { label: "HUB-ID / Ger\u00E4te-ID", value: valueOrDash(getInputValue("hub_geraete_id")) },
     { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
     { label: "Postleitzahl", value: valueOrDash(getInputValue("postleitzahl")) },
     { label: "Ort", value: valueOrDash(getInputValue("ort")) }
@@ -4792,7 +4894,7 @@ function buildReviewSections(){
       rows: customerRows
     },
     {
-      title: "Zu überwachende Kriterien",
+      title: "Alarmkriterien",
       target: "alarmFieldset",
       rows: [
         { label: "Ausgewählte Alarmarten", value: alarmValues.length ? alarmValues.join(", ") : "-" },
@@ -4852,6 +4954,7 @@ function buildReviewSections(){
   const anlageRows = [
     { label: "Anlagetyp", value: valueOrDash(getSelectDisplayText("anlagetyp")) },
     { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
+    { label: "HUB-ID / Ger\u00E4te-ID", value: valueOrDash(getInputValue("hub_geraete_id")) },
     { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
     { label: "Postleitzahl", value: valueOrDash(getInputValue("postleitzahl")) },
     { label: "Ort", value: valueOrDash(getInputValue("ort")) }
@@ -4873,7 +4976,7 @@ function buildReviewSections(){
       rows: customerRows
     },
     {
-      title: "Zu überwachende Kriterien",
+      title: "Alarmkriterien",
       target: "alarmFieldset",
       rows: [
         { label: "Ausgewählte Alarmarten", value: alarmValues.length ? alarmValues.join(", ") : "-" },
@@ -5604,11 +5707,13 @@ function setFieldControlVisibility(field, visible){
 function unlockAnlageSection(){
   const anlagetypEl = document.getElementById("anlagetyp");
   const standortEl = document.getElementById("standort");
+  const hubEl = document.getElementById("hub_geraete_id");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
   const ortEl = document.getElementById("ort");
   const btn = document.getElementById("saveAnlageBtn");
   const rechnungsadresseFields = [
+    document.getElementById("rechnungsadresse_name"),
     document.getElementById("rechnungsadresse_strasse"),
     document.getElementById("rechnungsadresse_postleitzahl"),
     document.getElementById("rechnungsadresse_ort")
@@ -5616,7 +5721,7 @@ function unlockAnlageSection(){
 
   anlageLocked = false;
 
-  [anlagetypEl, standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
+  [anlagetypEl, standortEl, hubEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
     if (!el) return;
     if ("disabled" in el) el.disabled = false;
     setFieldControlVisibility(el, true);
@@ -5627,7 +5732,7 @@ function unlockAnlageSection(){
   });
   syncRechnungsadresseSectionVisibility();
 
-  ["saved_anlagetyp", "saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
+  ["saved_anlagetyp", "saved_standort", "saved_hub_geraete_id", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
   setSectionSaveButtonState(btn, false, false);
 
   renderReviewSummary();
@@ -5659,12 +5764,14 @@ function unlockCustomerSection(){
 function resetAnlageSection(){
   const anlagetypEl = document.getElementById("anlagetyp");
   const standortEl = document.getElementById("standort");
+  const hubEl = document.getElementById("hub_geraete_id");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
   const ortEl = document.getElementById("ort");
   const rechnungsadresseEl = document.getElementById("rechnungsadresse");
   const rechnungsadresseAktivInput = document.getElementById("rechnungsadresse_aktiv");
   const rechnungsadresseFields = [
+    document.getElementById("rechnungsadresse_name"),
     document.getElementById("rechnungsadresse_strasse"),
     document.getElementById("rechnungsadresse_postleitzahl"),
     document.getElementById("rechnungsadresse_ort")
@@ -5678,7 +5785,7 @@ function resetAnlageSection(){
     anlagetypEl.disabled = false;
     setFieldControlVisibility(anlagetypEl, true);
   }
-  [standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
+  [standortEl, hubEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
     if (!el) return;
     el.value = "";
     el.disabled = false;
@@ -5693,7 +5800,7 @@ function resetAnlageSection(){
   if (rechnungsadresseEl) rechnungsadresseEl.value = "";
   syncRechnungsadresseSectionVisibility();
 
-  ["saved_anlagetyp", "saved_standort", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
+  ["saved_anlagetyp", "saved_standort", "saved_hub_geraete_id", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
   setFieldError("anlagetyp", "");
   setFieldError("standort", "");
   setFieldError("strasse", "");
@@ -5739,6 +5846,7 @@ function resetCustomerSection(){
 function saveAnlageData(){
   const anlagetypEl = document.getElementById("anlagetyp");
   const standortEl = document.getElementById("standort");
+  const hubEl = document.getElementById("hub_geraete_id");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
   const ortEl = document.getElementById("ort");
@@ -5749,6 +5857,7 @@ function saveAnlageData(){
   const savedRows = [
     { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getSelectDisplayText("anlagetyp") || "-" },
     { input: standortEl, savedId: "saved_standort", label: "Objektname", value: (standortEl?.value || "").trim() || "-" },
+    { input: hubEl, savedId: "saved_hub_geraete_id", label: "HUB-ID / Ger\u00E4te-ID", value: (hubEl?.value || "").trim(), hideWhenEmpty: true },
     { input: strasseEl, savedId: "saved_strasse", label: "Straße", value: (strasseEl?.value || "").trim() || "-" },
     { input: postleitzahlEl, savedId: "saved_postleitzahl", label: "Postleitzahl", value: (postleitzahlEl?.value || "").trim() || "-" },
     { input: ortEl, savedId: "saved_ort", label: "Ort", value: (ortEl?.value || "").trim() || "-" },
@@ -5866,7 +5975,7 @@ function saveAlarmCriteria(){
     setSectionSaveButtonState(btn, true, false);
   }
   syncAlarmDependencies();
-  showSectionSaveFeedback("Zu überwachende Kriterien", "saveAlarmBtn");
+  showSectionSaveFeedback("Alarmkriterien", "saveAlarmBtn");
   renderReviewSummary();
   updateStepProgress("alarmFieldset");
   saveDraftLocally(false);
@@ -5985,11 +6094,13 @@ function saveVerbindungCriteria(){
     verbindung_stehend_ausfalldauer_select: "Maximale Ausfalldauer",
     verbindung_stehend_ausfalldauer_custom: "Benutzerdefinierte Ausfalldauer",
     verbindung_stehend_alarmierung: "Art der Benachrichtigung",
-    verbindung_stehend_rueckmeldung: "Wünschen Sie eine Information per E-Mail wenn die Störung behoben ist?",
+    verbindung_stehend_rueckmeldung: "Wünschen Sie eine Information per E-Mail wenn die Verbindung wieder steht?",
     verbindung_bedarf_intervall: "Überwachungsintervall",
     verbindung_bedarf_alarm_wann: "Wann soll alarmiert werden",
     verbindung_bedarf_alarmierung: "Art der Benachrichtigung",
-    verbindung_bedarf_rueckmeldung: "Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?"
+    verbindung_bedarf_rueckmeldung: "Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?",
+    verbindung_cloud_alarm_wann: "Wann soll alarmiert werden",
+    verbindung_cloud_alarmierung: "Art der Benachrichtigung"
   };
   fieldLabels.verbindung_bedarf_intervall_custom = "Benutzerdefiniertes Überwachungsintervall";
 
@@ -6017,8 +6128,8 @@ function saveVerbindungCriteria(){
       alert("Bitte wählen Sie die Art der Benachrichtigung für die stehende Verbindung.");
       return;
     }
-    if (getSelectValue("verbindung_stehend_alarmierung") === "mail" && !getSelectValue("verbindung_stehend_rueckmeldung")){
-      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn die Störung behoben ist.");
+    if (!getSelectValue("verbindung_stehend_rueckmeldung")){
+      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn die Verbindung wieder steht.");
       return;
     }
   }
@@ -6044,6 +6155,18 @@ function saveVerbindungCriteria(){
     const requiresBedarfRueckmeldung = getSelectValue("verbindung_bedarf_alarmierung") === "mail";
     if (requiresBedarfRueckmeldung && !getSelectValue("verbindung_bedarf_rueckmeldung")){
       alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn nach dem Ausfall eine Testmeldung empfangen wurde.");
+      return;
+    }
+  }
+
+    if (art === "cloud"){
+    const alarmWann = getSelectValue("verbindung_cloud_alarm_wann");
+    if (!alarmWann){
+      alert("Bitte wählen Sie, wann alarmiert werden soll.");
+      return;
+    }
+    if (!getSelectValue("verbindung_cloud_alarmierung")){
+      alert("Bitte wählen Sie die Art der Benachrichtigung für die Cloud-Aufschaltung.");
       return;
     }
   }
@@ -6261,7 +6384,7 @@ function formularSenden(e) {
       <span class="step-index">2</span><span class="step-name">Kundendaten</span>
     </button>
     <button type="button" class="step-item" data-step="step-alarm" data-target="alarmFieldset">
-      <span class="step-index">3</span><span class="step-name">Alarm</span>
+      <span class="step-index">3</span><span class="step-name">Alarmkriterien</span>
     </button>
     <button type="button" class="step-item" data-step="step-verbindung" data-target="verbindungFieldset">
       <span class="step-index">4</span><span class="step-name">Verbindung</span>
@@ -6270,7 +6393,7 @@ function formularSenden(e) {
       <span class="step-index">5</span><span class="step-name">St&ouml;rungen</span>
     </button>
     <button type="button" class="step-item" data-step="step-status" data-target="statusFieldset">
-      <span class="step-index">6</span><span class="step-name">Status</span>
+      <span class="step-index">6</span><span class="step-name">Scharf/Unscharf</span>
     </button>
     <button type="button" class="step-item" data-step="step-review" data-target="privacyFieldset">
       <span class="step-index">7</span><span class="step-name">Datenschutz</span>
@@ -6295,6 +6418,10 @@ function formularSenden(e) {
     <input type="text" id="standort" placeholder="Objektname">
     <div class="customer-saved-row" id="saved_standort"></div>
   </div>
+  <div class="customer-input-row">
+    <input type="text" id="hub_geraete_id" placeholder="HUB-ID / Ger&auml;te-ID" autocomplete="off">
+    <div class="customer-saved-row" id="saved_hub_geraete_id"></div>
+  </div>
   <div class="anlage-grid-wrap">
     <div class="anlage-grid-row">
       <div class="anlage-grid-item">
@@ -6318,7 +6445,10 @@ function formularSenden(e) {
   </div>
   <div id="rechnungsadresse_wrap" class="billing-address-panel" aria-hidden="true">
     <div class="anlage-grid-wrap">
-      <div class="anlage-grid-row">
+      <div class="anlage-grid-row billing-grid-row">
+        <div class="anlage-grid-item">
+          <input type="text" id="rechnungsadresse_name" placeholder="Name" autocomplete="name">
+        </div>
         <div class="anlage-grid-item">
           <input type="text" id="rechnungsadresse_strasse" placeholder="Stra&szlig;e" autocomplete="street-address">
         </div>
@@ -6341,7 +6471,7 @@ function formularSenden(e) {
 
 <fieldset id="customerFieldset" data-step-section>
   <legend>Kundendaten</legend>
-  <p class="section-caption">Bitte tragen Sie hier ihre entsprechenden Ansprechpartner ein, die im Alarm/Ereignisfall zuständig sind.</p>
+  <p class="section-caption">Bitte tragen Sie hier Ihre entsprechenden Ansprechpartner ein, die im Alarm/Ereignisfall zu verst&auml;ndigen sind.</p>
   <div class="customer-input-row">
     <div id="telefonnummer_wrap" class="multi-phone-wrap">
       <div id="telefonnummer_list" class="phone-list">
@@ -6381,7 +6511,7 @@ function formularSenden(e) {
 </fieldset>
 
 <fieldset id="alarmFieldset" data-step-section>
-  <legend>Zu überwachende Kriterien</legend>
+  <legend>Alarmkriterien</legend>
   <p class="section-caption">Wählen Sie die Alarmarten, die Sicherheit Nord überwachen soll.</p>
   <label><input type="checkbox" class="alarm-kategorie" value="Medizinischer Notruf"> Medizinischer Notruf</label>
   <label><input type="checkbox" class="alarm-kategorie" value="Feuer"> Feuer</label>
@@ -6423,9 +6553,10 @@ function formularSenden(e) {
   <div class="technik-box" data-tech-box="netz">
     <div id="verbindung_options" class="tech-options">
       <select id="verbindung_art" onchange="toggleVerbindungArt(this)">
-        <option value="" selected>---- Überwachungsart auswählen ----</option>
-        <option value="stehend" data-label-html="Stehende Verbindung <span class='select-note-inline'>(dauerhaft/permanent)</span>">Stehende Verbindung (dauerhaft/permanent)</option>
+        <option value="">---- Überwachungsart auswählen ----</option>
+        <option value="cloud" selected data-label-html="Cloud-Aufschaltung">Cloud-Aufschaltung</option>
         <option value="bedarf" data-label-html="Bedarfsverbindung <span class='select-note-inline'>(Verbindung wird im Intervallmodus überwacht)</span>">Bedarfsverbindung (Verbindung wird im Intervallmodus überwacht)</option>
+        <option value="stehend" data-label-html="Stehende Verbindung <span class='select-note-inline'>(dauerhaft/permanent)</span>">Stehende Verbindung (dauerhaft/permanent)</option>
       </select>
 
       <div id="verbindung_stehend" class="sub-tech-options">
@@ -6458,12 +6589,12 @@ function formularSenden(e) {
         <select id="verbindung_stehend_alarmierung">
           <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
           <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
-          <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+          <option value="mail">E-Mail Benachrichtigung</option>
           <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
         </select>
 
         <select id="verbindung_stehend_rueckmeldung">
-          <option value="" selected>---- Wünschen Sie eine Information per E-Mail wenn die Störung behoben ist? ----</option>
+          <option value="" selected>---- Wünschen Sie eine Information per E-Mail wenn die Verbindung wieder steht? ----</option>
           <option value="ja">Ja</option>
           <option value="nein">Nein</option>
         </select>
@@ -6490,7 +6621,7 @@ function formularSenden(e) {
         <select id="verbindung_bedarf_alarmierung">
           <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
           <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
-          <option value="mail">E-Mail Benachrichtigung (Option: E-Mail Benachrichtigung auch bei Klar Meldung)</option>
+          <option value="mail">E-Mail Benachrichtigung</option>
           <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
         </select>
 
@@ -6498,6 +6629,21 @@ function formularSenden(e) {
           <option value="" selected>---- Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde? ----</option>
           <option value="ja">Ja</option>
           <option value="nein">Nein</option>
+        </select>
+      </div>
+
+      <div id="verbindung_cloud" class="sub-tech-options">
+        <select id="verbindung_cloud_alarm_wann">
+          <option value="" selected>---- Wenn die Testmeldung ausbleibt, wann soll alarmiert werden? ----</option>
+          <option value="sofort">Jederzeit/Sofort</option>
+          <option value="zeit">Nur in der Zeit von 8:00 - 20:00 Uhr</option>
+        </select>
+
+        <select id="verbindung_cloud_alarmierung">
+          <option value="" selected>---- Art der Benachrichtigung auswählen ----</option>
+          <option value="telefon_24">Telefonischer Anruf durch die Sicherheit Nord Leitstelle</option>
+          <option value="mail">E-Mail Benachrichtigung</option>
+          <option value="telefon_mail">Telefonischer Anruf durch die Sicherheit Nord Leitstelle &amp; E-Mail Benachrichtigung</option>
         </select>
       </div>
     </div>
@@ -6537,7 +6683,7 @@ function formularSenden(e) {
     <select id="netz_ueberwachungsart" onchange="toggleZeit(this,'netzzeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
       <option value="empfang">Sofort (nach Meldungsempfang)</option>
-      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin nicht als klar gemeldet wurde)</option>
     </select>
 
     <div id="netzzeit" class="zeitfeld">
@@ -6573,7 +6719,7 @@ function formularSenden(e) {
     <select id="batterie_ueberwachungsart" onchange="toggleZeit(this,'batteriezeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
       <option value="empfang">Sofort (nach Meldungsempfang)</option>
-      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin nicht als klar gemeldet wurde)</option>
     </select>
 
     <div id="batteriezeit" class="zeitfeld">
@@ -6609,7 +6755,7 @@ function formularSenden(e) {
     <select id="uebertragungsweg_ueberwachungsart" onchange="toggleZeit(this,'uebertragungswegzeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
       <option value="empfang">Sofort (nach Meldungsempfang)</option>
-      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin nicht als klar gemeldet wurde)</option>
     </select>
 
     <div id="uebertragungswegzeit" class="zeitfeld">
@@ -6643,7 +6789,7 @@ function formularSenden(e) {
     <select id="gma_ueberwachungsart" onchange="toggleZeit(this,'gmazeit')">
       <option value="" selected>---- Wann soll alarmiert werden? ----</option>
       <option value="empfang">Sofort (nach Meldungsempfang)</option>
-      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin als klar gemeldet wurde)</option>
+      <option value="zeit">Erst nach einer bestimmten Zeit (Wenn die Störung bis dahin nicht als klar gemeldet wurde)</option>
     </select>
 
     <div id="gmazeit" class="zeitfeld">
@@ -6773,6 +6919,8 @@ function formularSenden(e) {
 </div>
 </body>
 </html>
+
+
 
 
 
