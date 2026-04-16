@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aufschaltformular</title>
 
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
 <style>
   :root {
     --bg-top: #295e70;
@@ -1749,15 +1747,26 @@
 </style>
 
 <script>
-(function () {
-  if (typeof emailjs !== "undefined") {
-    emailjs.init("l10PMPa-_A1CMgSCV");
-  }
-})();
+const FORM_SUBMISSION_CONFIG = {
+  // Nach dem Deploy die /exec-URL des Google Apps Scripts hier eintragen.
+  googleAppsScriptUrl: "https://script.google.com/macros/s/AKfycbxzsuHJUpWS1cagQWSPRcDnp8YgXS5d8YbHGW_mPRN-qCraLdrVKo9ToKMDr3G7--JwBQ/exec",
+  requestTimeoutMs: 25000,
+  channelName: "aufschaltformular-submit"
+};
 
 let alreadySent = false;
 let customSelectGlobalBound = false;
 const FORM_VALIDATION_ACTIVE = false;
+
+function getCurrentPageOrigin(){
+  if (typeof window === "undefined" || !window.location) return "";
+  if (window.location.protocol === "file:") return "";
+  return String(window.location.origin || "").trim();
+}
+
+function getFormSubmissionEndpoint(){
+  return String(FORM_SUBMISSION_CONFIG.googleAppsScriptUrl || "").trim();
+}
 
 function closeAllCustomSelects(exceptWrap){
   document.querySelectorAll(".custom-select.is-open").forEach(wrap => {
@@ -3785,7 +3794,6 @@ let draftTimer = null;
 let currentStepSection = "anlageFieldset";
 let sectionHighlightTimeout = null;
 let latestReviewSnapshot = "";
-let latestCaseId = "";
 let skipAutoDraftSave = false;
 const DRAFT_STORAGE_KEY = "sn_aufschaltformular_draft_v1";
 
@@ -4844,6 +4852,104 @@ function buildEmailTemplateParams(){
   };
 }
 
+function buildFormSubmissionPayload(){
+  const params = buildEmailTemplateParams();
+  return {
+    submitted_at_iso: new Date().toISOString(),
+    datum: params.datum,
+    object_name: getInputValue("standort"),
+    customer_email: getInputValue("kontakt_email"),
+    customer_phone: getInputValue("telefonnummer"),
+    page_url: window.location.href,
+    page_origin: getCurrentPageOrigin(),
+    response_target_origin: getCurrentPageOrigin() || "*",
+    email_params: params
+  };
+}
+
+function appendHiddenSubmissionField(form, name, value){
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = String(value ?? "");
+  form.appendChild(input);
+}
+
+function showSuccessfulSubmissionState(){
+  localStorage.removeItem(DRAFT_STORAGE_KEY);
+  const now = new Date();
+  const timeEl = document.getElementById("thanksTime");
+  if (timeEl) timeEl.innerText = formatDateTime(now);
+  document.getElementById("formular").style.display = "none";
+  document.getElementById("danke").style.display = "block";
+}
+
+function submitFormViaGoogleAppsScript(payload){
+  const endpoint = getFormSubmissionEndpoint();
+  if (!endpoint) {
+    return Promise.reject(new Error("Die Google-Apps-Script-URL ist noch nicht im Aufschaltformular hinterlegt."));
+  }
+
+  return new Promise((resolve, reject) => {
+    const requestId = "submit_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
+    const iframeName = "aufschaltformular_submit_" + requestId;
+    const iframe = document.createElement("iframe");
+    const form = document.createElement("form");
+    const payloadWithRequest = {
+      ...payload,
+      request_id: requestId
+    };
+    let timeoutId = 0;
+
+    function cleanup(){
+      window.removeEventListener("message", handleMessage);
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (form.parentNode) form.parentNode.removeChild(form);
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }
+
+    function handleMessage(event){
+      const data = event && event.data;
+      if (!data || data.channel !== FORM_SUBMISSION_CONFIG.channelName || data.requestId !== requestId) {
+        return;
+      }
+
+      cleanup();
+
+      if (data.ok) {
+        resolve(data);
+        return;
+      }
+
+      reject(new Error(data.message || "Die Angaben konnten nicht gesendet werden."));
+    }
+
+    iframe.name = iframeName;
+    iframe.title = "Versteckter Sende-Frame";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.display = "none";
+
+    form.method = "POST";
+    form.action = endpoint;
+    form.target = iframeName;
+    form.style.display = "none";
+
+    appendHiddenSubmissionField(form, "payload_json", JSON.stringify(payloadWithRequest));
+    appendHiddenSubmissionField(form, "request_id", requestId);
+    appendHiddenSubmissionField(form, "response_target_origin", payloadWithRequest.response_target_origin || "*");
+
+    window.addEventListener("message", handleMessage);
+    timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Die Übermittlung hat zu lange gedauert. Bitte prüfen Sie die Apps-Script-Verbindung und versuchen Sie es erneut."));
+    }, Number(FORM_SUBMISSION_CONFIG.requestTimeoutMs) || 25000);
+
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    form.submit();
+  });
+}
+
 function buildReviewSections(){
   const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
     .filter(cb => cb.checked)
@@ -5050,15 +5156,7 @@ function validateBeforeSubmit(){
   return true;
 }
 
-function generateCaseId(){
-  const now = new Date();
-  const stamp = now.toISOString().replace(/[-:TZ.]/g, "").slice(0, 12);
-  const random = Math.floor(Math.random() * 900 + 100);
-  return "SN-" + stamp + "-" + random;
-}
-
 function downloadSummaryPdf(){
-  const caseId = latestCaseId || generateCaseId();
   const snapshot = latestReviewSnapshot || "";
   if (!snapshot){
     alert("Die Zusammenfassung ist noch nicht verfügbar.");
@@ -5072,7 +5170,7 @@ function downloadSummaryPdf(){
   }
 
   const html = "<!DOCTYPE html>" +
-    "<html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Aufschaltformular " + escapeHtml(caseId) + "</title>" +
+    "<html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Aufschaltformular</title>" +
     "<style>" +
       "body{font-family:Arial,sans-serif;color:#102a43;margin:24px;}" +
       "h1{margin:0 0 6px;font-size:24px;}" +
@@ -5086,7 +5184,7 @@ function downloadSummaryPdf(){
       ".review-edit{display:none;}" +
     "</style></head><body>" +
     "<h1>Aufschaltformular</h1>" +
-    "<p>Vorgangsnummer: <strong>" + escapeHtml(caseId) + "</strong><br>Erstellt am: " + escapeHtml(formatDateTime(new Date())) + "</p>" +
+    "<p>Erstellt am: " + escapeHtml(formatDateTime(new Date())) + "</p>" +
     snapshot +
     "</body></html>";
 
@@ -6330,24 +6428,15 @@ function formularSenden(e) {
   btn.disabled = true;
   btn.innerText = "Wird übermittelt...";
 
-  const caseId = generateCaseId();
-  latestCaseId = caseId;
-  const params = buildEmailTemplateParams();
+  const payload = buildFormSubmissionPayload();
 
-  emailjs.send(
-    "service_vnlczqu",
-    "template_chjz2oi",
-    params
-  ).then(
+  submitFormViaGoogleAppsScript(payload).then(
     () => {
-      localStorage.removeItem(DRAFT_STORAGE_KEY);
-      const now = new Date();
-      const timeEl = document.getElementById("thanksTime");
-      if (timeEl) timeEl.innerText = formatDateTime(now);
-      document.getElementById("formular").style.display = "none";
-      document.getElementById("danke").style.display = "block";
+      showSuccessfulSubmissionState();
     },
     (error) => {
+      if (!error || typeof error !== "object") error = { message: String(error || "") };
+      error.text = error && error.message ? error.message : error;
       alert("Fehler beim Übermitteln: " + error.text);
       console.error(error);
 
