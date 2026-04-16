@@ -169,13 +169,31 @@
   }
 
   .stepper[data-visible-count="7"] {
-    --step-list-gap: 6px;
-    --step-item-padding-x: 8px;
+    --step-list-gap: 5px;
+    --step-item-padding-x: 7px;
     --step-item-gap: 4px;
-    --step-item-font-size: 11.1px;
-    --step-item-min-height: 42px;
-    --step-index-size: 18px;
-    --step-index-font-size: 11px;
+    --step-item-font-size: 10.6px;
+    --step-item-min-height: 41px;
+    --step-index-size: 17px;
+    --step-index-font-size: 10px;
+  }
+
+  .stepper[data-visible-count="8"] {
+    --step-list-gap: 4px;
+    --step-item-padding-x: 5px;
+    --step-item-gap: 3px;
+    --step-item-font-size: 9.7px;
+    --step-item-min-height: 39px;
+    --step-index-size: 15px;
+    --step-index-font-size: 9px;
+  }
+
+  .stepper[data-visible-count="8"] .step-item {
+    letter-spacing: -0.01em;
+  }
+
+  .stepper[data-visible-count="8"] .step-name {
+    letter-spacing: -0.015em;
   }
 
   .stepper-head {
@@ -1813,13 +1831,15 @@ function syncCustomSelect(select){
     !!select.disabled &&
     (select.classList.contains("tech-filled") ||
      select.classList.contains("verbindung-filled") ||
-     select.classList.contains("status-filled"));
+     select.classList.contains("status-filled") ||
+     select.classList.contains("ueberwachung-filled"));
   trigger.classList.toggle("is-filled", isFilledLocked);
 
   menu.innerHTML = "";
   options.forEach((opt, index) => {
-    const isPlaceholderOption = opt.disabled && String(opt.value || "").trim() === "";
-    if (isPlaceholderOption) return;
+    const isPlaceholderOption = String(opt.value || "").trim() === "";
+    const showPlaceholderOption = select.dataset.showPlaceholderOption === "1";
+    if (isPlaceholderOption && opt.disabled && !showPlaceholderOption) return;
 
     const optionBtn = document.createElement("button");
     optionBtn.type = "button";
@@ -3481,6 +3501,39 @@ function syncStatusSectionVisibility() {
   setStatusSectionVisibility();
 }
 
+function setUeberwachungSectionVisibility() {
+  const fieldset = document.getElementById("ueberwachungFieldset");
+  const options = document.getElementById("ueberwachungOptions");
+  const summary = document.getElementById("ueberwachungSummary");
+  const select = document.getElementById("ueberwachung_reaktion_ab");
+  const detailWrap = document.getElementById("ueberwachung_anderer_zeitpunkt_wrap");
+  const detailInput = document.getElementById("ueberwachung_anderer_zeitpunkt");
+  const btn = document.getElementById("saveUeberwachungBtn");
+  if (!fieldset || !options || !select || !detailWrap || !detailInput) return;
+  const showDetailField = getSelectValue("ueberwachung_reaktion_ab") === "anderer_zeitpunkt";
+
+  fieldset.hidden = false;
+  fieldset.style.display = "block";
+  detailWrap.style.display = showDetailField ? "block" : "none";
+  detailWrap.setAttribute("aria-hidden", showDetailField ? "false" : "true");
+  select.disabled = ueberwachungLocked;
+  detailInput.disabled = ueberwachungLocked || !showDetailField;
+
+  if (summary){
+    const hasSummaryContent = String(summary.innerHTML || "").trim() !== "";
+    summary.style.display = hasSummaryContent ? "block" : "none";
+  }
+  if (btn){
+    setSectionSaveButtonState(btn, ueberwachungLocked, false);
+  }
+
+  refreshCustomSelects();
+}
+
+function syncUeberwachungSectionVisibility() {
+  setUeberwachungSectionVisibility();
+}
+
 function syncAlarmDependencies() {
   const techFieldset = document.getElementById("technikFieldset");
   if (!techFieldset) return;
@@ -3543,6 +3596,7 @@ document.addEventListener("DOMContentLoaded", function () {
   syncAllTechRueckmeldungVisibility();
   syncVerbindungSectionVisibility();
   syncStatusSectionVisibility();
+  syncUeberwachungSectionVisibility();
   syncAllStatusZeitfensterSummaries();
   refreshCustomSelects();
   bindStepNavigation();
@@ -3790,6 +3844,7 @@ let alarmLocked = false;
 let techLocked = false;
 let verbindungLocked = false;
 let statusLocked = false;
+let ueberwachungLocked = false;
 let draftTimer = null;
 let currentStepSection = "anlageFieldset";
 let sectionHighlightTimeout = null;
@@ -3866,7 +3921,7 @@ function setTechPreference(value){
   input.value = value === "nein" ? "nein" : "ja";
   syncAlarmDependencies();
   renderReviewSummary();
-  updateStepProgress(value === "nein" ? (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset") : "technikFieldset");
+  updateStepProgress(value === "nein" ? (getStatusPreference() === "ja" ? "statusFieldset" : "ueberwachungFieldset") : "technikFieldset");
   saveDraftLocally(false);
 }
 
@@ -3876,7 +3931,7 @@ function setVerbindungPreference(value){
   input.value = value === "nein" ? "nein" : "ja";
   syncVerbindungSectionVisibility();
   renderReviewSummary();
-  updateStepProgress(value === "nein" ? (getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset")) : "verbindungFieldset");
+  updateStepProgress(value === "nein" ? (getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "ueberwachungFieldset")) : "verbindungFieldset");
   saveDraftLocally(false);
 }
 
@@ -3892,8 +3947,14 @@ function setStatusPreference(value){
   syncStatusSectionVisibility();
   syncAllStatusZeitfensterSummaries();
   renderReviewSummary();
-  updateStepProgress(value === "nein" ? "privacyFieldset" : "statusFieldset");
+  updateStepProgress(value === "nein" ? "ueberwachungFieldset" : "statusFieldset");
   saveDraftLocally(false);
+}
+
+function toggleUeberwachungZeitpunkt(){
+  syncUeberwachungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("ueberwachungFieldset");
 }
 
 function valueOrDash(value){
@@ -4276,13 +4337,13 @@ function updateStepProgress(activeSectionId){
     currentStepSection = activeSectionId === "reviewFieldset" ? "privacyFieldset" : activeSectionId;
   }
   if (getVerbindungPreference() === "nein" && currentStepSection === "verbindungFieldset"){
-    currentStepSection = getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset");
+    currentStepSection = getTechPreference() === "ja" ? "technikFieldset" : (getStatusPreference() === "ja" ? "statusFieldset" : "ueberwachungFieldset");
   }
   if (getTechPreference() === "nein" && currentStepSection === "technikFieldset"){
-    currentStepSection = getStatusPreference() === "ja" ? "statusFieldset" : "privacyFieldset";
+    currentStepSection = getStatusPreference() === "ja" ? "statusFieldset" : "ueberwachungFieldset";
   }
   if (getStatusPreference() === "nein" && currentStepSection === "statusFieldset"){
-    currentStepSection = "privacyFieldset";
+    currentStepSection = "ueberwachungFieldset";
   }
 
   updateStepNavigation();
@@ -4295,6 +4356,7 @@ function updateStepProgress(activeSectionId){
     "step-verbindung",
     "step-tech",
     "step-status",
+    "step-monitor",
     "step-review"
   ].filter(step => {
     if (step === "step-verbindung") return getVerbindungPreference() === "ja";
@@ -4310,6 +4372,7 @@ function updateStepProgress(activeSectionId){
     "step-tech": getTechPreference() === "nein" || techLocked,
     "step-verbindung": getVerbindungPreference() === "nein" || verbindungLocked,
     "step-status": getStatusPreference() === "nein" || statusLocked,
+    "step-monitor": ueberwachungLocked,
     "step-review": consentChecked
   };
   const totalSteps = relevantSteps.length;
@@ -4718,6 +4781,22 @@ function getStatusDetails(){
   return parts.join(" | ");
 }
 
+function getUeberwachungDetails(){
+  const reactionValue = getSelectValue("ueberwachung_reaktion_ab");
+  const reactionLabel = getSelectDisplayText("ueberwachung_reaktion_ab");
+  const customDetail = (getInputValue("ueberwachung_anderer_zeitpunkt") || "").trim();
+
+  if (!reactionLabel && !customDetail){
+    return "-";
+  }
+
+  const parts = ["Reaktion: " + valueOrDash(reactionLabel)];
+  if (reactionValue === "anderer_zeitpunkt" && customDetail){
+    parts.push("Zeitpunkt: " + customDetail);
+  }
+  return parts.join(" | ");
+}
+
 function hasMeaningfulEmailValue(value){
   const text = String(value ?? "").trim();
   return !!text && text !== "-" && text !== "Keine";
@@ -4820,6 +4899,10 @@ function getEmailStatusText(){
   return toEmailSummaryLines(getStatusDetails());
 }
 
+function getEmailUeberwachungText(){
+  return toEmailSummaryLines(getUeberwachungDetails());
+}
+
 function getEmailDatenschutzText(){
   return document.getElementById("datenschutz_einwilligung")?.checked ? "Einwilligung zur Datenverarbeitung: Ja" : "";
 }
@@ -4831,6 +4914,7 @@ function buildEmailTemplateParams(){
   const verbindungText = getEmailVerbindungText();
   const technikText = getEmailTechnikText();
   const statusText = getEmailStatusText();
+  const ueberwachungText = getEmailUeberwachungText();
   const datenschutzText = getEmailDatenschutzText();
 
   return {
@@ -4847,6 +4931,8 @@ function buildEmailTemplateParams(){
     technik_display: getEmailBlockStyle(technikText),
     status_text: statusText,
     status_display: getEmailBlockStyle(statusText),
+    ueberwachung_text: ueberwachungText,
+    ueberwachung_display: getEmailBlockStyle(ueberwachungText),
     datenschutz_text: datenschutzText,
     datenschutz_display: getEmailBlockStyle(datenschutzText)
   };
@@ -5025,6 +5111,13 @@ function buildReviewSections(){
       rows: [
         { label: "Konfiguration", value: getStatusDetails() }
       ]
+    },
+    {
+      title: "Ueberwachung der Gefahrenmeldeanlage",
+      target: "ueberwachungFieldset",
+      rows: [
+        { label: "Konfiguration", value: getUeberwachungDetails() }
+      ]
     }
   ];
 }
@@ -5106,6 +5199,13 @@ function buildReviewSections(){
       target: "statusFieldset",
       rows: [
         { label: "Konfiguration", value: getStatusDetails() }
+      ]
+    },
+    {
+      title: "Ueberwachung der Gefahrenmeldeanlage",
+      target: "ueberwachungFieldset",
+      rows: [
+        { label: "Konfiguration", value: getUeberwachungDetails() }
       ]
     }
   ];
@@ -5411,6 +5511,31 @@ function unlockStatusSection(){
   saveDraftLocally(false);
 }
 
+function unlockUeberwachungSection(){
+  const fieldset = document.getElementById("ueberwachungFieldset");
+  const summary = document.getElementById("ueberwachungSummary");
+  const btn = document.getElementById("saveUeberwachungBtn");
+  if (!fieldset) return;
+
+  ueberwachungLocked = false;
+  fieldset.classList.remove("ueberwachung-frozen");
+  fieldset.querySelectorAll(".ueberwachung-filled").forEach(el => el.classList.remove("ueberwachung-filled"));
+  fieldset.querySelectorAll(".ueberwachung-filled-label").forEach(el => el.classList.remove("ueberwachung-filled-label"));
+  fieldset.querySelectorAll(".ueberwachung-filled-box").forEach(el => el.classList.remove("ueberwachung-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  setSectionSaveButtonState(btn, false, false);
+  syncUeberwachungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("ueberwachungFieldset");
+  saveDraftLocally(false);
+}
+
 function resetCustomerSection(){
   const standortEl = document.getElementById("standort");
   const strasseEl = document.getElementById("strasse");
@@ -5634,6 +5759,40 @@ function resetStatusSection(){
   syncAllStatusZeitfensterSummaries();
   renderReviewSummary();
   updateStepProgress("statusFieldset");
+  saveDraftLocally(false);
+}
+
+function resetUeberwachungSection(){
+  const fieldset = document.getElementById("ueberwachungFieldset");
+  const summary = document.getElementById("ueberwachungSummary");
+  const btn = document.getElementById("saveUeberwachungBtn");
+  const select = document.getElementById("ueberwachung_reaktion_ab");
+  const detailInput = document.getElementById("ueberwachung_anderer_zeitpunkt");
+  if (!fieldset || !select || !detailInput) return;
+
+  ueberwachungLocked = false;
+  fieldset.classList.remove("ueberwachung-frozen");
+  fieldset.querySelectorAll(".ueberwachung-filled").forEach(el => el.classList.remove("ueberwachung-filled"));
+  fieldset.querySelectorAll(".ueberwachung-filled-label").forEach(el => el.classList.remove("ueberwachung-filled-label"));
+  fieldset.querySelectorAll(".ueberwachung-filled-box").forEach(el => el.classList.remove("ueberwachung-filled-box"));
+  clearInlineSavedRows(fieldset);
+
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  select.value = "bei_aktivierung";
+  detailInput.value = "";
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+
+  if (btn){
+    setSectionSaveButtonState(btn, false, false);
+  }
+
+  syncUeberwachungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("ueberwachungFieldset");
   saveDraftLocally(false);
 }
 
@@ -6412,6 +6571,81 @@ function saveStatusCriteria(){
   saveDraftLocally(false);
 }
 
+function saveUeberwachungCriteria(){
+  const fieldset = document.getElementById("ueberwachungFieldset");
+  const btn = document.getElementById("saveUeberwachungBtn");
+  const options = document.getElementById("ueberwachungOptions");
+  const summary = document.getElementById("ueberwachungSummary");
+  if (!fieldset || !options) return;
+
+  const inputs = Array.from(fieldset.querySelectorAll("input, select, textarea"))
+    .filter(el => el.id !== "saveUeberwachungBtn");
+
+  const clearLegacyClasses = () => {
+    fieldset.classList.remove("ueberwachung-frozen");
+    fieldset.querySelectorAll(".ueberwachung-filled").forEach(el => el.classList.remove("ueberwachung-filled"));
+    fieldset.querySelectorAll(".ueberwachung-filled-label").forEach(el => el.classList.remove("ueberwachung-filled-label"));
+    fieldset.querySelectorAll(".ueberwachung-filled-box").forEach(el => el.classList.remove("ueberwachung-filled-box"));
+  };
+
+  const fieldLabels = {
+    ueberwachung_reaktion_ab: "Reaktion auf Meldungen",
+    ueberwachung_anderer_zeitpunkt: "Anderer Zeitpunkt"
+  };
+
+  if (ueberwachungLocked){
+    unlockUeberwachungSection();
+    return;
+  }
+
+  const reactionValue = getSelectValue("ueberwachung_reaktion_ab");
+  const customDetail = (getInputValue("ueberwachung_anderer_zeitpunkt") || "").trim();
+
+  if (FORM_VALIDATION_ACTIVE && !reactionValue){
+    alert("Bitte waehlen Sie aus, ab wann Sicherheit Nord reagieren soll.");
+    return;
+  }
+  if (FORM_VALIDATION_ACTIVE && reactionValue === "anderer_zeitpunkt" && !customDetail){
+    alert("Bitte beschreiben Sie den anderen Zeitpunkt.");
+    return;
+  }
+
+  clearLegacyClasses();
+  clearInlineSavedRows(fieldset);
+  if (summary){
+    summary.style.display = "none";
+    summary.innerHTML = "";
+  }
+
+  inputs.forEach(el => {
+    if (el.type === "checkbox" || el.type === "radio") {
+      el.disabled = true;
+      return;
+    }
+
+    const visible = isElementVisible(el);
+    const value = getFieldDisplayText(el);
+    el.disabled = true;
+
+    if (visible) {
+      const label = fieldLabels[el.id] || "Wert";
+      showInlineSavedRow(el, label, value || "-");
+    }
+  });
+
+  if (options) options.style.display = "block";
+
+  ueberwachungLocked = true;
+  if (btn){
+    setSectionSaveButtonState(btn, true, false);
+  }
+  showSectionSaveFeedback("Ueberwachung", "saveUeberwachungBtn");
+  syncUeberwachungSectionVisibility();
+  renderReviewSummary();
+  updateStepProgress("ueberwachungFieldset");
+  saveDraftLocally(false);
+}
+
 function formularSenden(e) {
   e.preventDefault();
 
@@ -6462,7 +6696,7 @@ function formularSenden(e) {
 
 <div class="stepper-head">
   <span>Schrittf&uuml;hrung</span>
-  <span id="stepProgressText">0/7 Bereiche gespeichert</span>
+  <span id="stepProgressText">0/8 Bereiche gespeichert</span>
 </div>
 <nav class="stepper" aria-label="Formularschritte">
   <div class="stepper-list">
@@ -6484,8 +6718,11 @@ function formularSenden(e) {
     <button type="button" class="step-item" data-step="step-status" data-target="statusFieldset">
       <span class="step-index">6</span><span class="step-name">Scharf/Unscharf</span>
     </button>
+    <button type="button" class="step-item" data-step="step-monitor" data-target="ueberwachungFieldset">
+      <span class="step-index">7</span><span class="step-name">&Uuml;berwachung</span>
+    </button>
     <button type="button" class="step-item" data-step="step-review" data-target="privacyFieldset">
-      <span class="step-index">7</span><span class="step-name">Datenschutz</span>
+      <span class="step-index">8</span><span class="step-name">Datenschutz</span>
     </button>
   </div>
 </nav>
@@ -6967,6 +7204,32 @@ function formularSenden(e) {
     <button type="button" class="secondary-btn" id="saveStatusBtn" onclick="saveStatusCriteria()">Speichern</button>
     <button type="button" class="secondary-btn section-reset-btn" id="resetStatusBtn" onclick="resetStatusSection()">Zurücksetzen</button>
   </div>
+  </div>
+</fieldset>
+
+<fieldset id="ueberwachungFieldset" data-step-section>
+  <legend>&Uuml;berwachung der Gefahrenmeldeanlage</legend>
+  <div id="ueberwachungOptions" class="status-options">
+    <label for="ueberwachung_reaktion_ab">Ab wann soll Sicherheit Nord auf &uuml;bertragene Meldungen reagieren?</label>
+    <select id="ueberwachung_reaktion_ab" data-show-placeholder-option="1" onchange="toggleUeberwachungZeitpunkt(this)">
+      <option value="">---- Zeitpunkt ausw&auml;hlen ----</option>
+      <option value="bei_aktivierung" selected>Bei Aktivierung</option>
+      <option value="anderer_zeitpunkt">Anderer Zeitpunkt</option>
+    </select>
+
+    <div id="ueberwachung_anderer_zeitpunkt_wrap" class="zeitfeld" style="display:none;" aria-hidden="true">
+      <textarea
+        id="ueberwachung_anderer_zeitpunkt"
+        data-display-wrap-id="ueberwachung_anderer_zeitpunkt_wrap"
+        placeholder="Anderen Zeitpunkt frei beschreiben"
+      ></textarea>
+    </div>
+  </div>
+
+  <div id="ueberwachungSummary" class="customer-saved-row"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveUeberwachungBtn" onclick="saveUeberwachungCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetUeberwachungBtn" onclick="resetUeberwachungSection()">Zur&uuml;cksetzen</button>
   </div>
 </fieldset>
 
