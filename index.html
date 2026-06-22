@@ -1774,7 +1774,7 @@ const FORM_SUBMISSION_CONFIG = {
 
 let alreadySent = false;
 let customSelectGlobalBound = false;
-const FORM_VALIDATION_ACTIVE = false;
+const FORM_VALIDATION_ACTIVE = true;
 
 function getCurrentPageOrigin(){
   if (typeof window === "undefined" || !window.location) return "";
@@ -5253,6 +5253,52 @@ function renderReviewSummary(){
 }
 
 function validateBeforeSubmit(){
+  if (!FORM_VALIDATION_ACTIVE) return true;
+
+  clearAllValidationUi();
+
+  const issues = [];
+  const addIssue = (target, label) => {
+    if (!issues.some(item => item.target === target && item.label === label)){
+      issues.push({ target, label });
+    }
+  };
+
+  const anlageValid = validateAnlageFields(false);
+  const customerValid = validateCustomerFields(false);
+  const consentValid = validateConsent(false);
+
+  if (!anlageValid) addIssue("anlageFieldset", "Anlagedaten vollständig ausfüllen");
+  if (!customerValid) addIssue("customerFieldset", "Kundendaten vollständig ausfüllen");
+  if (!anlageLocked) addIssue("anlageFieldset", "Anlagedaten speichern");
+  if (!customerLocked) addIssue("customerFieldset", "Kundendaten speichern");
+  if (!alarmLocked) addIssue("alarmFieldset", "Alarmkriterien speichern");
+
+  if (getVerbindungPreference() === "ja" && !verbindungLocked){
+    addIssue("verbindungFieldset", "Verbindungsüberwachung speichern");
+  }
+  if (getTechPreference() === "ja" && !techLocked){
+    addIssue("technikFieldset", "Technische Störungen speichern");
+  }
+  if (getStatusPreference() === "ja" && !statusLocked){
+    addIssue("statusFieldset", "Scharf-/Unscharfschaltung speichern");
+  }
+
+  if (!ueberwachungLocked) addIssue("ueberwachungFieldset", "Überwachung speichern");
+  if (!consentValid) addIssue("privacyFieldset", "Datenschutz bestätigen");
+
+  if (issues.length){
+    renderReviewSummary();
+    updateStepProgress(issues[0].target);
+    window.setTimeout(() => jumpToSection(issues[0].target), 80);
+    alert(
+      "Das Protokoll kann noch nicht übermittelt werden.\n\n" +
+      "Bitte erledigen Sie zuerst:\n- " +
+      issues.map(item => item.label).join("\n- ")
+    );
+    return false;
+  }
+
   return true;
 }
 
