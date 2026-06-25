@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="form-version" content="1.1">
+<meta name="form-version" content="1.2">
 <title>Aufschaltformular</title>
 
 <style>
@@ -5024,6 +5024,19 @@ function getEmailDatenschutzText(){
   return document.getElementById("datenschutz_einwilligung")?.checked ? "Einwilligung zur Datenverarbeitung: Ja" : "";
 }
 
+function getFollowUpInfoText(){
+  return [
+    "Aufgabe der Leitstelle:",
+    "Ist die Aufschaltung erfolgt sowie die \u00DCbertragung zur Leitstelle gew\u00E4hrleistet, erhalten Sie dieses Dokument zur Best\u00E4tigung der \u00DCberwachung an die angegebene E-Mail-Adresse zur\u00FCck.",
+    "",
+    "Aufgabe der Kundenbetreuung:",
+    "Die Kundenbetreuung wird sich zur Gestaltung des Dienstleistungsvertrages mit Ihnen in Verbindung setzen.",
+    "",
+    "Mit freundlichen Gr\u00FC\u00DFen",
+    "Sicherheit Nord"
+  ].join("\n");
+}
+
 function buildEmailTemplateParams(){
   const anlagedatenText = getEmailAnlagedatenText();
   const kundendatenText = getEmailKundendatenText();
@@ -5033,6 +5046,7 @@ function buildEmailTemplateParams(){
   const statusText = getEmailStatusText();
   const ueberwachungText = getEmailUeberwachungText();
   const datenschutzText = getEmailDatenschutzText();
+  const followupText = getFollowUpInfoText();
 
   return {
     datum: new Date().toLocaleString("de-DE"),
@@ -5051,7 +5065,9 @@ function buildEmailTemplateParams(){
     ueberwachung_text: ueberwachungText,
     ueberwachung_display: getEmailBlockStyle(ueberwachungText),
     datenschutz_text: datenschutzText,
-    datenschutz_display: getEmailBlockStyle(datenschutzText)
+    datenschutz_display: getEmailBlockStyle(datenschutzText),
+    followup_text: followupText,
+    followup_display: getEmailBlockStyle(followupText)
   };
 }
 
@@ -5528,9 +5544,9 @@ function buildPrintableFollowUpInfoHtml(){
       "<h2>Informationen zur weiteren Bearbeitung</h2>" +
       "<div class=\"print-info-block\">" +
         "<div class=\"print-info-title\">Aufgabe der Leitstelle:</div>" +
-        "<p>Ist die Aufschaltung erfolgt sowie die \u00DCbertragung zur Leitstelle gew\u00E4hrleistet, erhalten Sie dieses Dokument zur Best\u00E4tigung der \u00DCberwachung an die angegebene E-Mail-Adresse zur\u00FCck.</p>" +
+        "<p>" + escapeHtml(getFollowUpInfoText().split("\n")[1]) + "</p>" +
         "<div class=\"print-info-title\">Aufgabe der Kundenbetreuung:</div>" +
-        "<p>Die Kundenbetreuung wird sich zur Gestaltung des Dienstleistungsvertrages mit Ihnen in Verbindung setzen.</p>" +
+        "<p>" + escapeHtml(getFollowUpInfoText().split("\n")[4]) + "</p>" +
         "<p class=\"print-greeting\">Mit freundlichen Gr\u00FC\u00DFen<br>Sicherheit Nord</p>" +
       "</div>" +
     "</section>"
@@ -7058,7 +7074,7 @@ function formularSenden(e) {
   alt="Sicherheit Nord Logo"
 >
 <h2 class="page-title">Aufschaltformular</h2>
-<div class="form-version">Version 1.1</div>
+<div class="form-version">Version 1.2</div>
 
 <div class="stepper-head">
   <span>Schrittf&uuml;hrung</span>
