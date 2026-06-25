@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="form-version" content="1.2">
+<meta name="form-version" content="1.3">
 <title>Aufschaltformular</title>
 
 <style>
@@ -4824,8 +4824,8 @@ function getTechDetails(prefix){
 
   if (artText) parts.push("Wann soll alarmiert werden: " + artText);
   if (artValue === "zeit" && (zeit || "").trim()) parts.push("Zeit (X): " + (zeit || "").trim());
-  if (alarm) parts.push("Benachrichtigung: " + alarm);
-  if (alarmValue === "mail" && rueck) parts.push("Information per E-Mail bei Klarmeldung: " + rueck);
+  if (alarm) parts.push("Art der Benachrichtigung: " + alarm);
+  if (alarmValue === "mail" && rueck) parts.push("W\u00FCnschen Sie eine Information per E-Mail wenn die St\u00F6rung als klar gemeldet wurde?: " + rueck);
 
   return parts.length ? parts.join(" | ") : "-";
 }
@@ -4837,30 +4837,30 @@ function getVerbindungDetails(){
 
   if (art === "stehend"){
     const parts = [];
-    parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
-    parts.push("Max. Ausfalldauer: " + valueOrDash(getStehendeAusfalldauerDisplayValue()));
-    parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_stehend_alarmierung")));
-      parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
+    parts.push("\u00DCberwachungsart: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+    parts.push("Maximale Ausfalldauer: " + valueOrDash(getStehendeAusfalldauerDisplayValue()));
+    parts.push("Art der Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_stehend_alarmierung")));
+      parts.push("W\u00FCnschen Sie eine Information per E-Mail wenn die Verbindung wieder steht?: " + valueOrDash(getSelectDisplayText("verbindung_stehend_rueckmeldung")));
     return parts.join(" | ");
   }
 
   if (art === "bedarf"){
     const parts = [];
-    parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
-    parts.push("Routineintervall: " + valueOrDash(getBedarfIntervallDisplayValue()));
+    parts.push("\u00DCberwachungsart: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+    parts.push("\u00DCberwachungsintervall: " + valueOrDash(getBedarfIntervallDisplayValue()));
     parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarm_wann")));
     const bedarfAlarmierung = getSelectValue("verbindung_bedarf_alarmierung");
-    parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
+    parts.push("Art der Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_alarmierung")));
     if (bedarfAlarmierung === "mail"){
-      parts.push("Rückmeldung per E-Mail: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
+      parts.push("W\u00FCnschen Sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?: " + valueOrDash(getSelectDisplayText("verbindung_bedarf_rueckmeldung")));
     }
     return parts.join(" | ");
   }
 
   const parts = [];
-  parts.push("Art: " + valueOrDash(getSelectDisplayText("verbindung_art")));
+  parts.push("\u00DCberwachungsart: " + valueOrDash(getSelectDisplayText("verbindung_art")));
   parts.push("Wann soll alarmiert werden: " + valueOrDash(getSelectDisplayText("verbindung_cloud_alarm_wann")));
-  parts.push("Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_cloud_alarmierung")));
+  parts.push("Art der Benachrichtigung: " + valueOrDash(getSelectDisplayText("verbindung_cloud_alarmierung")));
   return parts.join(" | ");
 }
 
@@ -4995,10 +4995,10 @@ function getEmailTechnikText(){
   if (getTechPreference() === "nein") return "";
   const blocks = [];
   const configs = [
-    ["Störung der Gefahrenmeldeanlage", "gma"],
     ["Netzstörung (Stromausfall/Stromstörung)", "netz"],
     ["Batteriestörung", "batterie"],
-    ["St\u00F6rung-\u00DCbertragunsweg", "uebertragungsweg"]
+    ["St\u00F6rung-\u00DCbertragungsweg", "uebertragungsweg"],
+    ["Störung der Gefahrenmeldeanlage", "gma"]
   ];
 
   configs.forEach(([title, prefix]) => {
@@ -5169,7 +5169,7 @@ function submitFormViaGoogleAppsScript(payload){
   });
 }
 
-function buildReviewSections(){
+function buildLegacyReviewSections_(){
   const alarmValues = Array.from(document.querySelectorAll(".alarm-kategorie"))
     .filter(cb => cb.checked)
     .map(cb => cb.value);
@@ -5185,7 +5185,7 @@ function buildReviewSections(){
     techRows.push({ label: "Batteriestörung", value: getTechDetails("batterie") });
   }
   if (getTechPreference() === "ja" && document.getElementById("uebertragungsweg_aktiv")?.checked){
-    techRows.push({ label: "St\u00F6rung-\u00DCbertragunsweg", value: getTechDetails("uebertragungsweg") });
+    techRows.push({ label: "St\u00F6rung-\u00DCbertragungsweg", value: getTechDetails("uebertragungsweg") });
   }
   if (getTechPreference() === "ja" && document.getElementById("gma_aktiv")?.checked){
     techRows.push({ label: "Störung der Gefahrenmeldeanlage", value: getTechDetails("gma") });
@@ -5239,14 +5239,14 @@ function buildReviewSections(){
       rows: techRows
     },
     {
-      title: "Statusregel",
+      title: "Scharf- und Unscharfschaltung der Anlage",
       target: "statusFieldset",
       rows: [
         { label: "Konfiguration", value: getStatusDetails() }
       ]
     },
     {
-      title: "Ueberwachung der Gefahrenmeldeanlage",
+      title: "\u00DCberwachung der Gefahrenmeldeanlage",
       target: "ueberwachungFieldset",
       rows: [
         { label: "Konfiguration", value: getUeberwachungDetails() }
@@ -5271,7 +5271,7 @@ function buildReviewSections(){
     techRows.push({ label: "Batteriestörung", value: getTechDetails("batterie") });
   }
   if (getTechPreference() === "ja" && document.getElementById("uebertragungsweg_aktiv")?.checked){
-    techRows.push({ label: "Störung-Übertragunsweg", value: getTechDetails("uebertragungsweg") });
+    techRows.push({ label: "Störung-Übertragungsweg", value: getTechDetails("uebertragungsweg") });
   }
   if (getTechPreference() === "ja" && document.getElementById("gma_aktiv")?.checked){
     techRows.push({ label: "Störung der Gefahrenmeldeanlage", value: getTechDetails("gma") });
@@ -5328,14 +5328,14 @@ function buildReviewSections(){
       rows: techRows
     },
     {
-      title: "Statusregel",
+      title: "Scharf- und Unscharfschaltung der Anlage",
       target: "statusFieldset",
       rows: [
         { label: "Konfiguration", value: getStatusDetails() }
       ]
     },
     {
-      title: "Ueberwachung der Gefahrenmeldeanlage",
+      title: "\u00DCberwachung der Gefahrenmeldeanlage",
       target: "ueberwachungFieldset",
       rows: [
         { label: "Konfiguration", value: getUeberwachungDetails() }
@@ -5416,16 +5416,16 @@ function validateBeforeSubmit(){
   }
 
   if (getVerbindungPreference() === "ja" && !verbindungLocked){
-    addIssue("verbindungFieldset", "Verbindungsüberwachung speichern");
+    addIssue("verbindungFieldset", "Verbindungs\u00FCberwachungen speichern");
   }
   if (getTechPreference() === "ja" && !techLocked){
     addIssue("technikFieldset", "Technische Störungen speichern");
   }
   if (getStatusPreference() === "ja" && !statusLocked){
-    addIssue("statusFieldset", "Scharf-/Unscharfschaltung speichern");
+    addIssue("statusFieldset", "Scharf- und Unscharfschaltung der Anlage speichern");
   }
 
-  if (!ueberwachungLocked) addIssue("ueberwachungFieldset", "Überwachung speichern");
+  if (!ueberwachungLocked) addIssue("ueberwachungFieldset", "\u00DCberwachung der Gefahrenmeldeanlage speichern");
   if (!consentValid) addIssue("privacyFieldset", "Datenschutz bestätigen");
 
   if (issues.length){
@@ -5525,9 +5525,9 @@ function buildPrintableSummaryHtml(){
     ["Anlagedaten", params.anlagedaten_text],
     ["Kundendaten", params.kundendaten_text],
     ["Alarmkriterien", params.alarm_text],
-    ["Verbindungs\u00FCberwachung", params.verbindung_text],
+    ["Verbindungs\u00FCberwachungen", params.verbindung_text],
     ["Technische St\u00F6rungen", params.technik_text],
-    ["Scharf- und Unscharfschaltung", params.status_text],
+    ["Scharf- und Unscharfschaltung der Anlage", params.status_text],
     ["\u00DCberwachung der Gefahrenmeldeanlage", params.ueberwachung_text],
     ["Datenschutz und Einwilligung", params.datenschutz_text]
   ];
@@ -6663,7 +6663,7 @@ function saveVerbindungCriteria(){
   const summary = document.getElementById("verbindungSummary");
 
   if (!fieldset){
-    alert("Der Bereich Verbindungsüberwachung wurde nicht gefunden.");
+    alert("Der Bereich Verbindungs\u00FCberwachungen wurde nicht gefunden.");
     return;
   }
 
@@ -6686,7 +6686,7 @@ function saveVerbindungCriteria(){
     verbindung_bedarf_intervall: "Überwachungsintervall",
     verbindung_bedarf_alarm_wann: "Wann soll alarmiert werden",
     verbindung_bedarf_alarmierung: "Art der Benachrichtigung",
-    verbindung_bedarf_rueckmeldung: "Wünschen sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?",
+    verbindung_bedarf_rueckmeldung: "Wünschen Sie eine Information per E-Mail, wenn eine Testmeldung nach dem Ausfall empfangen wurde?",
     verbindung_cloud_alarm_wann: "Wann soll alarmiert werden",
     verbindung_cloud_alarmierung: "Art der Benachrichtigung"
   };
@@ -6841,7 +6841,7 @@ function saveStatusCriteria(){
   const summary = document.getElementById("statusSummary");
 
   if (!fieldset){
-    alert("Der Bereich Statusregel wurde nicht gefunden.");
+    alert("Der Bereich Scharf- und Unscharfschaltung der Anlage wurde nicht gefunden.");
     return;
   }
 
@@ -6941,7 +6941,7 @@ function saveStatusCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
-  showSectionSaveFeedback("Statusregel", "saveStatusBtn");
+  showSectionSaveFeedback("Scharf- und Unscharfschaltung der Anlage", "saveStatusBtn");
   renderReviewSummary();
   updateStepProgress("statusFieldset");
   saveDraftLocally(false);
@@ -6981,7 +6981,7 @@ function saveUeberwachungCriteria(){
   if (FORM_VALIDATION_ACTIVE && !reactionValue){
     setFieldError("ueberwachung_reaktion_ab", "Bitte w\u00E4hlen Sie den Zeitpunkt aus.");
     focusFieldById("ueberwachung_reaktion_ab");
-    alert("Bitte waehlen Sie aus, ab wann Sicherheit Nord reagieren soll.");
+    alert("Bitte w\u00E4hlen Sie aus, ab wann Sicherheit Nord reagieren soll.");
     return;
   }
   if (FORM_VALIDATION_ACTIVE && reactionValue === "anderer_zeitpunkt" && !customDetail){
@@ -7020,7 +7020,7 @@ function saveUeberwachungCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
-  showSectionSaveFeedback("Ueberwachung", "saveUeberwachungBtn");
+  showSectionSaveFeedback("\u00DCberwachung der Gefahrenmeldeanlage", "saveUeberwachungBtn");
   syncUeberwachungSectionVisibility();
   renderReviewSummary();
   updateStepProgress("ueberwachungFieldset");
@@ -7074,7 +7074,7 @@ function formularSenden(e) {
   alt="Sicherheit Nord Logo"
 >
 <h2 class="page-title">Aufschaltformular</h2>
-<div class="form-version">Version 1.2</div>
+<div class="form-version">Version 1.3</div>
 
 <div class="stepper-head">
   <span>Schrittf&uuml;hrung</span>
@@ -7251,7 +7251,7 @@ function formularSenden(e) {
   <legend>Verbindungs&uuml;berwachungen</legend>
   <div class="legend-toggle-row">
     <span class="legend-toggle-question">Sollen Verbindungsabbrüche Ihrer Anlage überwacht werden?</span>
-    <span class="legend-toggle-actions" role="group" aria-label="Verbindungsüberwachung anzeigen">
+    <span class="legend-toggle-actions" role="group" aria-label="Verbindungs\u00FCberwachungen anzeigen">
       <button type="button" id="verbindungToggleYes" class="legend-toggle-btn" aria-pressed="false" onclick="setVerbindungPreference('ja')">Ja</button>
       <button type="button" id="verbindungToggleNo" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setVerbindungPreference('nein')">Nein</button>
     </span>
@@ -7454,7 +7454,7 @@ function formularSenden(e) {
     <label class="tech-check-label">
       <span class="tech-check-main">
         <input type="checkbox" id="uebertragungsweg_aktiv" onchange="setTechnikSectionVisibility('uebertragungsweg_aktiv','uebertragungsweg_options')">
-        <span>St&ouml;rung-&Uuml;bertragunsweg</span>
+        <span>St&ouml;rung-&Uuml;bertragungsweg</span>
       </span>
       <span class="tech-check-note">(Internet/Mobilfunk ausgefallen)</span>
     </label>
@@ -7533,7 +7533,7 @@ function formularSenden(e) {
   </legend>
   <div class="legend-toggle-row">
     <span class="legend-toggle-question">Soll die Scharf- und Unscharfschaltung Ihrer Anlage überwacht werden?</span>
-    <span class="legend-toggle-actions" role="group" aria-label="Statusregel anzeigen">
+    <span class="legend-toggle-actions" role="group" aria-label="Scharf- und Unscharfschaltung anzeigen">
       <button type="button" id="statusToggleYes" class="legend-toggle-btn" aria-pressed="false" onclick="setStatusPreference('ja')">Ja</button>
       <button type="button" id="statusToggleNo" class="legend-toggle-btn is-active" aria-pressed="true" onclick="setStatusPreference('nein')">Nein</button>
     </span>
