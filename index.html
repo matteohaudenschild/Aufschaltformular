@@ -1207,16 +1207,35 @@
     font-weight: 600;
   }
 
-  input.has-error,
+  input.has-error:not([type="checkbox"]):not([type="radio"]),
   textarea.has-error,
   select.has-error {
-    border-color: #d92d20;
-    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13);
+    border-color: #d92d20 !important;
+    background-color: #fff5f4 !important;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13) !important;
+  }
+
+  select.has-error {
+    background-image:
+      linear-gradient(45deg, transparent 50%, #b42318 50%),
+      linear-gradient(135deg, #b42318 50%, transparent 50%),
+      linear-gradient(180deg, #fff7f5, #ffecea) !important;
+  }
+
+  input[type="checkbox"].has-error,
+  input[type="radio"].has-error {
+    outline: 2px solid #d92d20 !important;
+    outline-offset: 2px;
   }
 
   .custom-select > select.has-error + .custom-select-trigger {
-    border-color: #d92d20;
-    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13);
+    border-color: #d92d20 !important;
+    background:
+      linear-gradient(45deg, transparent 50%, #b42318 50%) calc(100% - 18px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(135deg, #b42318 50%, transparent 50%) calc(100% - 12px) calc(50% + 1px) / 6px 6px no-repeat,
+      linear-gradient(180deg, #fff7f5, #ffecea) !important;
+    color: #7a271a !important;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.13) !important;
   }
 
   .privacy-box {
@@ -1256,6 +1275,7 @@
   .validation-disabled select.has-error,
   .validation-disabled .custom-select > select.has-error + .custom-select-trigger {
     border-color: #c7d6e6 !important;
+    background-color: #ffffff !important;
     box-shadow: none !important;
   }
 
@@ -2214,6 +2234,9 @@ function syncSonstigeAlarmeCombined(){
 
 function handleSonstigeAlarmeChange(){
   syncSonstigeAlarmeCombined();
+  if (getSonstigeAlarmValues().length || Array.from(document.querySelectorAll(".alarm-kategorie")).some(cb => cb.checked)){
+    setAlarmCriteriaError("");
+  }
   scheduleDraftSave();
   renderReviewSummary();
 }
@@ -2757,6 +2780,9 @@ function syncTechRueckmeldungVisibility(prefix){
 
   selectEl.disabled = techLocked || !shouldShow;
   setFieldControlVisibility(selectEl, shouldShow);
+  if (!shouldShow || getSelectValue(prefix + "_rueckmeldung")){
+    setFieldError(prefix + "_rueckmeldung", "");
+  }
 }
 
 function syncAllTechRueckmeldungVisibility(){
@@ -3106,6 +3132,9 @@ function validateStatusZeitfenster(kind, showAlert){
   if (!config) return false;
 
   const rows = Array.from(document.querySelectorAll("#" + config.listId + " .zeitfenster-slot"));
+  rows.forEach(row => {
+    row.querySelectorAll("input, select, textarea").forEach(el => el.classList.remove("has-error"));
+  });
   if (rows.length === 0){
     if (showAlert) alert("Bitte legen Sie mindestens ein Zeitfenster fest.");
     return false;
@@ -3129,6 +3158,13 @@ function validateStatusZeitfenster(kind, showAlert){
       hasComplete = true;
       return;
     }
+    const missingFields = [
+      !dayRange ? row.querySelector(".ztf-day-range") : null,
+      !usesPreset && !toDay ? row.querySelector(".ztf-to-day") : null,
+      !fromTime ? row.querySelector(".ztf-from-time") : null,
+      !toTime ? row.querySelector(".ztf-to-time") : null
+    ].filter(Boolean);
+    missingFields.forEach(el => el.classList.add("has-error"));
     hasPartial = true;
   });
 
@@ -3294,6 +3330,7 @@ function syncUnscharfZeitfensterSummary(){
 
 function toggleStatusKontrollzeit(){
   const statusValue = getSelectValue("status_regel");
+  clearFieldErrors(["status_regel", "status_kontrollzeit", "status_kontrollzeit_uhrzeit"]);
   const kontrollzeitSelect = document.getElementById("status_kontrollzeit");
   const kontrollzeitZeitWrap = document.getElementById("status_kontrollzeit_uhrzeit_wrap");
   const kontrollzeitZeitInput = document.getElementById("status_kontrollzeit_uhrzeit");
@@ -3988,9 +4025,13 @@ function setFieldError(fieldId, message){
   const input = document.getElementById(fieldId);
   if (!input) return false;
   const errorId = fieldId + "_error";
-  const wrap = input.type === "hidden" ? document.getElementById(fieldId + "_wrap") : null;
-  const inputsToMark = wrap
-    ? Array.from(wrap.querySelectorAll("input, textarea, select")).filter(el => el.type !== "hidden")
+  const hiddenWrap = input.type === "hidden" ? document.getElementById(fieldId + "_wrap") : null;
+  const customSelectWrap = !hiddenWrap && input.parentElement && input.parentElement.classList && input.parentElement.classList.contains("custom-select")
+    ? input.parentElement
+    : null;
+  const wrap = hiddenWrap || customSelectWrap;
+  const inputsToMark = hiddenWrap
+    ? Array.from(hiddenWrap.querySelectorAll("input, textarea, select")).filter(el => el.type !== "hidden")
     : [input];
   if (!FORM_VALIDATION_ACTIVE){
     const existingErrorEl = document.getElementById(errorId);
@@ -4056,6 +4097,52 @@ function clearAllValidationUi(){
   document.querySelectorAll(".has-error").forEach(el => {
     el.classList.remove("has-error");
   });
+}
+
+function clearFieldErrors(fieldIds){
+  fieldIds.forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    const errorEl = document.getElementById(id + "_error");
+    if (errorEl){
+      errorEl.innerText = "";
+      errorEl.style.display = "none";
+    }
+
+    const hiddenWrap = input.type === "hidden" ? document.getElementById(id + "_wrap") : null;
+    const customSelectWrap = !hiddenWrap && input.parentElement && input.parentElement.classList && input.parentElement.classList.contains("custom-select")
+      ? input.parentElement
+      : null;
+    const wrap = hiddenWrap || customSelectWrap;
+    const inputsToMark = hiddenWrap
+      ? Array.from(hiddenWrap.querySelectorAll("input, textarea, select")).filter(el => el.type !== "hidden")
+      : [input];
+
+    inputsToMark.forEach(el => el.classList.remove("has-error"));
+    if (wrap) wrap.classList.remove("has-error");
+  });
+}
+
+function focusFieldById(fieldId){
+  const input = document.getElementById(fieldId);
+  if (!input) return;
+  const focusTarget = input.type === "hidden"
+    ? document.querySelector("#" + fieldId + "_wrap input:not([type='hidden']), #" + fieldId + "_wrap textarea, #" + fieldId + "_wrap select")
+    : input;
+  const customTrigger = focusTarget && focusTarget.parentElement && focusTarget.parentElement.classList && focusTarget.parentElement.classList.contains("custom-select")
+    ? focusTarget.parentElement.querySelector(".custom-select-trigger")
+    : null;
+  const target = customTrigger || focusTarget;
+  if (target && typeof target.focus === "function") target.focus();
+}
+
+function setAlarmCriteriaError(message){
+  const hasMessage = !!message;
+  document.querySelectorAll(".alarm-kategorie").forEach(cb => {
+    cb.classList.toggle("has-error", hasMessage);
+  });
+  return setFieldError("sonstige_alarme", message || "");
 }
 
 function validateCustomerFields(showAlert){
@@ -4643,6 +4730,12 @@ function bindAutoDraftSave(){
       scheduleDraftSave();
       renderReviewSummary();
       updateStepProgress();
+      if (el.id && el.type !== "hidden"){
+        const hasValue = el.type === "checkbox" || el.type === "radio"
+          ? el.checked
+          : (el.tagName === "SELECT" ? !!getSelectValue(el.id) : !!String(el.value || "").trim());
+        if (hasValue) setFieldError(el.id, "");
+      }
     });
     if (el.tagName === "INPUT" || el.tagName === "TEXTAREA"){
       el.addEventListener("input", () => {
@@ -4685,6 +4778,14 @@ function setupLiveValidation(){
       validateAnlageFields(false);
     });
   }
+
+  document.querySelectorAll(".alarm-kategorie").forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (cb.checked || getSonstigeAlarmValues().length){
+        setAlarmCriteriaError("");
+      }
+    });
+  });
 
   if (consentEl){
     consentEl.addEventListener("change", () => {
@@ -5272,7 +5373,15 @@ function validateBeforeSubmit(){
   if (!customerValid) addIssue("customerFieldset", "Kundendaten vollständig ausfüllen");
   if (!anlageLocked) addIssue("anlageFieldset", "Anlagedaten speichern");
   if (!customerLocked) addIssue("customerFieldset", "Kundendaten speichern");
-  if (!alarmLocked) addIssue("alarmFieldset", "Alarmkriterien speichern");
+  if (!alarmLocked) {
+    syncSonstigeAlarmeCombined();
+    const hasAlarmSelection = Array.from(document.querySelectorAll(".alarm-kategorie")).some(cb => cb.checked);
+    const sonstige = String(getInputValue("sonstige_alarme") || "").trim();
+    if (!hasAlarmSelection && !sonstige){
+      setAlarmCriteriaError("Bitte w\u00E4hlen Sie mindestens eine Alarmart aus oder tragen Sie Sonstige Alarme ein.");
+    }
+    addIssue("alarmFieldset", "Alarmkriterien speichern");
+  }
 
   if (getVerbindungPreference() === "ja" && !verbindungLocked){
     addIssue("verbindungFieldset", "Verbindungsüberwachung speichern");
@@ -6257,11 +6366,16 @@ function saveAlarmCriteria(){
   syncSonstigeAlarmeCombined();
   const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
   const sonstige = (sonstigeEl.value || "").trim();
+  const alarmCriteriaMissing = FORM_VALIDATION_ACTIVE && selected.length === 0 && !sonstige;
 
-  if (FORM_VALIDATION_ACTIVE && selected.length === 0 && !sonstige){
+  if (alarmCriteriaMissing){
+    setAlarmCriteriaError("Bitte w\u00E4hlen Sie mindestens eine Alarmart aus oder tragen Sie Sonstige Alarme ein.");
+    focusFieldById("sonstige_alarme");
     alert("Bitte wählen Sie mindestens eine Alarmart oder tragen Sie etwas unter Sonstige Alarme ein.");
     return;
   }
+
+  setAlarmCriteriaError("");
 
   checkboxes.forEach(cb => cb.disabled = true);
   setSonstigeAlarmeDisabled(true);
@@ -6328,13 +6442,17 @@ function saveTechCriteria(){
     return;
   }
 
+  clearFieldErrors(["gma_rueckmeldung", "netz_rueckmeldung", "batterie_rueckmeldung", "uebertragungsweg_rueckmeldung"]);
+
   if (FORM_VALIDATION_ACTIVE){
     const rueckmeldungPflichtFelder = ["gma", "netz", "batterie", "uebertragungsweg"];
-  for (const prefix of rueckmeldungPflichtFelder){
-    if (shouldShowTechRueckmeldung(prefix) && !getSelectValue(prefix + "_rueckmeldung")){
-      alert("Bitte w\u00E4hlen Sie aus, ob Sie per E-Mail informiert werden m\u00F6chten, wenn die St\u00F6rung als klar gemeldet wurde.");
-      return;
-    }
+    for (const prefix of rueckmeldungPflichtFelder){
+      if (shouldShowTechRueckmeldung(prefix) && !getSelectValue(prefix + "_rueckmeldung")){
+        setFieldError(prefix + "_rueckmeldung", "Bitte w\u00E4hlen Sie aus, ob Sie per E-Mail informiert werden m\u00F6chten, wenn die St\u00F6rung als klar gemeldet wurde.");
+        focusFieldById(prefix + "_rueckmeldung");
+        alert("Bitte w\u00E4hlen Sie aus, ob Sie per E-Mail informiert werden m\u00F6chten, wenn die St\u00F6rung als klar gemeldet wurde.");
+        return;
+      }
     }
   }
 
@@ -6413,67 +6531,105 @@ function saveVerbindungCriteria(){
   }
 
   const art = getSelectValue("verbindung_art");
+  clearFieldErrors([
+    "verbindung_art",
+    "verbindung_stehend_ausfalldauer_select",
+    "verbindung_stehend_ausfalldauer_custom",
+    "verbindung_stehend_alarmierung",
+    "verbindung_stehend_rueckmeldung",
+    "verbindung_bedarf_intervall",
+    "verbindung_bedarf_intervall_custom",
+    "verbindung_bedarf_alarm_wann",
+    "verbindung_bedarf_alarmierung",
+    "verbindung_bedarf_rueckmeldung",
+    "verbindung_cloud_alarm_wann",
+    "verbindung_cloud_alarmierung"
+  ]);
 
   if (FORM_VALIDATION_ACTIVE){
     if (!art){
-    alert("Bitte wählen Sie eine Überwachungsart.");
-    return;
-  }
+      setFieldError("verbindung_art", "Bitte w\u00E4hlen Sie eine \u00DCberwachungsart aus.");
+      focusFieldById("verbindung_art");
+      alert("Bitte wählen Sie eine Überwachungsart.");
+      return;
+    }
 
     if (art === "stehend"){
-    const ausfall = getStehendeAusfalldauerDisplayValue();
-    const ausfallMin = parseDurationToMinutes(ausfall);
-    if (!ausfall || !Number.isFinite(ausfallMin) || ausfallMin < 15){
-      alert("Bitte geben Sie bei stehender Verbindung mindestens 15 Minuten Ausfalldauer an.");
-      return;
+      const ausfall = getStehendeAusfalldauerDisplayValue();
+      const ausfallMin = parseDurationToMinutes(ausfall);
+      if (!ausfall || !Number.isFinite(ausfallMin) || ausfallMin < 15){
+        const durationFieldId = getSelectValue("verbindung_stehend_ausfalldauer_select") === "custom"
+          ? "verbindung_stehend_ausfalldauer_custom"
+          : "verbindung_stehend_ausfalldauer_select";
+        setFieldError(durationFieldId, "Bitte geben Sie mindestens 15 Minuten Ausfalldauer an.");
+        focusFieldById(durationFieldId);
+        alert("Bitte geben Sie bei stehender Verbindung mindestens 15 Minuten Ausfalldauer an.");
+        return;
+      }
+      if (!getSelectValue("verbindung_stehend_alarmierung")){
+        setFieldError("verbindung_stehend_alarmierung", "Bitte w\u00E4hlen Sie die Art der Benachrichtigung aus.");
+        focusFieldById("verbindung_stehend_alarmierung");
+        alert("Bitte wählen Sie die Art der Benachrichtigung für die stehende Verbindung.");
+        return;
+      }
+      if (!getSelectValue("verbindung_stehend_rueckmeldung")){
+        setFieldError("verbindung_stehend_rueckmeldung", "Bitte w\u00E4hlen Sie aus, ob eine R\u00FCckmeldung per E-Mail gew\u00FCnscht ist.");
+        focusFieldById("verbindung_stehend_rueckmeldung");
+        alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn die Verbindung wieder steht.");
+        return;
+      }
     }
-    if (!getSelectValue("verbindung_stehend_alarmierung")){
-      alert("Bitte wählen Sie die Art der Benachrichtigung für die stehende Verbindung.");
-      return;
-    }
-    if (!getSelectValue("verbindung_stehend_rueckmeldung")){
-      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn die Verbindung wieder steht.");
-      return;
-    }
-  }
 
     if (art === "bedarf"){
-    if (!getSelectValue("verbindung_bedarf_intervall")){
-      alert("Bitte wählen Sie das Überwachungsintervall für die Bedarfsverbindung.");
-      return;
+      if (!getSelectValue("verbindung_bedarf_intervall")){
+        setFieldError("verbindung_bedarf_intervall", "Bitte w\u00E4hlen Sie das \u00DCberwachungsintervall aus.");
+        focusFieldById("verbindung_bedarf_intervall");
+        alert("Bitte wählen Sie das Überwachungsintervall für die Bedarfsverbindung.");
+        return;
+      }
+      if (getSelectValue("verbindung_bedarf_intervall") === "custom" && !String(getInputValue("verbindung_bedarf_intervall_custom") || "").trim()){
+        setFieldError("verbindung_bedarf_intervall_custom", "Bitte geben Sie das benutzerdefinierte \u00DCberwachungsintervall an.");
+        focusFieldById("verbindung_bedarf_intervall_custom");
+        alert("Bitte geben Sie das benutzerdefinierte Überwachungsintervall an.");
+        return;
+      }
+      const alarmWann = getSelectValue("verbindung_bedarf_alarm_wann");
+      if (!alarmWann){
+        setFieldError("verbindung_bedarf_alarm_wann", "Bitte w\u00E4hlen Sie aus, wann alarmiert werden soll.");
+        focusFieldById("verbindung_bedarf_alarm_wann");
+        alert("Bitte wählen Sie, wann alarmiert werden soll.");
+        return;
+      }
+      if (!getSelectValue("verbindung_bedarf_alarmierung")){
+        setFieldError("verbindung_bedarf_alarmierung", "Bitte w\u00E4hlen Sie die Art der Benachrichtigung aus.");
+        focusFieldById("verbindung_bedarf_alarmierung");
+        alert("Bitte wählen Sie die Art der Benachrichtigung für die Bedarfsverbindung.");
+        return;
+      }
+      const requiresBedarfRueckmeldung = getSelectValue("verbindung_bedarf_alarmierung") === "mail";
+      if (requiresBedarfRueckmeldung && !getSelectValue("verbindung_bedarf_rueckmeldung")){
+        setFieldError("verbindung_bedarf_rueckmeldung", "Bitte w\u00E4hlen Sie aus, ob eine R\u00FCckmeldung per E-Mail gew\u00FCnscht ist.");
+        focusFieldById("verbindung_bedarf_rueckmeldung");
+        alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn nach dem Ausfall eine Testmeldung empfangen wurde.");
+        return;
+      }
     }
-    if (getSelectValue("verbindung_bedarf_intervall") === "custom" && !String(getInputValue("verbindung_bedarf_intervall_custom") || "").trim()){
-      alert("Bitte geben Sie das benutzerdefinierte Überwachungsintervall an.");
-      return;
-    }
-    const alarmWann = getSelectValue("verbindung_bedarf_alarm_wann");
-    if (!alarmWann){
-      alert("Bitte wählen Sie, wann alarmiert werden soll.");
-      return;
-    }
-    if (!getSelectValue("verbindung_bedarf_alarmierung")){
-      alert("Bitte wählen Sie die Art der Benachrichtigung für die Bedarfsverbindung.");
-      return;
-    }
-    const requiresBedarfRueckmeldung = getSelectValue("verbindung_bedarf_alarmierung") === "mail";
-    if (requiresBedarfRueckmeldung && !getSelectValue("verbindung_bedarf_rueckmeldung")){
-      alert("Bitte wählen Sie aus, ob Sie per E-Mail informiert werden möchten, wenn nach dem Ausfall eine Testmeldung empfangen wurde.");
-      return;
-    }
-  }
 
     if (art === "cloud"){
-    const alarmWann = getSelectValue("verbindung_cloud_alarm_wann");
-    if (!alarmWann){
-      alert("Bitte wählen Sie, wann alarmiert werden soll.");
-      return;
+      const alarmWann = getSelectValue("verbindung_cloud_alarm_wann");
+      if (!alarmWann){
+        setFieldError("verbindung_cloud_alarm_wann", "Bitte w\u00E4hlen Sie aus, wann alarmiert werden soll.");
+        focusFieldById("verbindung_cloud_alarm_wann");
+        alert("Bitte wählen Sie, wann alarmiert werden soll.");
+        return;
+      }
+      if (!getSelectValue("verbindung_cloud_alarmierung")){
+        setFieldError("verbindung_cloud_alarmierung", "Bitte w\u00E4hlen Sie die Art der Benachrichtigung aus.");
+        focusFieldById("verbindung_cloud_alarmierung");
+        alert("Bitte wählen Sie die Art der Benachrichtigung für die Cloud-Aufschaltung.");
+        return;
+      }
     }
-    if (!getSelectValue("verbindung_cloud_alarmierung")){
-      alert("Bitte wählen Sie die Art der Benachrichtigung für die Cloud-Aufschaltung.");
-      return;
-    }
-  }
-
   }
 
   clearLegacyClasses();
@@ -6546,8 +6702,11 @@ function saveStatusCriteria(){
   }
 
   const statusValue = getSelectValue("status_regel");
+  clearFieldErrors(["status_regel", "status_kontrollzeit", "status_kontrollzeit_uhrzeit"]);
 
   if (FORM_VALIDATION_ACTIVE && !statusValue){
+    setFieldError("status_regel", "Bitte w\u00E4hlen Sie eine Statusregel aus.");
+    focusFieldById("status_regel");
     alert("Bitte wählen Sie eine Statusregel.");
     return;
   }
@@ -6568,10 +6727,14 @@ function saveStatusCriteria(){
     syncUnscharfZeitfensterSummary();
   }
   if (FORM_VALIDATION_ACTIVE && statusValue === "kontrollzeit_scharf" && !statusKontrollzeit){
+    setFieldError("status_kontrollzeit", "Bitte w\u00E4hlen Sie eine Option aus.");
+    focusFieldById("status_kontrollzeit");
     alert('Bitte wählen Sie unter "Nur tägliche Kontrollzeit für Scharf" eine Option aus.');
     return;
   }
   if (FORM_VALIDATION_ACTIVE && statusValue === "kontrollzeit_scharf" && !statusKontrollzeitUhrzeit){
+    setFieldError("status_kontrollzeit_uhrzeit", "Bitte geben Sie die Kontrollzeit ein.");
+    focusFieldById("status_kontrollzeit_uhrzeit");
     alert("Bitte geben Sie die Kontrollzeit ein.");
     return;
   }
@@ -6646,12 +6809,17 @@ function saveUeberwachungCriteria(){
 
   const reactionValue = getSelectValue("ueberwachung_reaktion_ab");
   const customDetail = (getInputValue("ueberwachung_anderer_zeitpunkt") || "").trim();
+  clearFieldErrors(["ueberwachung_reaktion_ab", "ueberwachung_anderer_zeitpunkt"]);
 
   if (FORM_VALIDATION_ACTIVE && !reactionValue){
+    setFieldError("ueberwachung_reaktion_ab", "Bitte w\u00E4hlen Sie den Zeitpunkt aus.");
+    focusFieldById("ueberwachung_reaktion_ab");
     alert("Bitte waehlen Sie aus, ab wann Sicherheit Nord reagieren soll.");
     return;
   }
   if (FORM_VALIDATION_ACTIVE && reactionValue === "anderer_zeitpunkt" && !customDetail){
+    setFieldError("ueberwachung_anderer_zeitpunkt", "Bitte beschreiben Sie den anderen Zeitpunkt.");
+    focusFieldById("ueberwachung_anderer_zeitpunkt");
     alert("Bitte beschreiben Sie den anderen Zeitpunkt.");
     return;
   }
