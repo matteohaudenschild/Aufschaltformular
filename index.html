@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="form-version" content="1.0">
+<meta name="form-version" content="1.1">
 <title>Aufschaltformular</title>
 
 <style>
@@ -5522,6 +5522,21 @@ function buildPrintableSummaryHtml(){
     .join("");
 }
 
+function buildPrintableFollowUpInfoHtml(){
+  return (
+    "<section class=\"print-section print-info-section\">" +
+      "<h2>Informationen zur weiteren Bearbeitung</h2>" +
+      "<div class=\"print-info-block\">" +
+        "<div class=\"print-info-title\">Aufgabe der Leitstelle:</div>" +
+        "<p>Ist die Aufschaltung erfolgt sowie die \u00DCbertragung zur Leitstelle gew\u00E4hrleistet, erhalten Sie dieses Dokument zur Best\u00E4tigung der \u00DCberwachung an die angegebene E-Mail-Adresse zur\u00FCck.</p>" +
+        "<div class=\"print-info-title\">Aufgabe der Kundenbetreuung:</div>" +
+        "<p>Die Kundenbetreuung wird sich zur Gestaltung des Dienstleistungsvertrages mit Ihnen in Verbindung setzen.</p>" +
+        "<p class=\"print-greeting\">Mit freundlichen Gr\u00FC\u00DFen<br>Sicherheit Nord</p>" +
+      "</div>" +
+    "</section>"
+  );
+}
+
 function downloadSummaryPdf(){
   const summaryHtml = buildPrintableSummaryHtml();
   if (!summaryHtml){
@@ -5557,6 +5572,11 @@ function downloadSummaryPdf(){
       ".print-label{color:#39566f;font-weight:700;}" +
       ".print-value{color:#102a43;white-space:pre-wrap;overflow-wrap:anywhere;}" +
       ".print-note{padding:7px 0;color:#102a43;white-space:pre-wrap;overflow-wrap:anywhere;}" +
+      ".print-info-block{padding:14px 15px 16px;}" +
+      ".print-info-title{margin:0 0 5px;color:#243b53;font-weight:700;}" +
+      ".print-info-block p{margin:0 0 14px;color:#102a43;line-height:1.45;}" +
+      ".print-info-block p:last-child{margin-bottom:0;}" +
+      ".print-greeting{padding-top:2px;}" +
       "@media(max-width:700px){.sheet{margin:0;border-radius:0;padding:20px;}.print-meta{grid-template-columns:1fr;}.print-row{grid-template-columns:1fr;gap:3px;}}" +
       "@media print{body{background:#fff;}.sheet{max-width:none;margin:0;padding:0;border:none;border-radius:0;box-shadow:none;}.print-head{margin-bottom:18px;}.print-section{margin-bottom:14px;border-color:#d5e0ea;}h1{font-size:25px;}.print-row{grid-template-columns:185px 1fr;}.print-section h2{background:#f1f6fb;}}" +
     "</style></head><body>" +
@@ -5570,6 +5590,7 @@ function downloadSummaryPdf(){
         "</div>" +
       "</header>" +
       summaryHtml +
+      buildPrintableFollowUpInfoHtml() +
     "</main>" +
     "</body></html>";
 
@@ -7037,7 +7058,7 @@ function formularSenden(e) {
   alt="Sicherheit Nord Logo"
 >
 <h2 class="page-title">Aufschaltformular</h2>
-<div class="form-version">Version 1.0</div>
+<div class="form-version">Version 1.1</div>
 
 <div class="stepper-head">
   <span>Schrittf&uuml;hrung</span>
