@@ -5427,9 +5427,104 @@ function validateBeforeSubmit(){
   return true;
 }
 
+function getFormVersion(){
+  return document.querySelector("meta[name='form-version']")?.getAttribute("content") || "1.0";
+}
+
+function splitPrintableSummaryLine(line){
+  const text = String(line || "").trim();
+  const separatorIndex = text.indexOf(":");
+  if (separatorIndex <= 0){
+    return { heading: text };
+  }
+
+  return {
+    label: text.slice(0, separatorIndex).trim(),
+    value: text.slice(separatorIndex + 1).trim() || "-"
+  };
+}
+
+function formatPrintableValueHtml(value){
+  const text = valueOrDash(value);
+  return String(text)
+    .split("|")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .map(part => escapeHtml(part))
+    .join("<br>");
+}
+
+function buildPrintableSectionHtml(title, text){
+  const rawText = String(text || "").trim();
+  if (!hasMeaningfulEmailValue(rawText)) return "";
+
+  const blocks = rawText
+    .split(/\n\s*\n/)
+    .map(block => block.trim())
+    .filter(Boolean);
+
+  const blocksHtml = blocks.map(block => {
+    const lines = block
+      .split("\n")
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    if (!lines.length) return "";
+
+    let subtitleHtml = "";
+    let rowLines = lines;
+    if (lines.length > 1 && !lines[0].includes(":")){
+      subtitleHtml = "<div class=\"print-subtitle\">" + escapeHtml(lines[0]) + "</div>";
+      rowLines = lines.slice(1);
+    }
+
+    const rowsHtml = rowLines.map(line => {
+      const parsed = splitPrintableSummaryLine(line);
+      if (parsed.heading){
+        return "<div class=\"print-note\">" + escapeHtml(parsed.heading) + "</div>";
+      }
+
+      return (
+        "<div class=\"print-row\">" +
+          "<div class=\"print-label\">" + escapeHtml(parsed.label) + "</div>" +
+          "<div class=\"print-value\">" + formatPrintableValueHtml(parsed.value) + "</div>" +
+        "</div>"
+      );
+    }).join("");
+
+    return "<div class=\"print-block\">" + subtitleHtml + rowsHtml + "</div>";
+  }).join("");
+
+  return (
+    "<section class=\"print-section\">" +
+      "<h2>" + escapeHtml(title) + "</h2>" +
+      blocksHtml +
+    "</section>"
+  );
+}
+
+function buildPrintableSummaryHtml(){
+  const params = buildEmailTemplateParams();
+  const sections = [
+    ["Anlagedaten", params.anlagedaten_text],
+    ["Kundendaten", params.kundendaten_text],
+    ["Alarmkriterien", params.alarm_text],
+    ["Verbindungs\u00FCberwachung", params.verbindung_text],
+    ["Technische St\u00F6rungen", params.technik_text],
+    ["Scharf- und Unscharfschaltung", params.status_text],
+    ["\u00DCberwachung der Gefahrenmeldeanlage", params.ueberwachung_text],
+    ["Datenschutz und Einwilligung", params.datenschutz_text]
+  ];
+
+  return sections
+    .map(([title, text]) => buildPrintableSectionHtml(title, text))
+    .filter(Boolean)
+    .join("");
+}
+
 function downloadSummaryPdf(){
-  const snapshot = latestReviewSnapshot || "";
-  if (!snapshot){
+  const summaryHtml = buildPrintableSummaryHtml();
+  if (!summaryHtml){
     alert("Die Zusammenfassung ist noch nicht verfügbar.");
     return;
   }
@@ -5443,20 +5538,39 @@ function downloadSummaryPdf(){
   const html = "<!DOCTYPE html>" +
     "<html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Aufschaltformular</title>" +
     "<style>" +
-      "body{font-family:Arial,sans-serif;color:#102a43;margin:24px;}" +
-      "h1{margin:0 0 6px;font-size:24px;}" +
-      "p{margin:0 0 14px;color:#334e68;}" +
-      ".review-section{border:1px solid #d9e2ec;border-radius:10px;padding:10px 12px;margin-bottom:10px;}" +
-      ".review-title{margin:0 0 8px;font-size:16px;color:#243b53;}" +
-      ".review-row{display:grid;grid-template-columns:220px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid #e6edf3;}" +
-      ".review-row:last-child{border-bottom:none;}" +
-      ".review-label{font-weight:700;color:#334e68;}" +
-      ".review-value{color:#102a43;}" +
-      ".review-edit{display:none;}" +
+      "@page{size:A4;margin:16mm;}" +
+      "*{box-sizing:border-box;}" +
+      "body{margin:0;background:#eef3f7;color:#102a43;font-family:Arial,'Helvetica Neue',sans-serif;font-size:13.5px;line-height:1.45;}" +
+      ".sheet{max-width:900px;margin:24px auto;padding:30px;background:#fff;border:1px solid #d8e3ee;border-radius:14px;box-shadow:0 12px 30px rgba(16,42,70,.12);}" +
+      ".print-head{border-bottom:3px solid #d9e6f2;margin-bottom:22px;padding-bottom:16px;}" +
+      ".print-kicker{margin:0 0 5px;color:#526b84;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}" +
+      "h1{margin:0 0 12px;color:#102a43;font-size:28px;line-height:1.15;}" +
+      ".print-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;color:#334e68;font-size:13px;}" +
+      ".print-meta strong{color:#243b53;}" +
+      ".print-section{break-inside:avoid;page-break-inside:avoid;margin:0 0 18px;border:1px solid #d9e4ef;border-radius:12px;overflow:hidden;background:#fff;}" +
+      ".print-section h2{margin:0;padding:10px 14px;background:#eef5fb;color:#14324f;font-size:17px;line-height:1.25;border-bottom:1px solid #d9e4ef;}" +
+      ".print-block{padding:12px 15px;}" +
+      ".print-block + .print-block{border-top:1px solid #e6edf3;}" +
+      ".print-subtitle{margin:0 0 8px;color:#1f4568;font-size:14px;font-weight:700;}" +
+      ".print-row{display:grid;grid-template-columns:minmax(170px,230px) minmax(0,1fr);gap:14px;align-items:start;padding:7px 0;border-bottom:1px solid #edf2f7;}" +
+      ".print-row:last-child{border-bottom:none;}" +
+      ".print-label{color:#39566f;font-weight:700;}" +
+      ".print-value{color:#102a43;white-space:pre-wrap;overflow-wrap:anywhere;}" +
+      ".print-note{padding:7px 0;color:#102a43;white-space:pre-wrap;overflow-wrap:anywhere;}" +
+      "@media(max-width:700px){.sheet{margin:0;border-radius:0;padding:20px;}.print-meta{grid-template-columns:1fr;}.print-row{grid-template-columns:1fr;gap:3px;}}" +
+      "@media print{body{background:#fff;}.sheet{max-width:none;margin:0;padding:0;border:none;border-radius:0;box-shadow:none;}.print-head{margin-bottom:18px;}.print-section{margin-bottom:14px;border-color:#d5e0ea;}h1{font-size:25px;}.print-row{grid-template-columns:185px 1fr;}.print-section h2{background:#f1f6fb;}}" +
     "</style></head><body>" +
-    "<h1>Aufschaltformular</h1>" +
-    "<p>Erstellt am: " + escapeHtml(formatDateTime(new Date())) + "</p>" +
-    snapshot +
+    "<main class=\"sheet\">" +
+      "<header class=\"print-head\">" +
+        "<p class=\"print-kicker\">Sicherheit Nord</p>" +
+        "<h1>Aufschaltformular</h1>" +
+        "<div class=\"print-meta\">" +
+          "<div><strong>Erstellt am:</strong> " + escapeHtml(formatDateTime(new Date())) + "</div>" +
+          "<div><strong>Version:</strong> " + escapeHtml(getFormVersion()) + "</div>" +
+        "</div>" +
+      "</header>" +
+      summaryHtml +
+    "</main>" +
     "</body></html>";
 
   win.document.open();
