@@ -4992,7 +4992,7 @@ function getEmailVerbindungText(){
 }
 
 function getEmailTechnikText(){
-  if (getTechPreference() === "nein") return "";
+  if (getTechPreference() === "nein") return "Nein";
   const blocks = [];
   const configs = [
     ["Netzstörung (Stromausfall/Stromstörung)", "netz"],
