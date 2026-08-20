@@ -370,6 +370,7 @@
     border-radius: 14px;
     background: #ffffff;
     color: #1b2c3f;
+    font-family: inherit;
     font-size: 15px;
     line-height: 1.35;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
@@ -3641,6 +3642,7 @@ document.addEventListener("DOMContentLoaded", function () {
   bindSonstigeAlarmeFields();
   initCustomSelects();
   loadDraftLocally();
+  loadAllSectionDraftsLocally();
   syncRechnungsadresseSectionVisibility();
   syncTelefonnummerCombined();
   syncKontaktEmailCombined();
@@ -3904,6 +3906,58 @@ let sectionHighlightTimeout = null;
 let latestReviewSnapshot = "";
 let skipAutoDraftSave = false;
 const DRAFT_STORAGE_KEY = "sn_aufschaltformular_draft_v1";
+const SECTION_DRAFT_STORAGE_PREFIX = "sn_aufschaltformular_live_section_v1_";
+const SECTION_DRAFT_VERSION = 1;
+const SECTION_DRAFT_CONFIG = {
+  anlage: {
+    fieldsetId: "anlageFieldset",
+    fieldIds: [
+      "anlagetyp", "standort", "hub_geraete_id", "strasse", "postleitzahl", "ort",
+      "rechnungsadresse_aktiv", "rechnungsadresse_name", "rechnungsadresse_strasse",
+      "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"
+    ]
+  },
+  customer: {
+    fieldsetId: "customerFieldset",
+    fieldIds: ["kontaktzeilen_data"]
+  },
+  alarm: {
+    fieldsetId: "alarmFieldset",
+    fieldIds: ["sonstige_alarme_data"]
+  },
+  verbindung: {
+    fieldsetId: "verbindungFieldset",
+    fieldIds: [
+      "verbindung_erforderlich", "verbindung_art",
+      "verbindung_stehend_ausfalldauer_select", "verbindung_stehend_ausfalldauer_custom",
+      "verbindung_stehend_alarmierung", "verbindung_stehend_rueckmeldung",
+      "verbindung_bedarf_intervall", "verbindung_bedarf_intervall_custom",
+      "verbindung_bedarf_alarm_wann", "verbindung_bedarf_alarmierung", "verbindung_bedarf_rueckmeldung",
+      "verbindung_cloud_alarm_wann", "verbindung_cloud_alarmierung"
+    ]
+  },
+  tech: {
+    fieldsetId: "technikFieldset",
+    fieldIds: [
+      "technik_erforderlich",
+      "netz_aktiv", "netz_ueberwachungsart", "netz_zeit", "netz_alarmierung", "netz_rueckmeldung",
+      "batterie_aktiv", "batterie_ueberwachungsart", "batterie_zeit", "batterie_alarmierung", "batterie_rueckmeldung",
+      "uebertragungsweg_aktiv", "uebertragungsweg_ueberwachungsart", "uebertragungsweg_zeit", "uebertragungsweg_alarmierung", "uebertragungsweg_rueckmeldung",
+      "gma_aktiv", "gma_ueberwachungsart", "gma_zeit", "gma_alarmierung", "gma_rueckmeldung"
+    ]
+  },
+  status: {
+    fieldsetId: "statusFieldset",
+    fieldIds: [
+      "status_erforderlich", "status_regel", "status_kontrollzeit", "status_kontrollzeit_uhrzeit",
+      "status_scharf_zeitfenster_data", "status_unscharf_zeitfenster_data"
+    ]
+  },
+  ueberwachung: {
+    fieldsetId: "ueberwachungFieldset",
+    fieldIds: ["ueberwachung_reaktion_ab", "ueberwachung_anderer_zeitpunkt"]
+  }
+};
 
 function getTechPreference(){
   const input = document.getElementById("technik_erforderlich");
@@ -4517,6 +4571,207 @@ function showSectionEditFeedback(sectionLabel){
   return;
 }
 
+function getSectionDraftStorageKey(sectionKey){
+  return SECTION_DRAFT_STORAGE_PREFIX + sectionKey;
+}
+
+function readSectionDraftField(id){
+  const field = document.getElementById(id);
+  if (!field) return undefined;
+  if (field.type === "checkbox" || field.type === "radio") return !!field.checked;
+  return String(field.value || "").slice(0, 50000);
+}
+
+function collectSectionDraftData(sectionKey){
+  const config = SECTION_DRAFT_CONFIG[sectionKey];
+  if (!config) return null;
+
+  if (sectionKey === "anlage") syncRechnungsadresseCombined();
+  if (sectionKey === "customer") syncCustomerContactCombined();
+  if (sectionKey === "alarm") syncSonstigeAlarmeCombined();
+  if (sectionKey === "status") syncAllStatusZeitfensterSummaries();
+
+  const fields = {};
+  config.fieldIds.forEach(id => {
+    const value = readSectionDraftField(id);
+    if (value !== undefined) fields[id] = value;
+  });
+
+  if (sectionKey === "anlage" && fields.rechnungsadresse_aktiv !== "ja"){
+    [
+      "rechnungsadresse_name", "rechnungsadresse_strasse",
+      "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"
+    ].forEach(id => { fields[id] = ""; });
+  }
+
+  if (sectionKey === "verbindung"){
+    const activeArt = String(fields.verbindung_art || "");
+    const branchIds = {
+      stehend: [
+        "verbindung_stehend_ausfalldauer_select", "verbindung_stehend_ausfalldauer_custom",
+        "verbindung_stehend_alarmierung", "verbindung_stehend_rueckmeldung"
+      ],
+      bedarf: [
+        "verbindung_bedarf_intervall", "verbindung_bedarf_intervall_custom",
+        "verbindung_bedarf_alarm_wann", "verbindung_bedarf_alarmierung", "verbindung_bedarf_rueckmeldung"
+      ],
+      cloud: ["verbindung_cloud_alarm_wann", "verbindung_cloud_alarmierung"]
+    };
+    Object.keys(branchIds).forEach(branch => {
+      if (branch === activeArt) return;
+      branchIds[branch].forEach(id => { fields[id] = ""; });
+    });
+  }
+
+  if (sectionKey === "tech"){
+    ["netz", "batterie", "uebertragungsweg", "gma"].forEach(prefix => {
+      if (fields[prefix + "_aktiv"] === true) return;
+      ["ueberwachungsart", "zeit", "alarmierung", "rueckmeldung"].forEach(suffix => {
+        fields[prefix + "_" + suffix] = "";
+      });
+    });
+  }
+
+  if (sectionKey === "ueberwachung" && fields.ueberwachung_reaktion_ab !== "anderer_zeitpunkt"){
+    fields.ueberwachung_anderer_zeitpunkt = "";
+  }
+
+  const record = {
+    version: SECTION_DRAFT_VERSION,
+    section: sectionKey,
+    savedAt: Date.now(),
+    fields
+  };
+
+  if (sectionKey === "alarm"){
+    record.alarmarten = Array.from(document.querySelectorAll("#alarmFieldset .alarm-kategorie"))
+      .filter(field => field.checked)
+      .map(field => String(field.value || "").slice(0, 120));
+  }
+  return record;
+}
+
+function saveSectionDraftLocally(sectionKey){
+  const record = collectSectionDraftData(sectionKey);
+  if (!record) return false;
+  try {
+    localStorage.setItem(getSectionDraftStorageKey(sectionKey), JSON.stringify(record));
+    return true;
+  } catch (error){
+    console.error(error);
+    return false;
+  }
+}
+
+function clearSectionDraftLocally(sectionKey){
+  if (!SECTION_DRAFT_CONFIG[sectionKey]) return false;
+  try {
+    localStorage.removeItem(getSectionDraftStorageKey(sectionKey));
+    return true;
+  } catch (error){
+    console.error(error);
+    return false;
+  }
+}
+
+function clearAllSectionDraftsLocally(){
+  Object.keys(SECTION_DRAFT_CONFIG).forEach(clearSectionDraftLocally);
+}
+
+function applySectionDraftField(id, value){
+  const field = document.getElementById(id);
+  if (!field) return;
+  if (field.type === "checkbox" || field.type === "radio"){
+    field.checked = value === true;
+    return;
+  }
+  const safeValue = typeof value === "string" ? value.slice(0, 50000) : "";
+  if (field.tagName === "SELECT"){
+    const allowed = Array.from(field.options || []).some(option => option.value === safeValue);
+    if (allowed) field.value = safeValue;
+    return;
+  }
+  field.value = safeValue;
+}
+
+function applySectionDraftData(sectionKey, record){
+  const config = SECTION_DRAFT_CONFIG[sectionKey];
+  if (
+    !config || !record || typeof record !== "object" ||
+    record.version !== SECTION_DRAFT_VERSION || record.section !== sectionKey ||
+    !record.fields || typeof record.fields !== "object"
+  ) return false;
+
+  config.fieldIds.forEach(id => {
+    if (Object.prototype.hasOwnProperty.call(record.fields, id)){
+      applySectionDraftField(id, record.fields[id]);
+    }
+  });
+
+  if (sectionKey === "anlage"){
+    if (document.getElementById("rechnungsadresse_aktiv")?.value !== "ja"){
+      [
+        "rechnungsadresse_name", "rechnungsadresse_strasse",
+        "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"
+      ].forEach(id => applySectionDraftField(id, ""));
+    }
+    syncRechnungsadresseSectionVisibility();
+    syncRechnungsadresseCombined();
+  } else if (sectionKey === "customer"){
+    applyCustomerContactDraftData(record.fields.kontaktzeilen_data || "[]", {
+      names: "", phones: "", emails: ""
+    });
+    hideLegacyCustomerContactFields();
+  } else if (sectionKey === "alarm"){
+    const allowedAlarmarten = new Set(
+      Array.from(document.querySelectorAll("#alarmFieldset .alarm-kategorie"))
+        .map(field => String(field.value || ""))
+    );
+    const selectedAlarmarten = new Set(
+      (Array.isArray(record.alarmarten) ? record.alarmarten : [])
+        .map(value => String(value || "").slice(0, 120))
+        .filter(value => allowedAlarmarten.has(value))
+    );
+    document.querySelectorAll("#alarmFieldset .alarm-kategorie").forEach(field => {
+      field.checked = selectedAlarmarten.has(String(field.value || ""));
+    });
+    applySonstigeAlarmValues(record.fields.sonstige_alarme_data || "[]", "");
+  } else if (sectionKey === "verbindung"){
+    syncVerbindungSectionVisibility();
+  } else if (sectionKey === "tech"){
+    syncAlarmDependencies();
+    syncTechnikSectionVisibility();
+    syncAllTechRueckmeldungVisibility();
+  } else if (sectionKey === "status"){
+    applyScharfZeitfensterData(record.fields.status_scharf_zeitfenster_data || "[]");
+    applyUnscharfZeitfensterData(record.fields.status_unscharf_zeitfenster_data || "[]");
+    syncStatusSectionVisibility();
+    syncAllStatusZeitfensterSummaries();
+  } else if (sectionKey === "ueberwachung"){
+    syncUeberwachungSectionVisibility();
+  }
+
+  refreshCustomSelects();
+  return true;
+}
+
+function loadSectionDraftLocally(sectionKey){
+  let record;
+  try {
+    const raw = localStorage.getItem(getSectionDraftStorageKey(sectionKey));
+    if (!raw) return false;
+    record = JSON.parse(raw);
+  } catch (error){
+    console.error(error);
+    return false;
+  }
+  return applySectionDraftData(sectionKey, record);
+}
+
+function loadAllSectionDraftsLocally(){
+  Object.keys(SECTION_DRAFT_CONFIG).forEach(loadSectionDraftLocally);
+}
+
 function collectDraftData(){
   const form = document.getElementById("aufschaltformular");
   const data = {};
@@ -4720,6 +4975,7 @@ function clearDraftLocally(){
   }
   skipAutoDraftSave = true;
   localStorage.removeItem(DRAFT_STORAGE_KEY);
+  clearAllSectionDraftsLocally();
   window.setTimeout(() => window.location.reload(), 120);
 }
 
@@ -5096,6 +5352,7 @@ function appendHiddenSubmissionField(form, name, value){
 
 function showSuccessfulSubmissionState(){
   localStorage.removeItem(DRAFT_STORAGE_KEY);
+  clearAllSectionDraftsLocally();
   const now = new Date();
   const timeEl = document.getElementById("thanksTime");
   if (timeEl) timeEl.innerText = formatDateTime(now);
@@ -5246,7 +5503,7 @@ function buildLegacyReviewSections_(){
       ]
     },
     {
-      title: "\u00DCberwachung der Gefahrenmeldeanlage",
+      title: "\u00DCberwachung der Gefahrenmeldeanlage nach Alarmkriterien",
       target: "ueberwachungFieldset",
       rows: [
         { label: "Konfiguration", value: getUeberwachungDetails() }
@@ -5335,7 +5592,7 @@ function buildReviewSections(){
       ]
     },
     {
-      title: "\u00DCberwachung der Gefahrenmeldeanlage",
+      title: "\u00DCberwachung der Gefahrenmeldeanlage nach Alarmkriterien",
       target: "ueberwachungFieldset",
       rows: [
         { label: "Konfiguration", value: getUeberwachungDetails() }
@@ -5528,7 +5785,7 @@ function buildPrintableSummaryHtml(){
     ["Verbindungs\u00FCberwachungen", params.verbindung_text],
     ["Technische St\u00F6rungen", params.technik_text],
     ["Scharf- und Unscharfschaltung der Anlage", params.status_text],
-    ["\u00DCberwachung der Gefahrenmeldeanlage", params.ueberwachung_text],
+    ["\u00DCberwachung der Gefahrenmeldeanlage nach Alarmkriterien", params.ueberwachung_text],
     ["Datenschutz und Einwilligung", params.datenschutz_text]
   ];
 
@@ -5971,6 +6228,7 @@ function resetAlarmSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("alarm");
   syncAlarmDependencies();
   renderReviewSummary();
   updateStepProgress("alarmFieldset");
@@ -6003,6 +6261,7 @@ function resetVerbindungSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("verbindung");
   syncVerbindungSectionVisibility();
   renderReviewSummary();
   updateStepProgress("verbindungFieldset");
@@ -6036,6 +6295,7 @@ function resetTechSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("tech");
   syncAlarmDependencies();
   syncTechnikSectionVisibility();
   renderReviewSummary();
@@ -6077,6 +6337,7 @@ function resetStatusSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("status");
   syncStatusSectionVisibility();
   syncAllStatusZeitfensterSummaries();
   renderReviewSummary();
@@ -6112,6 +6373,7 @@ function resetUeberwachungSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("ueberwachung");
   syncUeberwachungSectionVisibility();
   renderReviewSummary();
   updateStepProgress("ueberwachungFieldset");
@@ -6390,6 +6652,7 @@ function resetAnlageSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("anlage");
   renderReviewSummary();
   updateStepProgress("anlageFieldset");
   saveDraftLocally(false);
@@ -6416,6 +6679,7 @@ function resetCustomerSection(){
     setSectionSaveButtonState(btn, false, false);
   }
 
+  clearSectionDraftLocally("customer");
   renderReviewSummary();
   updateStepProgress("customerFieldset");
   saveDraftLocally(false);
@@ -6475,6 +6739,7 @@ function saveAnlageData(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("anlage");
   showSectionSaveFeedback("Anlagedaten", "saveAnlageBtn");
   renderReviewSummary();
   updateStepProgress("anlageFieldset");
@@ -6512,6 +6777,7 @@ function saveCustomerData(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("customer");
   showSectionSaveFeedback("Kundendaten", "saveCustomerBtn");
   renderReviewSummary();
   updateStepProgress("customerFieldset");
@@ -6558,6 +6824,7 @@ function saveAlarmCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("alarm");
   syncAlarmDependencies();
   showSectionSaveFeedback("Alarmkriterien", "saveAlarmBtn");
   renderReviewSummary();
@@ -6650,6 +6917,7 @@ function saveTechCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("tech");
   showSectionSaveFeedback("Technische Störungen", "saveTechBtn");
   renderReviewSummary();
   updateStepProgress("technikFieldset");
@@ -6828,6 +7096,7 @@ function saveVerbindungCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("verbindung");
   showSectionSaveFeedback("Verbindungsüberwachungen", "saveVerbindungBtn");
   renderReviewSummary();
   updateStepProgress("verbindungFieldset");
@@ -6941,6 +7210,7 @@ function saveStatusCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("status");
   showSectionSaveFeedback("Scharf- und Unscharfschaltung der Anlage", "saveStatusBtn");
   renderReviewSummary();
   updateStepProgress("statusFieldset");
@@ -7020,6 +7290,7 @@ function saveUeberwachungCriteria(){
   if (btn){
     setSectionSaveButtonState(btn, true, false);
   }
+  saveSectionDraftLocally("ueberwachung");
   showSectionSaveFeedback("\u00DCberwachung der Gefahrenmeldeanlage", "saveUeberwachungBtn");
   syncUeberwachungSectionVisibility();
   renderReviewSummary();
@@ -7244,6 +7515,32 @@ function formularSenden(e) {
   <div class="section-action-row">
     <button type="button" class="secondary-btn" id="saveAlarmBtn" onclick="saveAlarmCriteria()">Speichern</button>
     <button type="button" class="secondary-btn section-reset-btn" id="resetAlarmBtn" onclick="resetAlarmSection()">Zurücksetzen</button>
+  </div>
+</fieldset>
+
+<fieldset id="ueberwachungFieldset" data-step-section>
+  <legend>&Uuml;berwachung der Gefahrenmeldeanlage</legend>
+  <div id="ueberwachungOptions" class="status-options">
+    <label for="ueberwachung_reaktion_ab">Ab wann soll Sicherheit Nord auf &uuml;bertragene Meldungen reagieren?</label>
+    <select id="ueberwachung_reaktion_ab" data-show-placeholder-option="1" onchange="toggleUeberwachungZeitpunkt(this)">
+      <option value="">---- Zeitpunkt ausw&auml;hlen ----</option>
+      <option value="bei_aktivierung" selected>Bei Aktivierung</option>
+      <option value="anderer_zeitpunkt">Anderer Zeitpunkt</option>
+    </select>
+
+    <div id="ueberwachung_anderer_zeitpunkt_wrap" class="zeitfeld" style="display:none;" aria-hidden="true">
+      <textarea
+        id="ueberwachung_anderer_zeitpunkt"
+        data-display-wrap-id="ueberwachung_anderer_zeitpunkt_wrap"
+        placeholder="Anderen Zeitpunkt frei beschreiben"
+      ></textarea>
+    </div>
+  </div>
+
+  <div id="ueberwachungSummary" class="customer-saved-row"></div>
+  <div class="section-action-row">
+    <button type="button" class="secondary-btn" id="saveUeberwachungBtn" onclick="saveUeberwachungCriteria()">Speichern</button>
+    <button type="button" class="secondary-btn section-reset-btn" id="resetUeberwachungBtn" onclick="resetUeberwachungSection()">Zur&uuml;cksetzen</button>
   </div>
 </fieldset>
 
@@ -7586,32 +7883,6 @@ function formularSenden(e) {
     <button type="button" class="secondary-btn" id="saveStatusBtn" onclick="saveStatusCriteria()">Speichern</button>
     <button type="button" class="secondary-btn section-reset-btn" id="resetStatusBtn" onclick="resetStatusSection()">Zurücksetzen</button>
   </div>
-  </div>
-</fieldset>
-
-<fieldset id="ueberwachungFieldset" data-step-section>
-  <legend>&Uuml;berwachung der Gefahrenmeldeanlage</legend>
-  <div id="ueberwachungOptions" class="status-options">
-    <label for="ueberwachung_reaktion_ab">Ab wann soll Sicherheit Nord auf &uuml;bertragene Meldungen reagieren?</label>
-    <select id="ueberwachung_reaktion_ab" data-show-placeholder-option="1" onchange="toggleUeberwachungZeitpunkt(this)">
-      <option value="">---- Zeitpunkt ausw&auml;hlen ----</option>
-      <option value="bei_aktivierung" selected>Bei Aktivierung</option>
-      <option value="anderer_zeitpunkt">Anderer Zeitpunkt</option>
-    </select>
-
-    <div id="ueberwachung_anderer_zeitpunkt_wrap" class="zeitfeld" style="display:none;" aria-hidden="true">
-      <textarea
-        id="ueberwachung_anderer_zeitpunkt"
-        data-display-wrap-id="ueberwachung_anderer_zeitpunkt_wrap"
-        placeholder="Anderen Zeitpunkt frei beschreiben"
-      ></textarea>
-    </div>
-  </div>
-
-  <div id="ueberwachungSummary" class="customer-saved-row"></div>
-  <div class="section-action-row">
-    <button type="button" class="secondary-btn" id="saveUeberwachungBtn" onclick="saveUeberwachungCriteria()">Speichern</button>
-    <button type="button" class="secondary-btn section-reset-btn" id="resetUeberwachungBtn" onclick="resetUeberwachungSection()">Zur&uuml;cksetzen</button>
   </div>
 </fieldset>
 
