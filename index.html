@@ -4344,7 +4344,7 @@ function validateAnlageFields(showAlert){
   const ortEl = document.getElementById("ort");
   if (!anlagetypEl || !standortEl || !strasseEl || !postleitzahlEl || !ortEl) return true;
 
-  const anlagetyp = getSelectValue("anlagetyp");
+  const anlagetyp = String(anlagetypEl.value || "").trim();
   const standort = (standortEl.value || "").trim();
   const strasse = (strasseEl.value || "").trim();
   const postleitzahl = (postleitzahlEl.value || "").trim();
@@ -4355,7 +4355,7 @@ function validateAnlageFields(showAlert){
   if (!anlagetyp){
     valid = false;
     firstInvalid = firstInvalid || anlagetypEl;
-    setFieldError("anlagetyp", "Bitte wählen Sie den Anlagetyp aus.");
+    setFieldError("anlagetyp", "Bitte geben Sie den Anlagetyp ein.");
   } else {
     setFieldError("anlagetyp", "");
   }
@@ -5058,10 +5058,10 @@ function setupLiveValidation(){
   });
 
   if (anlagetypEl){
-    anlagetypEl.addEventListener("change", () => {
-      if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
-      validateAnlageFields(false);
+    anlagetypEl.addEventListener("input", () => {
+      if (String(anlagetypEl.value || "").trim()) setFieldError("anlagetyp", "");
     });
+    anlagetypEl.addEventListener("change", () => validateAnlageFields(false));
   }
 
   document.querySelectorAll(".alarm-kategorie").forEach(cb => {
@@ -5203,7 +5203,7 @@ function getEmailBlockStyle(text){
 function getEmailAnlagedatenText(){
   const lines = [];
   const anlageFields = [
-    ["Anlagetyp", getSelectDisplayText("anlagetyp")],
+    ["Anlagetyp", getInputValue("anlagetyp").trim()],
     ["Objektname", getInputValue("standort")],
     ["HUB-ID / Ger\u00E4te-ID", getInputValue("hub_geraete_id")],
     ["Stra\u00DFe", getInputValue("strasse")],
@@ -5554,7 +5554,7 @@ function buildReviewSections(){
   }
 
   const anlageRows = [
-    { label: "Anlagetyp", value: valueOrDash(getSelectDisplayText("anlagetyp")) },
+    { label: "Anlagetyp", value: valueOrDash(getInputValue("anlagetyp").trim()) },
     { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
     { label: "HUB-ID / Ger\u00E4te-ID", value: valueOrDash(getInputValue("hub_geraete_id")) },
     { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
@@ -6711,7 +6711,7 @@ function saveAnlageData(){
   const btn = document.getElementById("saveAnlageBtn");
   syncRechnungsadresseCombined();
   const savedRows = [
-    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getSelectDisplayText("anlagetyp") || "-" },
+    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: (anlagetypEl?.value || "").trim() || "-" },
     { input: standortEl, savedId: "saved_standort", label: "Objektname", value: (standortEl?.value || "").trim() || "-" },
     { input: hubEl, savedId: "saved_hub_geraete_id", label: "HUB-ID / Ger\u00E4te-ID", value: (hubEl?.value || "").trim(), hideWhenEmpty: true },
     { input: strasseEl, savedId: "saved_strasse", label: "Straße", value: (strasseEl?.value || "").trim() || "-" },
@@ -7399,11 +7399,18 @@ function formularSenden(e) {
   <legend>Anlagedaten</legend>
   <p class="section-caption">Bitte tragen Sie hier die Basisdaten Ihrer Anlage ein.</p>
   <div class="customer-input-row">
-    <select id="anlagetyp">
-      <option value="">---- Anlagetyp ausw&auml;hlen ----</option>
-      <option value="Ajax" selected>Ajax</option>
-      <option value="Jablotron">Jablotron</option>
-    </select>
+    <input
+      type="text"
+      id="anlagetyp"
+      list="anlagetyp_optionen"
+      value="Ajax"
+      placeholder="Anlagetyp ausw&auml;hlen oder frei eingeben"
+      autocomplete="off"
+    >
+    <datalist id="anlagetyp_optionen">
+      <option value="Ajax"></option>
+      <option value="Jablotron"></option>
+    </datalist>
     <div class="customer-saved-row" id="saved_anlagetyp"></div>
   </div>
   <div class="customer-input-row">
