@@ -1875,7 +1875,7 @@ function setCustomSelectLabelContent(target, option, fallbackText){
 
 function updateAnlagetypCustomSelection(select, trigger){
   const customInput = document.getElementById("anlagetyp_custom");
-  if (!select || !trigger || !customInput || select.disabled || anlageLocked) return;
+  if (!select || !trigger || !customInput || select.disabled) return;
 
   select.value = "custom";
   const customValue = String(customInput.value || "").trim();
@@ -1889,6 +1889,7 @@ function updateAnlagetypCustomSelection(select, trigger){
     setFieldError("anlagetyp_custom", "");
   }
 
+  if (anlageLocked) saveSectionDraftLocally("anlage");
   scheduleDraftSave();
   renderReviewSummary();
   updateStepProgress("anlageFieldset");
@@ -1961,7 +1962,7 @@ function syncCustomSelect(select){
 
     if (isAnlagetyp && opt.value === "custom" && customWrap && customInput){
       customWrap.setAttribute("aria-hidden", "false");
-      customInput.disabled = !!select.disabled || anlageLocked;
+      customInput.disabled = !!select.disabled;
       customInput.placeholder = "Frei eingeben";
       customInput.setAttribute("aria-label", "Anlagentyp frei eingeben");
       menu.appendChild(customWrap);
@@ -3808,7 +3809,7 @@ function syncAnlagetypCustomVisibility(){
   const isInline = !!customWrap.closest(".custom-select-menu");
   customWrap.style.display = "";
   customWrap.setAttribute("aria-hidden", isInline ? "false" : "true");
-  customInput.disabled = !!select.disabled || anlageLocked || !isInline;
+  customInput.disabled = !!select.disabled || !isInline;
 
   if (!isCustom){
     customInput.value = "";
@@ -3820,6 +3821,7 @@ function toggleAnlagetyp(){
   syncAnlagetypCustomVisibility();
   if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
   if (getAnlagetypValue()) setFieldError("anlagetyp_custom", "");
+  if (anlageLocked) saveSectionDraftLocally("anlage");
   scheduleDraftSave();
   renderReviewSummary();
   updateStepProgress("anlageFieldset");
@@ -6883,7 +6885,7 @@ function saveAnlageData(){
   const btn = document.getElementById("saveAnlageBtn");
   syncRechnungsadresseCombined();
   const savedRows = [
-    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getAnlagetypValue() || "-" },
+    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getAnlagetypValue() || "-", keepEditable: true },
     { input: standortEl, savedId: "saved_standort", label: "Objektname", value: (standortEl?.value || "").trim() || "-" },
     { input: hubEl, savedId: "saved_hub_geraete_id", label: "HUB-ID / Ger\u00E4te-ID", value: (hubEl?.value || "").trim(), hideWhenEmpty: true },
     { input: strasseEl, savedId: "saved_strasse", label: "Straße", value: (strasseEl?.value || "").trim() || "-" },
@@ -6905,7 +6907,7 @@ function saveAnlageData(){
   savedRows.forEach(item => {
     const savedEl = document.getElementById(item.savedId);
     if (savedEl){
-      if (item.hideWhenEmpty && !String(item.value || "").trim()){
+      if (item.keepEditable || (item.hideWhenEmpty && !String(item.value || "").trim())){
         hideSavedRow(item.savedId);
       } else {
         savedEl.innerHTML =
@@ -6914,7 +6916,7 @@ function saveAnlageData(){
         savedEl.style.display = "block";
       }
     }
-    if (item.input){
+    if (item.input && !item.keepEditable){
       if ("disabled" in item.input) item.input.disabled = true;
       setFieldControlVisibility(item.input, false);
     }
