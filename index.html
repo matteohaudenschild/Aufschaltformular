@@ -1951,10 +1951,20 @@ function syncCustomSelect(select){
      select.classList.contains("ueberwachung-filled"));
   trigger.classList.toggle("is-filled", isFilledLocked);
 
-  if (customWrap && customWrap.parentElement === menu){
-    customWrap.remove();
+  const hasInlineCustomOption = !!(
+    isAnlagetyp &&
+    customWrap &&
+    customInput &&
+    options.some(opt => opt.value === "custom")
+  );
+  if (hasInlineCustomOption && customWrap.parentElement === menu){
+    Array.from(menu.children).forEach(child => {
+      if (child !== customWrap) child.remove();
+    });
+  } else {
+    menu.innerHTML = "";
   }
-  menu.innerHTML = "";
+  let inlineCustomPlaced = false;
   options.forEach((opt, index) => {
     const isPlaceholderOption = String(opt.value || "").trim() === "";
     const showPlaceholderOption = select.dataset.showPlaceholderOption === "1";
@@ -1965,7 +1975,8 @@ function syncCustomSelect(select){
       customInput.disabled = !!select.disabled;
       customInput.placeholder = "Frei eingeben";
       customInput.setAttribute("aria-label", "Anlagentyp frei eingeben");
-      menu.appendChild(customWrap);
+      if (customWrap.parentElement !== menu) menu.appendChild(customWrap);
+      inlineCustomPlaced = true;
       return;
     }
 
@@ -1992,7 +2003,11 @@ function syncCustomSelect(select){
       trigger.focus();
     });
 
-    menu.appendChild(optionBtn);
+    if (hasInlineCustomOption && customWrap.parentElement === menu && !inlineCustomPlaced){
+      menu.insertBefore(optionBtn, customWrap);
+    } else {
+      menu.appendChild(optionBtn);
+    }
   });
 
   if (isAnlagetyp){
