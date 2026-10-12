@@ -3654,6 +3654,7 @@ document.addEventListener("DOMContentLoaded", function () {
   bindRechnungsadresseFields();
   bindSonstigeAlarmeFields();
   initCustomSelects();
+  syncAnlagetypCustomVisibility();
   loadDraftLocally();
   loadAllSectionDraftsLocally();
   syncRechnungsadresseSectionVisibility();
@@ -3699,6 +3700,39 @@ function getSelectValue(id) {
 function getInputValue(id) {
   const input = document.getElementById(id);
   return input ? input.value : "";
+}
+
+function getAnlagetypValue(){
+  const selectedValue = getSelectValue("anlagetyp");
+  if (selectedValue === "custom"){
+    return String(getInputValue("anlagetyp_custom") || "").trim();
+  }
+  return selectedValue ? getSelectDisplayText("anlagetyp") : "";
+}
+
+function syncAnlagetypCustomVisibility(){
+  const customWrap = document.getElementById("anlagetyp_custom_wrap");
+  const customInput = document.getElementById("anlagetyp_custom");
+  if (!customWrap || !customInput) return;
+
+  const isCustom = getSelectValue("anlagetyp") === "custom";
+  const shouldShow = isCustom && !anlageLocked;
+  customWrap.style.display = shouldShow ? "block" : "none";
+  customWrap.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+  customInput.disabled = !shouldShow;
+
+  if (!isCustom){
+    customInput.value = "";
+    setFieldError("anlagetyp_custom", "");
+  }
+}
+
+function toggleAnlagetyp(){
+  syncAnlagetypCustomVisibility();
+  if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
+  if (getAnlagetypValue()) setFieldError("anlagetyp_custom", "");
+  scheduleDraftSave();
+  renderReviewSummary();
 }
 
 function getCustomerAddressData(){
@@ -3925,7 +3959,7 @@ const SECTION_DRAFT_CONFIG = {
   anlage: {
     fieldsetId: "anlageFieldset",
     fieldIds: [
-      "anlagetyp", "standort", "hub_geraete_id", "strasse", "postleitzahl", "ort",
+      "anlagetyp", "anlagetyp_custom", "standort", "hub_geraete_id", "strasse", "postleitzahl", "ort",
       "rechnungsadresse_aktiv", "rechnungsadresse_name", "rechnungsadresse_strasse",
       "rechnungsadresse_postleitzahl", "rechnungsadresse_ort"
     ]
@@ -4338,13 +4372,15 @@ function validateAnlageFields(showAlert){
     return true;
   }
   const anlagetypEl = document.getElementById("anlagetyp");
+  const anlagetypCustomEl = document.getElementById("anlagetyp_custom");
   const standortEl = document.getElementById("standort");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
   const ortEl = document.getElementById("ort");
   if (!anlagetypEl || !standortEl || !strasseEl || !postleitzahlEl || !ortEl) return true;
 
-  const anlagetyp = String(anlagetypEl.value || "").trim();
+  const anlagetypSelection = getSelectValue("anlagetyp");
+  const anlagetyp = getAnlagetypValue();
   const standort = (standortEl.value || "").trim();
   const strasse = (strasseEl.value || "").trim();
   const postleitzahl = (postleitzahlEl.value || "").trim();
@@ -4352,12 +4388,19 @@ function validateAnlageFields(showAlert){
   let valid = true;
   let firstInvalid = null;
 
-  if (!anlagetyp){
+  if (!anlagetypSelection){
     valid = false;
     firstInvalid = firstInvalid || anlagetypEl;
-    setFieldError("anlagetyp", "Bitte geben Sie den Anlagetyp ein.");
+    setFieldError("anlagetyp", "Bitte w\u00E4hlen Sie den Anlagentyp aus.");
+    setFieldError("anlagetyp_custom", "");
+  } else if (anlagetypSelection === "custom" && !anlagetyp){
+    valid = false;
+    firstInvalid = firstInvalid || anlagetypCustomEl;
+    setFieldError("anlagetyp", "");
+    setFieldError("anlagetyp_custom", "Bitte geben Sie den Anlagetyp ein.");
   } else {
     setFieldError("anlagetyp", "");
+    setFieldError("anlagetyp_custom", "");
   }
 
   if (!standort){
@@ -4394,7 +4437,7 @@ function validateAnlageFields(showAlert){
 
   if (!valid && showAlert){
     alert("Bitte prüfen Sie die markierten Felder in den Anlagedaten.");
-    if (firstInvalid) firstInvalid.focus();
+    if (firstInvalid) focusFieldById(firstInvalid.id);
   }
 
   return valid;
@@ -4722,6 +4765,20 @@ function applySectionDraftData(sectionKey, record){
   });
 
   if (sectionKey === "anlage"){
+    const storedType = String(record.fields.anlagetyp || "").slice(0, 50000);
+    const typeSelect = document.getElementById("anlagetyp");
+    const hasSeparateCustomValue = Object.prototype.hasOwnProperty.call(record.fields, "anlagetyp_custom");
+    const isPresetType = typeSelect && Array.from(typeSelect.options || []).some(option =>
+      option.value !== "custom" && option.value === storedType
+    );
+    if (
+      storedType && typeSelect &&
+      !hasSeparateCustomValue && !isPresetType
+    ){
+      typeSelect.value = "custom";
+      applySectionDraftField("anlagetyp_custom", storedType);
+    }
+    syncAnlagetypCustomVisibility();
     if (document.getElementById("rechnungsadresse_aktiv")?.value !== "ja"){
       [
         "rechnungsadresse_name", "rechnungsadresse_strasse",
@@ -5043,6 +5100,7 @@ function setupLiveValidation(){
     return;
   }
   const anlagetypEl = document.getElementById("anlagetyp");
+  const anlagetypCustomEl = document.getElementById("anlagetyp_custom");
   const standortEl = document.getElementById("standort");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
@@ -5058,10 +5116,18 @@ function setupLiveValidation(){
   });
 
   if (anlagetypEl){
-    anlagetypEl.addEventListener("input", () => {
-      if (String(anlagetypEl.value || "").trim()) setFieldError("anlagetyp", "");
+    anlagetypEl.addEventListener("change", () => {
+      if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
+      if (getSelectValue("anlagetyp") !== "custom") setFieldError("anlagetyp_custom", "");
+      validateAnlageFields(false);
     });
-    anlagetypEl.addEventListener("change", () => validateAnlageFields(false));
+  }
+
+  if (anlagetypCustomEl){
+    anlagetypCustomEl.addEventListener("input", () => {
+      if (String(anlagetypCustomEl.value || "").trim()) setFieldError("anlagetyp_custom", "");
+    });
+    anlagetypCustomEl.addEventListener("blur", () => validateAnlageFields(false));
   }
 
   document.querySelectorAll(".alarm-kategorie").forEach(cb => {
@@ -5203,7 +5269,7 @@ function getEmailBlockStyle(text){
 function getEmailAnlagedatenText(){
   const lines = [];
   const anlageFields = [
-    ["Anlagetyp", getInputValue("anlagetyp").trim()],
+    ["Anlagetyp", getAnlagetypValue()],
     ["Objektname", getInputValue("standort")],
     ["HUB-ID / Ger\u00E4te-ID", getInputValue("hub_geraete_id")],
     ["Stra\u00DFe", getInputValue("strasse")],
@@ -5554,7 +5620,7 @@ function buildReviewSections(){
   }
 
   const anlageRows = [
-    { label: "Anlagetyp", value: valueOrDash(getInputValue("anlagetyp").trim()) },
+    { label: "Anlagetyp", value: valueOrDash(getAnlagetypValue()) },
     { label: "Objektname", value: valueOrDash(getInputValue("standort")) },
     { label: "HUB-ID / Ger\u00E4te-ID", value: valueOrDash(getInputValue("hub_geraete_id")) },
     { label: "Stra\u00DFe", value: valueOrDash(getInputValue("strasse")) },
@@ -6584,6 +6650,7 @@ function unlockAnlageSection(){
     if (!field) return;
     field.disabled = false;
   });
+  syncAnlagetypCustomVisibility();
   syncRechnungsadresseSectionVisibility();
 
   ["saved_anlagetyp", "saved_standort", "saved_hub_geraete_id", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
@@ -6617,6 +6684,7 @@ function unlockCustomerSection(){
 
 function resetAnlageSection(){
   const anlagetypEl = document.getElementById("anlagetyp");
+  const anlagetypCustomEl = document.getElementById("anlagetyp_custom");
   const standortEl = document.getElementById("standort");
   const hubEl = document.getElementById("hub_geraete_id");
   const strasseEl = document.getElementById("strasse");
@@ -6639,6 +6707,8 @@ function resetAnlageSection(){
     anlagetypEl.disabled = false;
     setFieldControlVisibility(anlagetypEl, true);
   }
+  if (anlagetypCustomEl) anlagetypCustomEl.value = "";
+  syncAnlagetypCustomVisibility();
   [standortEl, hubEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
     if (!el) return;
     el.value = "";
@@ -6656,6 +6726,7 @@ function resetAnlageSection(){
 
   ["saved_anlagetyp", "saved_standort", "saved_hub_geraete_id", "saved_strasse", "saved_postleitzahl", "saved_ort", "saved_rechnungsadresse"].forEach(hideSavedRow);
   setFieldError("anlagetyp", "");
+  setFieldError("anlagetyp_custom", "");
   setFieldError("standort", "");
   setFieldError("strasse", "");
   setFieldError("postleitzahl", "");
@@ -6711,7 +6782,7 @@ function saveAnlageData(){
   const btn = document.getElementById("saveAnlageBtn");
   syncRechnungsadresseCombined();
   const savedRows = [
-    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: (anlagetypEl?.value || "").trim() || "-" },
+    { input: anlagetypEl, savedId: "saved_anlagetyp", label: "Anlagetyp", value: getAnlagetypValue() || "-" },
     { input: standortEl, savedId: "saved_standort", label: "Objektname", value: (standortEl?.value || "").trim() || "-" },
     { input: hubEl, savedId: "saved_hub_geraete_id", label: "HUB-ID / Ger\u00E4te-ID", value: (hubEl?.value || "").trim(), hideWhenEmpty: true },
     { input: strasseEl, savedId: "saved_strasse", label: "Straße", value: (strasseEl?.value || "").trim() || "-" },
@@ -6748,6 +6819,7 @@ function saveAnlageData(){
   });
 
   anlageLocked = true;
+  syncAnlagetypCustomVisibility();
   syncRechnungsadresseSectionVisibility(false);
   if (btn){
     setSectionSaveButtonState(btn, true, false);
@@ -7399,18 +7471,15 @@ function formularSenden(e) {
   <legend>Anlagedaten</legend>
   <p class="section-caption">Bitte tragen Sie hier die Basisdaten Ihrer Anlage ein.</p>
   <div class="customer-input-row">
-    <input
-      type="text"
-      id="anlagetyp"
-      list="anlagetyp_optionen"
-      value="Ajax"
-      placeholder="Anlagetyp ausw&auml;hlen oder frei eingeben"
-      autocomplete="off"
-    >
-    <datalist id="anlagetyp_optionen">
-      <option value="Ajax"></option>
-      <option value="Jablotron"></option>
-    </datalist>
+    <select id="anlagetyp" onchange="toggleAnlagetyp()">
+      <option value="">---- Anlagetyp ausw&auml;hlen ----</option>
+      <option value="Ajax" selected>Ajax</option>
+      <option value="Jablotron">Jablotron</option>
+      <option value="custom">Eigener Anlagentyp (frei eingeben)</option>
+    </select>
+    <div id="anlagetyp_custom_wrap" class="zeitfeld" aria-hidden="true">
+      <input type="text" id="anlagetyp_custom" placeholder="Eigenen Anlagentyp eingeben" autocomplete="off">
+    </div>
     <div class="customer-saved-row" id="saved_anlagetyp"></div>
   </div>
   <div class="customer-input-row">
