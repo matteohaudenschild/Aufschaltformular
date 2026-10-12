@@ -567,6 +567,24 @@
     filter: none;
   }
 
+  .custom-select-free-entry {
+    display: none;
+  }
+
+  .custom-select-menu > .custom-select-free-entry {
+    display: block;
+    margin: 2px 0 0;
+    padding: 4px;
+  }
+
+  .custom-select-free-entry input[type="text"] {
+    min-height: 38px;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
   input[type="text"]::placeholder,
   input[type="email"]::placeholder,
   input[type="tel"]::placeholder,
@@ -1855,6 +1873,46 @@ function setCustomSelectLabelContent(target, option, fallbackText){
   target.innerText = String(fallbackText || "").trim();
 }
 
+function updateAnlagetypCustomSelection(select, trigger){
+  const customInput = document.getElementById("anlagetyp_custom");
+  if (!select || !trigger || !customInput || select.disabled || anlageLocked) return;
+
+  select.value = "custom";
+  const customValue = String(customInput.value || "").trim();
+  setCustomSelectLabelContent(trigger, null, customValue || "Frei eingeben");
+  trigger.classList.toggle("placeholder", !customValue);
+
+  if (sectionValidationAttempted.anlage){
+    validateAnlageFields(false);
+  } else if (customValue){
+    setFieldError("anlagetyp", "");
+    setFieldError("anlagetyp_custom", "");
+  }
+
+  scheduleDraftSave();
+  renderReviewSummary();
+  updateStepProgress("anlageFieldset");
+}
+
+function bindAnlagetypCustomInput(select, trigger){
+  const customInput = document.getElementById("anlagetyp_custom");
+  if (!customInput || customInput.dataset.inlineCustomBound === "1") return;
+
+  customInput.dataset.inlineCustomBound = "1";
+  customInput.addEventListener("focus", () => {
+    updateAnlagetypCustomSelection(select, trigger);
+  });
+  customInput.addEventListener("input", () => {
+    updateAnlagetypCustomSelection(select, trigger);
+  });
+  customInput.addEventListener("keydown", event => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    closeAllCustomSelects();
+    trigger.focus();
+  });
+}
+
 function syncCustomSelect(select){
   if (!select || select.dataset.customUi !== "1") return;
   const wrap = select.parentElement;
@@ -1866,8 +1924,15 @@ function syncCustomSelect(select){
 
   const options = Array.from(select.options || []);
   const current = options[select.selectedIndex] || null;
-  const text = current ? String(current.text || "").trim() : "";
-  const placeholderMode = !current || current.disabled || current.value === "";
+  const isAnlagetyp = select.id === "anlagetyp";
+  const customInput = isAnlagetyp ? document.getElementById("anlagetyp_custom") : null;
+  const customWrap = isAnlagetyp ? document.getElementById("anlagetyp_custom_wrap") : null;
+  const customValue = customInput ? String(customInput.value || "").trim() : "";
+  const isCustomValue = isAnlagetyp && current && current.value === "custom";
+  const text = isCustomValue
+    ? (customValue || "Frei eingeben")
+    : (current ? String(current.text || "").trim() : "");
+  const placeholderMode = !current || current.disabled || current.value === "" || (isCustomValue && !customValue);
 
   setCustomSelectLabelContent(trigger, current, text || "Bitte auswählen");
   trigger.classList.toggle("placeholder", placeholderMode);
@@ -1885,11 +1950,23 @@ function syncCustomSelect(select){
      select.classList.contains("ueberwachung-filled"));
   trigger.classList.toggle("is-filled", isFilledLocked);
 
+  if (customWrap && customWrap.parentElement === menu){
+    customWrap.remove();
+  }
   menu.innerHTML = "";
   options.forEach((opt, index) => {
     const isPlaceholderOption = String(opt.value || "").trim() === "";
     const showPlaceholderOption = select.dataset.showPlaceholderOption === "1";
     if (isPlaceholderOption && opt.disabled && !showPlaceholderOption) return;
+
+    if (isAnlagetyp && opt.value === "custom" && customWrap && customInput){
+      customWrap.setAttribute("aria-hidden", "false");
+      customInput.disabled = !!select.disabled || anlageLocked;
+      customInput.placeholder = "Frei eingeben";
+      customInput.setAttribute("aria-label", "Anlagentyp frei eingeben");
+      menu.appendChild(customWrap);
+      return;
+    }
 
     const optionBtn = document.createElement("button");
     optionBtn.type = "button";
@@ -1916,6 +1993,10 @@ function syncCustomSelect(select){
 
     menu.appendChild(optionBtn);
   });
+
+  if (isAnlagetyp){
+    bindAnlagetypCustomInput(select, trigger);
+  }
 }
 
 function createCustomSelect(select){
@@ -1932,11 +2013,14 @@ function createCustomSelect(select){
   const trigger = document.createElement("button");
   trigger.type = "button";
   trigger.className = "custom-select-trigger placeholder";
-  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-haspopup", select.id === "anlagetyp" ? "dialog" : "listbox");
 
   const menu = document.createElement("div");
   menu.className = "custom-select-menu";
-  menu.setAttribute("role", "listbox");
+  menu.setAttribute("role", select.id === "anlagetyp" ? "dialog" : "listbox");
+  if (select.id === "anlagetyp"){
+    menu.setAttribute("aria-label", "Anlagentyp auswählen oder frei eingeben");
+  }
 
   wrap.appendChild(trigger);
   wrap.appendChild(menu);
@@ -2160,7 +2244,9 @@ function attachEmailFieldListeners(input){
   input.dataset.emailBound = "1";
   input.addEventListener("input", handleEmailFieldsChange);
   input.addEventListener("change", handleEmailFieldsChange);
-  input.addEventListener("blur", () => validateCustomerFields(false));
+  input.addEventListener("blur", () => {
+    if (sectionValidationAttempted.customer) validateCustomerFields(false);
+  });
 }
 
 function setEmailFieldsDisabled(disabled){
@@ -2479,7 +2565,9 @@ function bindCustomerContactInput(input){
   input.dataset.contactBound = "1";
   input.addEventListener("input", handleCustomerContactRowsChange);
   input.addEventListener("change", handleCustomerContactRowsChange);
-  input.addEventListener("blur", () => validateCustomerFields(false));
+  input.addEventListener("blur", () => {
+    if (sectionValidationAttempted.customer) validateCustomerFields(false);
+  });
 }
 
 function attachEmailFieldListeners(input){
@@ -3711,15 +3799,16 @@ function getAnlagetypValue(){
 }
 
 function syncAnlagetypCustomVisibility(){
+  const select = document.getElementById("anlagetyp");
   const customWrap = document.getElementById("anlagetyp_custom_wrap");
   const customInput = document.getElementById("anlagetyp_custom");
-  if (!customWrap || !customInput) return;
+  if (!select || !customWrap || !customInput) return;
 
   const isCustom = getSelectValue("anlagetyp") === "custom";
-  const shouldShow = isCustom && !anlageLocked;
-  customWrap.style.display = shouldShow ? "block" : "none";
-  customWrap.setAttribute("aria-hidden", shouldShow ? "false" : "true");
-  customInput.disabled = !shouldShow;
+  const isInline = !!customWrap.closest(".custom-select-menu");
+  customWrap.style.display = "";
+  customWrap.setAttribute("aria-hidden", isInline ? "false" : "true");
+  customInput.disabled = !!select.disabled || anlageLocked || !isInline;
 
   if (!isCustom){
     customInput.value = "";
@@ -3733,6 +3822,7 @@ function toggleAnlagetyp(){
   if (getAnlagetypValue()) setFieldError("anlagetyp_custom", "");
   scheduleDraftSave();
   renderReviewSummary();
+  updateStepProgress("anlageFieldset");
 }
 
 function getCustomerAddressData(){
@@ -3947,6 +4037,10 @@ let techLocked = false;
 let verbindungLocked = false;
 let statusLocked = false;
 let ueberwachungLocked = false;
+const sectionValidationAttempted = {
+  anlage: false,
+  customer: false
+};
 let draftTimer = null;
 let currentStepSection = "anlageFieldset";
 let sectionHighlightTimeout = null;
@@ -4372,7 +4466,6 @@ function validateAnlageFields(showAlert){
     return true;
   }
   const anlagetypEl = document.getElementById("anlagetyp");
-  const anlagetypCustomEl = document.getElementById("anlagetyp_custom");
   const standortEl = document.getElementById("standort");
   const strasseEl = document.getElementById("strasse");
   const postleitzahlEl = document.getElementById("postleitzahl");
@@ -4395,9 +4488,9 @@ function validateAnlageFields(showAlert){
     setFieldError("anlagetyp_custom", "");
   } else if (anlagetypSelection === "custom" && !anlagetyp){
     valid = false;
-    firstInvalid = firstInvalid || anlagetypCustomEl;
-    setFieldError("anlagetyp", "");
-    setFieldError("anlagetyp_custom", "Bitte geben Sie den Anlagetyp ein.");
+    firstInvalid = firstInvalid || anlagetypEl;
+    setFieldError("anlagetyp", "Bitte geben Sie den Anlagentyp ein.");
+    setFieldError("anlagetyp_custom", "");
   } else {
     setFieldError("anlagetyp", "");
     setFieldError("anlagetyp_custom", "");
@@ -5109,7 +5202,9 @@ function setupLiveValidation(){
 
   [standortEl, strasseEl, postleitzahlEl, ortEl].forEach(el => {
     if (!el) return;
-    el.addEventListener("blur", () => validateAnlageFields(false));
+    el.addEventListener("blur", () => {
+      if (sectionValidationAttempted.anlage) validateAnlageFields(false);
+    });
     el.addEventListener("input", () => {
       if ((el.value || "").trim()) setFieldError(el.id, "");
     });
@@ -5119,7 +5214,7 @@ function setupLiveValidation(){
     anlagetypEl.addEventListener("change", () => {
       if (getSelectValue("anlagetyp")) setFieldError("anlagetyp", "");
       if (getSelectValue("anlagetyp") !== "custom") setFieldError("anlagetyp_custom", "");
-      validateAnlageFields(false);
+      if (sectionValidationAttempted.anlage) validateAnlageFields(false);
     });
   }
 
@@ -5127,7 +5222,9 @@ function setupLiveValidation(){
     anlagetypCustomEl.addEventListener("input", () => {
       if (String(anlagetypCustomEl.value || "").trim()) setFieldError("anlagetyp_custom", "");
     });
-    anlagetypCustomEl.addEventListener("blur", () => validateAnlageFields(false));
+    anlagetypCustomEl.addEventListener("blur", () => {
+      if (sectionValidationAttempted.anlage) validateAnlageFields(false);
+    });
   }
 
   document.querySelectorAll(".alarm-kategorie").forEach(cb => {
@@ -5733,6 +5830,8 @@ function validateBeforeSubmit(){
     }
   };
 
+  sectionValidationAttempted.anlage = true;
+  sectionValidationAttempted.customer = true;
   const anlageValid = validateAnlageFields(false);
   const customerValid = validateCustomerFields(false);
   const consentValid = validateConsent(false);
@@ -6701,9 +6800,10 @@ function resetAnlageSection(){
   const btn = document.getElementById("saveAnlageBtn");
 
   anlageLocked = false;
+  sectionValidationAttempted.anlage = false;
 
   if (anlagetypEl){
-    anlagetypEl.value = "Ajax";
+    anlagetypEl.value = "";
     anlagetypEl.disabled = false;
     setFieldControlVisibility(anlagetypEl, true);
   }
@@ -6748,6 +6848,7 @@ function resetCustomerSection(){
   const btn = document.getElementById("saveCustomerBtn");
 
   customerLocked = false;
+  sectionValidationAttempted.customer = false;
 
   if (kontaktWrapEl) kontaktWrapEl.style.display = "";
 
@@ -6796,6 +6897,7 @@ function saveAnlageData(){
     return;
   }
 
+  sectionValidationAttempted.anlage = true;
   if (FORM_VALIDATION_ACTIVE && !validateAnlageFields(true)){
     return;
   }
@@ -6843,6 +6945,7 @@ function saveCustomerData(){
 
   syncCustomerContactCombined();
 
+  sectionValidationAttempted.customer = true;
   if (FORM_VALIDATION_ACTIVE && !validateCustomerFields(true)){
     return;
   }
@@ -7472,13 +7575,13 @@ function formularSenden(e) {
   <p class="section-caption">Bitte tragen Sie hier die Basisdaten Ihrer Anlage ein.</p>
   <div class="customer-input-row">
     <select id="anlagetyp" onchange="toggleAnlagetyp()">
-      <option value="">---- Anlagetyp ausw&auml;hlen ----</option>
-      <option value="Ajax" selected>Ajax</option>
+      <option value="" selected disabled>---- Anlagetyp ausw&auml;hlen ----</option>
+      <option value="Ajax">Ajax</option>
       <option value="Jablotron">Jablotron</option>
-      <option value="custom">Eigener Anlagentyp (frei eingeben)</option>
+      <option value="custom">Frei eingeben</option>
     </select>
-    <div id="anlagetyp_custom_wrap" class="zeitfeld" aria-hidden="true">
-      <input type="text" id="anlagetyp_custom" placeholder="Eigenen Anlagentyp eingeben" autocomplete="off">
+    <div id="anlagetyp_custom_wrap" class="zeitfeld custom-select-free-entry" aria-hidden="true">
+      <input type="text" id="anlagetyp_custom" placeholder="Frei eingeben" autocomplete="off">
     </div>
     <div class="customer-saved-row" id="saved_anlagetyp"></div>
   </div>
